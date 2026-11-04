@@ -1,0 +1,68 @@
+@theme {
+  --color-board-light: #EBECD0;
+  --color-board-dark: #779556;
+  --color-ink: #1A1A1A;
+  --color-muted: #5A5A5A;
+  --color-primary: #2F4F3E;
+  --color-danger: #C0392B;
+
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+  --spacing-48: 48px;
+
+  --radius-6: 6px;
+  --radius-10: 10px;
+  --radius-14: 14px;
+
+  --duration-120: 120ms;
+  --duration-180: 180ms;
+  --duration-260: 260ms;
+}
+
+:root {
+  /* Board colours */
+  --board-light: #EBECD0;
+  --board-dark: #779556;
+  --color-board-light: #EBECD0;
+  --color-board-dark: #779556;
+
+  /* Theme colours */
+  --ink: #1A1A1A;
+  --muted: #5A5A5A;
+  --primary: #2F4F3E;
+  --danger: #C0392B;
+  --color-ink: #1A1A1A;
+  --color-muted: #5A5A5A;
+  --color-primary: #2F4F3E;
+  --color-danger: #C0392B;
+
+  /* Spacing scale: 4, 8, 12, 16, 24, 32, 48 */
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-48: 48px;
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+  --spacing-48: 48px;
+
+  /* Radii: 6, 10, 14 */
+  --radius-6: 6px;
+  --radius-10: 10px;
+  --radius-14: 14px;
+
+  /* Motion durations: 120, 180, 260ms */
+  --duration-120: 120ms;
+  --duration-180: 180ms;
+  --duration-260: 260ms;
+}
