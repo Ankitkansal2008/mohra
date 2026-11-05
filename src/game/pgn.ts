@@ -40,3 +40,17 @@ export function syncPgnHeaders(
   rules.setHeader('Black', names.black);
   rules.setHeader('Result', getResultToken(game.status, game.winner));
 }
+
+// PRD FR-17: Download the active game representation as valid PGN file.
+export function downloadPgnFile(pgnText: string, filename: string = 'gambit.pgn'): void {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
+  const blob = new Blob([pgnText], { type: 'application/x-chess-pgn;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}

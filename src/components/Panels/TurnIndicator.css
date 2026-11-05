@@ -1,0 +1,103 @@
+.gambit-turn-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--space-8) var(--space-12);
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.gambit-player-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.gambit-player-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid var(--color-border);
+}
+
+.gambit-avatar-white {
+  background-color: var(--color-panel, #ffffff);
+  color: var(--color-ink, #1a1a1a);
+}
+
+.gambit-avatar-black {
+  background-color: var(--color-ink, #1a1a1a);
+  color: var(--color-panel, #ffffff);
+}
+
+.gambit-player-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.gambit-player-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-ink);
+  line-height: 1.2;
+}
+
+.gambit-player-sub {
+  font-size: 12px;
+  color: var(--color-muted);
+  line-height: 1.2;
+}
+
+.gambit-turn-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  animation: gambit-pulse 1.8s infinite ease-in-out;
+}
+
+.gambit-clock {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 16px;
+  padding: 4px 10px;
+  border-radius: var(--radius-6);
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  border: 1px solid var(--color-border);
+  min-width: 58px;
+  text-align: center;
+}
+
+.gambit-clock-active {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.gambit-clock-urgent {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+  background-color: rgba(192, 57, 43, 0.08);
+}
+
+.gambit-clock-flagged {
+  color: var(--color-danger);
+  background-color: rgba(192, 57, 43, 0.16);
+}
+
+@keyframes gambit-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
+}
+

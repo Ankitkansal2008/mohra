@@ -210,4 +210,34 @@ describe('Result dialog in game view', () => {
     copyBtn.props.onClick();
     expect(onCopyPgn).toHaveBeenCalledTimes(1);
   });
+
+  it('enables Review moves when moves exist and enters review mode on click', () => {
+    useGameStore.setState((s) => ({
+      game: { ...s.game, moves: ['e4', 'e5'], status: 'checkmate', winner: 'w' },
+    }));
+
+    const onReviewMoves = vi.fn();
+    const element = ResultDialog({
+      status: 'checkmate',
+      winner: 'w',
+      onReviewMoves,
+    });
+
+    const actionsDiv = element?.props.children[2];
+    const [, reviewBtn] = actionsDiv.props.children;
+    expect(reviewBtn.props.disabled).toBe(false);
+
+    reviewBtn.props.onClick();
+    expect(onReviewMoves).toHaveBeenCalledTimes(1);
+
+    // When clicked without custom callback, enters review mode at last ply
+    const elementDefault = ResultDialog({
+      status: 'checkmate',
+      winner: 'w',
+    });
+    const actionsDivDefault = elementDefault?.props.children[2];
+    const [, reviewBtnDefault] = actionsDivDefault.props.children;
+    reviewBtnDefault.props.onClick();
+    expect(useGameStore.getState().ui.reviewPly).toBe(1);
+  });
 });

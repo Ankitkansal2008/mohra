@@ -60,3 +60,42 @@ export interface ToastNotification {
   reason?: RejectionReason;
   message: string;
 }
+
+export interface GameStoreState {
+  game: GameState;
+  ui: UiState;
+  toast: ToastNotification | null;
+  lastMove: [string, string] | null;
+  announcedMove: string | null;
+  engineToken: number;
+  isThinking: boolean;
+  engineFailed: boolean;
+
+  attemptMove: (from: string, to?: string, promotion?: string, isEngine?: boolean) => boolean;
+  applyEngineMove: (token: number, uci: string) => boolean;
+  setThinking: (thinking: boolean) => void;
+  setEngineFailed: (failed: boolean) => void;
+  setEngineToken: (token: number) => void;
+  requestEngineToken: () => number;
+  setLevel: (level: Level) => void;
+  selectSquare: (square: string) => void;
+  clearSelection: () => void;
+  cancelPromotion: () => void;
+  confirmPromotion: (piece: 'q' | 'r' | 'b' | 'n') => boolean;
+  setRejectionToast: (reason: RejectionReason) => void;
+  showToast: (message: string, reason?: RejectionReason) => void;
+  dismissToast: () => void;
+  resetGame: (customFen?: string) => void;
+  loadFen: (fen: string) => boolean;
+  undo: () => boolean;
+  resignGame: () => void;
+  toggleFlip: () => void;
+  setReviewPly: (ply: number | null) => void;
+  tickClock: (now?: number) => void;
+  setTheme: (theme: 'default' | 'slate') => void;
+  setSoundOn: (soundOn: boolean) => void;
+  setAnimationOn: (animationOn: boolean) => void;
+  setShowCoords: (showCoords: boolean) => void;
+  setClockEnabled: (enabled: boolean) => void;
+  restoreGame: (savedGame: GameState) => void;
+}

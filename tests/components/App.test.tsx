@@ -25,5 +25,20 @@ describe('App component', () => {
     expect(html).toContain('chessboard-piece-bQ-d8');
     expect(html).toContain('chessboard-piece-bK-e8');
   });
+
+  it('renders turn indicators above and below board with correct player names', () => {
+    // Computer mode: Top is Gambit (Black), Bottom is You (White)
+    const htmlComputer = renderToStaticMarkup(React.createElement(App));
+    expect(htmlComputer).toContain('data-testid="turn-indicator-top"');
+    expect(htmlComputer).toContain('data-testid="turn-indicator-bottom"');
+    expect(htmlComputer).toContain('Gambit');
+    expect(htmlComputer).toContain('You');
+  });
+
+  it('renders move list panel with initial empty state', () => {
+    const html = renderToStaticMarkup(React.createElement(App));
+    expect(html).toContain('class="gambit-move-panel"');
+    expect(html).toContain('No moves yet. White to play.');
+  });
 });
 

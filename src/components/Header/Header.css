@@ -1,14 +1,41 @@
 .gambit-header {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   padding: var(--spacing-8) var(--spacing-16);
   border-bottom: 1px solid var(--color-border);
   background-color: var(--color-surface);
+  gap: var(--spacing-12);
 }
 
-.gambit-header:empty {
-  display: none;
+.gambit-brand {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-decoration: none;
+  margin: 0;
+}
+
+.gambit-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+}
+
+.gambit-header-btn {
+  background: var(--color-panel, #ffffff);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-6);
+  padding: 5px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: all var(--duration-120);
+}
+
+.gambit-header-btn:hover {
+  border-color: var(--color-primary);
 }
 
 .fen-loader-form {

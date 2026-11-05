@@ -1,0 +1,101 @@
+.gambit-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(20, 26, 20, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: var(--space-16);
+  box-sizing: border-box;
+}
+
+.gambit-settings-dialog {
+  background-color: var(--color-panel, #ffffff);
+  border: 1px solid var(--color-border, #e2e6de);
+  border-radius: var(--radius-14, 14px);
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 4px 16px rgba(20, 26, 20, 0.16);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.gambit-settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-16);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.gambit-settings-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-ink);
+  margin: 0;
+}
+
+.gambit-settings-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--color-muted);
+  padding: 4px;
+  border-radius: var(--radius-6);
+  line-height: 1;
+}
+
+.gambit-settings-close:hover {
+  color: var(--color-ink);
+}
+
+.gambit-settings-body {
+  padding: var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.gambit-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+}
+
+.gambit-setting-label {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+.gambit-setting-group {
+  display: flex;
+  background-color: var(--color-surface, #fafaf7);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-6);
+  padding: 2px;
+  gap: 2px;
+}
+
+.gambit-setting-btn {
+  background: none;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: all var(--duration-120);
+}
+
+.gambit-setting-btn-active {
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-weight: 600;
+}
+

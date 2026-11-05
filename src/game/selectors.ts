@@ -1,3 +1,4 @@
+import { Chess } from 'chess.js';
 import { en } from '../copy/en.ts';
 import { rules } from './rules.ts';
 import type {
@@ -179,33 +180,58 @@ export function createInitialUiState(): UiState {
     reviewPly: null,
     flipped: false,
     theme: 'default',
-    soundOn: true,
+    soundOn: false,
     animationOn: true,
     showCoords: true,
   };
 }
 
+// Pure helper calculates position at arbitrary review ply without mutating active state.
+export function getFenAtPly(
+  moves: string[],
+  ply: number,
+  startFen: string = STARTING_FEN,
+): { fen: string; lastMove: [string, string] | null } {
+  if (ply < 0 || moves.length === 0) return { fen: startFen, lastMove: null };
+  const chess = new Chess(startFen);
+  let lastMove: [string, string] | null = null;
+  const maxPly = Math.min(ply, moves.length - 1);
+  for (let i = 0; i <= maxPly; i++) {
+    const res = chess.move(moves[i]);
+    if (i === maxPly && res) lastMove = [res.from, res.to];
+  }
+  return { fen: chess.fen(), lastMove };
+}
+
+export interface MovePair {
+  moveNumber: number;
+  white: { san: string; ply: number };
+  black?: { san: string; ply: number };
+}
+
+export function getMovePairs(moves: string[]): MovePair[] {
+  const pairs: MovePair[] = [];
+  for (let i = 0; i < moves.length; i += 2) {
+    pairs.push({
+      moveNumber: Math.floor(i / 2) + 1,
+      white: { san: moves[i], ply: i },
+      black: i + 1 < moves.length ? { san: moves[i + 1], ply: i + 1 } : undefined,
+    });
+  }
+  return pairs;
+}
+
 // Undo availability: 1 ply in local mode, 2 plies in computer mode so human always moves.
 export function canUndo(game: GameState): boolean {
-  if (game.moves.length === 0) {
-    return false;
-  }
-  if (game.mode === 'local') {
-    return game.moves.length >= 1;
-  }
+  if (game.moves.length === 0) return false;
+  if (game.mode === 'local') return game.moves.length >= 1;
   return game.humanSide === 'w' ? game.moves.length >= 1 : game.moves.length >= 2;
 }
 
 export function getPliesToUndo(game: GameState): number {
-  if (!canUndo(game)) {
-    return 0;
-  }
-  if (game.mode === 'local') {
-    return 1;
-  }
-  if (game.humanSide === 'w') {
-    return game.moves.length >= 2 ? 2 : 1;
-  }
+  if (!canUndo(game)) return 0;
+  if (game.mode === 'local') return 1;
+  if (game.humanSide === 'w') return game.moves.length >= 2 ? 2 : 1;
   return game.moves.length >= 3 ? 2 : 1;
 }
 

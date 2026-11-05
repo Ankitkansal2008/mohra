@@ -50,10 +50,47 @@ export const en: Record<string, string> = {
   reviewMoves: 'Review moves',
   reviewMovesDisabled: 'Available once the move list is built',
   copyPgn: 'Copy PGN',
+  downloadPgn: 'Download PGN',
   undo: 'Undo',
   flip: 'Flip',
   resign: 'Resign',
   cancel: 'Cancel',
+  newGame: 'New game',
+
+  // Player labels and turn indicators
+  you: 'You',
+  gambit: 'Gambit',
+  player1: 'Player 1',
+  player2: 'Player 2',
+  white: 'White',
+  black: 'Black',
+  toMove: 'To move',
+  levelLabel: 'Level {level}',
+
+  // Moves list & review mode
+  moves: 'Moves',
+  noMovesYet: 'No moves yet. White to play.',
+  returnToGame: 'Return to game',
+  reviewingMove: 'Reviewing move {move}',
+
+  // Persistence & Resume
+  resumeGame: 'Resume game - {turn} to move, move {move}',
+  resume: 'Resume',
+  discard: 'Discard',
+
+  // Settings
+  settings: 'Settings',
+  settingsTitle: 'Settings',
+  close: 'Close',
+  soundSetting: 'Sound',
+  themeSetting: 'Board theme',
+  themeDefault: 'Green',
+  themeSlate: 'Slate',
+  animationSetting: 'Piece animation',
+  coordsSetting: 'Coordinates',
+  clockSetting: 'Clock (10 min)',
+  on: 'On',
+  off: 'Off',
 
   // Dev position loader
   loadFen: 'Load FEN',

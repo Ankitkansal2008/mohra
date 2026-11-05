@@ -21,9 +21,10 @@ export function ResultDialog({
   fen,
   className = '',
   onRematch,
-  onReviewMoves: _onReviewMoves,
+  onReviewMoves,
   onCopyPgn,
 }: ResultDialogProps): React.JSX.Element | null {
+  const movesCount = useGameStore((s) => s.game.moves.length);
   // Pure explanation helper handles copy formatting for all terminal outcomes.
   const explanation = getResultExplanation(status, winner, fen);
   if (!explanation) {
@@ -35,6 +36,17 @@ export function ResultDialog({
       onRematch();
     } else {
       useGameStore.getState().resetGame();
+    }
+  };
+
+  const handleReviewMoves = (): void => {
+    if (onReviewMoves) {
+      onReviewMoves();
+      return;
+    }
+    const moves = useGameStore.getState().game.moves;
+    if (moves.length > 0) {
+      useGameStore.getState().setReviewPly(moves.length - 1);
     }
   };
 
@@ -50,6 +62,8 @@ export function ResultDialog({
     }
     state.showToast(en.pgnCopied);
   };
+
+  const isReviewDisabled = movesCount === 0;
 
   return (
     <div
@@ -78,9 +92,10 @@ export function ResultDialog({
         <button
           type="button"
           className="gambit-result-dialog-btn"
-          disabled
-          title={en.reviewMovesDisabled}
-          aria-label={en.reviewMovesDisabled}
+          disabled={isReviewDisabled}
+          onClick={handleReviewMoves}
+          title={isReviewDisabled ? en.reviewMovesDisabled : en.reviewMoves}
+          aria-label={isReviewDisabled ? en.reviewMovesDisabled : en.reviewMoves}
         >
           {en.reviewMoves}
         </button>

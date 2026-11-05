@@ -3,6 +3,7 @@ import { Chessboard } from 'react-chessboard';
 import { en } from '../../copy/en.ts';
 import {
   findKingSquare,
+  getFenAtPly,
   getTurn,
   isCheck,
   isGameOver,
@@ -79,15 +80,18 @@ export function BoardView({
     return () => mediaQuery.removeEventListener('change', listener);
   }, []);
 
-  const fen = propFen ?? storeGame.fen;
+  const isReviewing = storeUi.reviewPly !== null;
+  const reviewPos = isReviewing ? getFenAtPly(storeGame.moves, storeUi.reviewPly!) : null;
+  const fen = propFen ?? (reviewPos ? reviewPos.fen : storeGame.fen);
   const status = propStatus ?? storeGame.status;
   const winner = propWinner !== undefined ? propWinner : storeGame.winner;
   const theme = propTheme ?? storeUi.theme;
-  const selected = propSelected !== undefined ? propSelected : storeUi.selected;
-  const lastMove = propLastMove !== undefined ? propLastMove : storeLastMove;
-  const legalTargets = propLegalTargets !== undefined ? propLegalTargets : storeUi.targets;
+  const selected = isReviewing ? null : (propSelected !== undefined ? propSelected : storeUi.selected);
+  const lastMove = propLastMove !== undefined ? propLastMove : (reviewPos ? reviewPos.lastMove : storeLastMove);
+  const legalTargets = isReviewing ? null : (propLegalTargets !== undefined ? propLegalTargets : storeUi.targets);
   const turn = getTurn(fen);
   const orientation = propBoardOrientation ?? (storeUi.flipped ? 'black' : 'white');
+  const isInteractive = interactive && !isReviewing && !isGameOver(status);
 
   const activeCheck =
     propCheck !== undefined
@@ -195,21 +199,21 @@ export function BoardView({
           lightSquareNotationStyle: { color: 'var(--color-muted, #5A5A5A)', fontSize: '11px' },
           boardStyle: {
             touchAction: 'none',
-            ...(interactive ? {} : { pointerEvents: 'none' }),
+            ...(isInteractive ? {} : { pointerEvents: 'none' }),
           },
-          allowDragging: interactive && !isGameOver(status),
+          allowDragging: isInteractive,
           canDragPiece: ({ piece }) => {
-            if (!interactive || isGameOver(status)) return false;
+            if (!isInteractive) return false;
             return piece.pieceType[0] === turn;
           },
           onPieceDrop: ({ sourceSquare, targetSquare }) => {
-            if (!interactive || isGameOver(status) || !targetSquare || sourceSquare === targetSquare) {
+            if (!isInteractive || !targetSquare || sourceSquare === targetSquare) {
               return false;
             }
             return attemptMove(sourceSquare, targetSquare);
           },
           onSquareClick: ({ square }) => {
-            if (!interactive || isGameOver(status)) return;
+            if (!isInteractive) return;
             selectSquare(square);
           },
         }}
@@ -225,7 +229,7 @@ export function BoardView({
         />
       ) : null}
 
-      {isGameOver(status) ? (
+      {isGameOver(status) && !isReviewing ? (
         <ResultDialog
           status={status}
           winner={winner}
