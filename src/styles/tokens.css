@@ -1,6 +1,8 @@
 @theme {
   --color-board-light: #EBECD0;
   --color-board-dark: #779556;
+  --color-board-slate-light: #DEE3E6;
+  --color-board-slate-dark: #8CA2AD;
   --color-ink: #1A1A1A;
   --color-muted: #5A5A5A;
   --color-primary: #2F4F3E;
@@ -24,11 +26,21 @@
 }
 
 :root {
-  /* Board colours */
+  /* Board colours - standard and slate alternative */
   --board-light: #EBECD0;
   --board-dark: #779556;
   --color-board-light: #EBECD0;
   --color-board-dark: #779556;
+  --board-slate-light: #DEE3E6;
+  --board-slate-dark: #8CA2AD;
+  --color-board-slate-light: #DEE3E6;
+  --color-board-slate-dark: #8CA2AD;
+
+  /* Board square highlight overlays */
+  --board-selected: rgba(247, 236, 116, 0.45);
+  --board-last-move: rgba(247, 236, 116, 0.28);
+  --board-check: radial-gradient(circle, rgba(228, 87, 46, 0.6) 0%, rgba(228, 87, 46, 0) 70%);
+  --board-legal-dot: rgba(20, 20, 20, 0.16);
 
   /* Theme colours */
   --ink: #1A1A1A;
@@ -65,4 +77,18 @@
   --duration-120: 120ms;
   --duration-180: 180ms;
   --duration-260: 260ms;
+}
+
+/* Board layout container: square aspect-ratio, minimum 40px square (320px board) */
+.gambit-board-wrapper {
+  width: clamp(320px, 100%, 100%);
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+/* Coordinate labels hidden below 360px viewport width */
+@media (max-width: 359.98px) {
+  .gambit-board-wrapper [data-square] > span:first-child {
+    display: none !important;
+  }
 }
