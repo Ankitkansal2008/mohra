@@ -36,5 +36,12 @@ export const BOARD_HIGHLIGHTS = {
       'radial-gradient(circle, var(--board-legal-dot, rgba(20, 20, 20, 0.16)) 26%, transparent 27%)',
     borderRadius: '50%',
   },
+  legalTargetEmpty: {
+    background:
+      'radial-gradient(circle, var(--board-legal-dot, rgba(20, 20, 20, 0.16)) 26%, transparent 27%)',
+  },
+  legalTargetOccupied: {
+    background:
+      'radial-gradient(circle, transparent 35%, var(--board-legal-dot, rgba(20, 20, 20, 0.16)) 35%, var(--board-legal-dot, rgba(20, 20, 20, 0.16)) 44%, transparent 44.5%)',
+  },
 } satisfies Record<string, React.CSSProperties>;
-

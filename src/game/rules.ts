@@ -1,15 +1,7 @@
 import { Chess, type Square } from 'chess.js';
+import type { GameStatus, RejectionReason, Side } from './types.ts';
 
-export type Side = 'w' | 'b';
-
-export type GameStatus =
-  | 'checkmate'
-  | 'stalemate'
-  | 'draw-repetition'
-  | 'draw-fifty'
-  | 'draw-material'
-  | 'check'
-  | 'playing';
+export type { GameStatus, RejectionReason, Side };
 
 export interface MoveResult {
   san: string;
@@ -158,6 +150,82 @@ export function isAttacked(square: string, by: Side): boolean {
   return instance.isAttacked(square as Square, by);
 }
 
+export function getPiece(square: string): { type: string; color: Side } | null {
+  if (!/^[a-h][1-8]$/.test(square)) {
+    return null;
+  }
+  const piece = instance.get(square as Square);
+  return piece ? { type: piece.type, color: piece.color as Side } : null;
+}
+
+export function getRejectionReason(from: string, to: string): RejectionReason {
+  if (instance.isGameOver()) {
+    return 'game-over';
+  }
+
+  if (!/^[a-h][1-8]$/.test(from) || !/^[a-h][1-8]$/.test(to)) {
+    return 'illegal-shape';
+  }
+
+  const piece = instance.get(from as Square);
+  if (!piece) {
+    return 'illegal-shape';
+  }
+
+  const turn = instance.turn();
+  if (piece.color !== turn) {
+    return 'wrong-turn';
+  }
+
+  // Castling attempt: king moving 2 squares horizontally
+  if (piece.type === 'k') {
+    const fromCol = from.charCodeAt(0);
+    const toCol = to.charCodeAt(0);
+    if (Math.abs(toCol - fromCol) === 2) {
+      return 'castling-blocked';
+    }
+  }
+
+  // If already in check, any illegal move fails to escape check
+  if (instance.inCheck()) {
+    return 'in-check';
+  }
+
+  // If king tries to move into an attacked square
+  if (piece.type === 'k') {
+    const opponentColor = turn === 'w' ? 'b' : 'w';
+    if (instance.isAttacked(to as Square, opponentColor)) {
+      return 'in-check';
+    }
+    return 'illegal-shape';
+  }
+
+  // Absolute pin check: if removing piece leaves friendly king under attack
+  let kingSquare: Square | null = null;
+  const board = instance.board();
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const p = board[r][c];
+      if (p && p.type === 'k' && p.color === turn) {
+        kingSquare = p.square;
+        break;
+      }
+    }
+    if (kingSquare) break;
+  }
+
+  if (kingSquare) {
+    const clone = new Chess(instance.fen());
+    clone.remove(from as Square);
+    const opponentColor = turn === 'w' ? 'b' : 'w';
+    if (clone.isAttacked(kingSquare, opponentColor)) {
+      return 'pinned';
+    }
+  }
+
+  return 'illegal-shape';
+}
+
 export const rules = {
   reset,
   legalFrom,
@@ -169,6 +237,8 @@ export const rules = {
   loadPgn,
   status,
   isAttacked,
+  getPiece,
+  getRejectionReason,
 };
 
 export default rules;
