@@ -130,3 +130,4 @@ export function PromotionOverlay({
 }
 
 export default PromotionOverlay;
+
