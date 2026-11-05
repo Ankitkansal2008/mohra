@@ -179,32 +179,33 @@ describe('Result dialog in game view', () => {
     expect(html).toContain(`>${en.rematch}</button>`);
     expect(html).toContain(`>${en.reviewMoves}</button>`);
     expect(html).toContain(`>${en.copyPgn}</button>`);
+    // Review moves is disabled until Stage 6 with explanatory title & aria-label
+    expect(html).toContain('disabled=""');
+    expect(html).toContain(`title="${en.reviewMovesDisabled}"`);
+    expect(html).toContain(`aria-label="${en.reviewMovesDisabled}"`);
   });
 
   it('invokes action handlers when provided via props', () => {
     const onRematch = vi.fn();
-    const onReviewMoves = vi.fn();
     const onCopyPgn = vi.fn();
 
     const element = ResultDialog({
       status: 'checkmate',
       winner: 'w',
       onRematch,
-      onReviewMoves,
       onCopyPgn,
     });
 
     expect(element).not.toBeNull();
-    // Verify actions element structure
     const actionsDiv = element?.props.children[2];
     expect(actionsDiv.props.className).toBe('gambit-result-dialog-actions');
 
     const [rematchBtn, reviewBtn, copyBtn] = actionsDiv.props.children;
+    expect(reviewBtn.props.disabled).toBe(true);
+    expect(reviewBtn.props.title).toBe('Available once the move list is built');
+
     rematchBtn.props.onClick();
     expect(onRematch).toHaveBeenCalledTimes(1);
-
-    reviewBtn.props.onClick();
-    expect(onReviewMoves).toHaveBeenCalledTimes(1);
 
     copyBtn.props.onClick();
     expect(onCopyPgn).toHaveBeenCalledTimes(1);

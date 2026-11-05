@@ -49,55 +49,28 @@ export function legalMovesAll(): LegalMove[] {
 export function status(): { status: GameStatus; winner: Side | null } {
   // Checkmate terminates the game with a victor; the side whose turn it is has no legal escape.
   if (instance.isCheckmate()) {
-    return {
-      status: 'checkmate',
-      winner: instance.turn() === 'w' ? 'b' : 'w',
-    };
+    return { status: 'checkmate', winner: instance.turn() === 'w' ? 'b' : 'w' };
   }
-
   // Stalemate is a terminal draw condition where the active side has no legal moves but is not in check.
   if (instance.isStalemate()) {
-    return {
-      status: 'stalemate',
-      winner: null,
-    };
+    return { status: 'stalemate', winner: null };
   }
-
   // Repetition claims take precedence over move count thresholds per FIDE claim ordering.
   if (instance.isThreefoldRepetition()) {
-    return {
-      status: 'draw-repetition',
-      winner: null,
-    };
+    return { status: 'draw-repetition', winner: null };
   }
-
   // chess.js 1.4 exposes isDrawByFiftyMoves (without Rule suffix) for half-move counter checks.
   if (instance.isDrawByFiftyMoves()) {
-    return {
-      status: 'draw-fifty',
-      winner: null,
-    };
+    return { status: 'draw-fifty', winner: null };
   }
-
   // Dead positions with insufficient mating material cannot be won by either player.
   if (instance.isInsufficientMaterial()) {
-    return {
-      status: 'draw-material',
-      winner: null,
-    };
+    return { status: 'draw-material', winner: null };
   }
-
   if (instance.inCheck()) {
-    return {
-      status: 'check',
-      winner: null,
-    };
+    return { status: 'check', winner: null };
   }
-
-  return {
-    status: 'playing',
-    winner: null,
-  };
+  return { status: 'playing', winner: null };
 }
 
 export function apply(from: string, to: string, promotion?: string): MoveResult {
@@ -121,6 +94,7 @@ export function undo(): MoveResult | null {
   if (!undone) {
     return null;
   }
+  instance.header('Result', '*');
   const currentStatus = status();
   return {
     san: undone.san,
@@ -135,7 +109,22 @@ export function fen(): string {
   return instance.fen();
 }
 
+export function setHeader(key: string, value: string): void {
+  instance.header(key, value);
+}
+
 export function pgn(): string {
+  const currentStatus = status();
+  if (currentStatus.status === 'checkmate') {
+    instance.header('Result', currentStatus.winner === 'w' ? '1-0' : '0-1');
+  } else if (
+    currentStatus.status === 'stalemate' ||
+    currentStatus.status === 'draw-repetition' ||
+    currentStatus.status === 'draw-fifty' ||
+    currentStatus.status === 'draw-material'
+  ) {
+    instance.header('Result', '1/2-1/2');
+  }
   return instance.pgn();
 }
 
@@ -185,8 +174,8 @@ export function getRejectionReason(from: string, to: string): RejectionReason {
     const toCol = to.charCodeAt(0);
     const isCastling =
       Math.abs(toCol - fromCol) === 2 ||
-      (from === 'e1' && (to === 'g1' || to === 'c1' || to === 'h1' || to === 'a1')) ||
-      (from === 'e8' && (to === 'g8' || to === 'c8' || to === 'h8' || to === 'a8'));
+      (from === 'e1' && ['g1', 'c1', 'h1', 'a1'].includes(to)) ||
+      (from === 'e8' && ['g8', 'c8', 'h8', 'a8'].includes(to));
     if (isCastling) {
       return 'castling-blocked';
     }
@@ -194,18 +183,10 @@ export function getRejectionReason(from: string, to: string): RejectionReason {
 
   // 5. Moving piece is pinned (removing it would expose the king) - evaluated before in-check
   if (piece.type !== 'k') {
-    let kingSquare: Square | null = null;
-    const board = instance.board();
-    for (let r = 0; r < 8; r++) {
-      for (let c = 0; c < 8; c++) {
-        const p = board[r][c];
-        if (p && p.type === 'k' && p.color === turn) {
-          kingSquare = p.square;
-          break;
-        }
-      }
-      if (kingSquare) break;
-    }
+    const kingSquare = instance
+      .board()
+      .flat()
+      .find((p) => p && p.type === 'k' && p.color === turn)?.square;
 
     if (kingSquare) {
       const clone = new Chess(instance.fen());
@@ -239,6 +220,7 @@ export const rules = {
   undo,
   fen,
   pgn,
+  setHeader,
   loadPgn,
   status,
   isAttacked,

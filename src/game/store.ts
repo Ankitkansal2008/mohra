@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { en } from '../copy/en.ts';
+import { syncPgnHeaders } from './pgn.ts';
 import { rules } from './rules.ts';
 import {
   STARTING_FEN,
@@ -89,6 +90,12 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
 
     const result = rules.apply(from, to, promotion);
     const sideLabel = currentTurn === 'w' ? 'White' : 'Black';
+    syncPgnHeaders({
+      mode: state.game.mode,
+      humanSide: state.game.humanSide,
+      status: result.status,
+      winner: result.winner,
+    });
 
     set((s) => ({
       game: {
@@ -153,29 +160,18 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
 
   resetGame: (customFen?: string): void => {
     rules.reset(customFen);
-    set({
-      game: createInitialGameState(customFen ?? STARTING_FEN),
-      ui: createInitialUiState(),
-      toast: null,
-      lastMove: null,
-      announcedMove: null,
-    });
+    const initial = createInitialGameState(customFen ?? STARTING_FEN);
+    syncPgnHeaders(initial);
+    set({ game: initial, ui: createInitialUiState(), toast: null, lastMove: null, announcedMove: null });
   },
 
   loadFen: (fen: string): boolean => {
     const trimmed = fen.trim();
-    try {
-      rules.reset(trimmed);
-    } catch {
-      rules.reset(get().game.fen);
-      get().showToast(en.invalidPosition);
-      return false;
-    }
+    try { rules.reset(trimmed); } catch { rules.reset(get().game.fen); get().showToast(en.invalidPosition); return false; }
     const { mode, humanSide, level } = get().game;
-    set({
-      game: { ...createInitialGameState(trimmed), mode, humanSide, level },
-      ui: createInitialUiState(), toast: null, lastMove: null, announcedMove: null,
-    });
+    const newGame = { ...createInitialGameState(trimmed), mode, humanSide, level };
+    syncPgnHeaders(newGame);
+    set({ game: newGame, ui: createInitialUiState(), toast: null, lastMove: null, announcedMove: null });
     return true;
   },
 
@@ -185,36 +181,29 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
       get().showToast(en.undoStart);
       return false;
     }
-
     const plies = getPliesToUndo(state.game);
     if (state.game.pgn) {
       try { rules.loadPgn(state.game.pgn); } catch {}
     }
-    for (let i = 0; i < plies; i++) {
-      rules.undo();
-    }
-
+    for (let i = 0; i < plies; i++) rules.undo();
     const newMoves = state.game.moves.slice(0, state.game.moves.length - plies);
     const newUci = state.game.uciMoves.slice(0, state.game.uciMoves.length - plies);
-    const currentStatus = rules.status();
-    const lastUci = newUci[newUci.length - 1];
-    const lastMove: [string, string] | null = lastUci
-      ? [lastUci.slice(0, 2), lastUci.slice(2, 4)]
-      : null;
-
+    const cur = rules.status();
+    syncPgnHeaders({ mode: state.game.mode, humanSide: state.game.humanSide, status: cur.status, winner: cur.winner });
+    const last = newUci[newUci.length - 1];
     set((s) => ({
       game: {
         ...s.game,
         fen: rules.fen(),
-        status: currentStatus.status,
-        winner: currentStatus.winner,
+        status: cur.status,
+        winner: cur.winner,
         moves: newMoves,
         uciMoves: newUci,
         pgn: rules.pgn(),
         savedAt: Date.now(),
       },
       ui: { ...s.ui, selected: null, targets: [], pendingPromotion: null, reviewPly: null },
-      lastMove,
+      lastMove: last ? [last.slice(0, 2), last.slice(2, 4)] : null,
       announcedMove: null,
     }));
     return true;
@@ -224,8 +213,9 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
     const state = get();
     if (isGameOver(state.game.status)) return;
     const winner = getResignWinner(state.game);
+    syncPgnHeaders({ mode: state.game.mode, humanSide: state.game.humanSide, status: 'resigned', winner });
     set((s) => ({
-      game: { ...s.game, status: 'resigned', winner, savedAt: Date.now() },
+      game: { ...s.game, status: 'resigned', winner, pgn: rules.pgn(), savedAt: Date.now() },
       ui: { ...s.ui, selected: null, targets: [], pendingPromotion: null },
       announcedMove: null,
     }));

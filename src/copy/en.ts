@@ -48,6 +48,7 @@ export const en: Record<string, string> = {
   // Actions and controls (PRD FR-12, FR-13, FR-17, FR-19 and UI/UX Section 7, 8)
   rematch: 'Rematch',
   reviewMoves: 'Review moves',
+  reviewMovesDisabled: 'Available once the move list is built',
   copyPgn: 'Copy PGN',
   undo: 'Undo',
   flip: 'Flip',

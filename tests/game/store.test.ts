@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { en } from '../../src/copy/en.ts';
+import { pgn } from '../../src/game/rules.ts';
 import {
   getTurn,
   isCheck,
@@ -555,6 +556,48 @@ describe('Game store and move pipeline', () => {
       const moveAllowed = useGameStore.getState().attemptMove('e2', 'e4');
       expect(moveAllowed).toBe(false);
       expect(useGameStore.getState().game.moves).toHaveLength(0);
+    });
+
+    it('after a resignation win for White, pgn() contains [Result "1-0"] and ends with 1-0', () => {
+      const store = useGameStore.getState();
+      store.attemptMove('e2', 'e4');
+      // Black's turn in local mode: Black resigns, so White wins
+      store.resignGame();
+
+      const state = useGameStore.getState();
+      expect(state.game.status).toBe('resigned');
+      expect(state.game.winner).toBe('w');
+
+      // Both store.game.pgn and rules.pgn() reflect the result and headers
+      expect(state.game.pgn).toContain('[Result "1-0"]');
+      expect(state.game.pgn.trim().endsWith('1-0')).toBe(true);
+      expect(state.game.pgn).toContain('[White "Player 1"]');
+      expect(state.game.pgn).toContain('[Black "Player 2"]');
+
+      expect(pgn()).toContain('[Result "1-0"]');
+      expect(pgn().trim().endsWith('1-0')).toBe(true);
+    });
+
+    it('sets computer mode headers White "You" and Black "Gambit" when human is White', () => {
+      useGameStore.setState({
+        game: {
+          ...useGameStore.getState().game,
+          mode: 'computer',
+          humanSide: 'w',
+        },
+      });
+
+      const store = useGameStore.getState();
+      store.attemptMove('e2', 'e4');
+      // Human resigns (White resigns -> Black wins: 0-1)
+      store.resignGame();
+
+      const state = useGameStore.getState();
+      expect(state.game.winner).toBe('b');
+      expect(state.game.pgn).toContain('[White "You"]');
+      expect(state.game.pgn).toContain('[Black "Gambit"]');
+      expect(state.game.pgn).toContain('[Result "0-1"]');
+      expect(state.game.pgn.trim().endsWith('0-1')).toBe(true);
     });
   });
 

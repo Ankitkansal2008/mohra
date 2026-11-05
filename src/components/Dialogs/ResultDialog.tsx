@@ -21,7 +21,7 @@ export function ResultDialog({
   fen,
   className = '',
   onRematch,
-  onReviewMoves,
+  onReviewMoves: _onReviewMoves,
   onCopyPgn,
 }: ResultDialogProps): React.JSX.Element | null {
   // Pure explanation helper handles copy formatting for all terminal outcomes.
@@ -35,15 +35,6 @@ export function ResultDialog({
       onRematch();
     } else {
       useGameStore.getState().resetGame();
-    }
-  };
-
-  const handleReviewMoves = (): void => {
-    if (onReviewMoves) {
-      onReviewMoves();
-    } else {
-      const moves = useGameStore.getState().game.moves;
-      useGameStore.getState().setReviewPly(moves.length);
     }
   };
 
@@ -87,7 +78,9 @@ export function ResultDialog({
         <button
           type="button"
           className="gambit-result-dialog-btn"
-          onClick={handleReviewMoves}
+          disabled
+          title={en.reviewMovesDisabled}
+          aria-label={en.reviewMovesDisabled}
         >
           {en.reviewMoves}
         </button>

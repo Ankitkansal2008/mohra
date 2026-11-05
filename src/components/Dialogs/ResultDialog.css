@@ -58,7 +58,12 @@
   transition: background-color var(--duration-120) ease;
 }
 
-.gambit-result-dialog-btn:hover {
+.gambit-result-dialog-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.gambit-result-dialog-btn:hover:not(:disabled) {
   background-color: var(--color-surface);
 }
 
