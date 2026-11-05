@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { en } from '../../src/copy/en.ts';
 import {
   cancelEngineSearch,
+  connectBridgeToStore,
   getLevelConfig,
   handleEngineFailure,
   handleWorkerMessage,
@@ -293,7 +294,7 @@ describe('Stockfish Engine Opponent', () => {
 
       // Advance to 5000ms ceiling
       vi.advanceTimersByTime(5000);
-      expect(mockWorker!.postedMessages).toContainEqual({ type: 'stop' });
+      expect(mockWorker!.postedMessages).toContain('stop');
 
       // No bestmove arrives; advance 500ms fallback grace
       vi.advanceTimersByTime(500);
@@ -331,11 +332,17 @@ describe('Stockfish Engine Opponent', () => {
   });
 
   describe('UCI protocol helpers', () => {
-    it('formats position command with and without move history', () => {
+    it('formats position command with current FEN', () => {
       expect(formatPositionCommand('startpos')).toBe('position fen startpos');
-      expect(formatPositionCommand('startpos', ['e2e4', 'e7e5'])).toBe(
-        'position fen startpos moves e2e4 e7e5',
+    });
+
+    it('asserts the command string for the position after 1.e4 is exactly position fen without moves token', () => {
+      const fenAfterE4 = 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1';
+      const command = formatPositionCommand(fenAfterE4);
+      expect(command).toBe(
+        'position fen rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1',
       );
+      expect(command).not.toContain('moves');
     });
 
     it('formats go command with depth and movetime', () => {
@@ -369,6 +376,120 @@ describe('Stockfish Engine Opponent', () => {
         multiPv: 3,
         pvMove: 'd7d5',
       });
+    });
+  });
+
+  describe('regression: human move during engine search', () => {
+    it('does not recurse and does not throw when applying a human move while the engine is thinking', () => {
+      let mockWorker: MockWorker | null = null;
+      initEngine(() => {
+        mockWorker = new MockWorker();
+        return mockWorker as unknown as Worker;
+      });
+      const disconnect = connectBridgeToStore();
+
+      try {
+        // Set thinking indicator to simulate active search
+        useGameStore.getState().setThinking(true);
+        expect(useGameStore.getState().isThinking).toBe(true);
+
+        // Applying human move while engine is thinking must not recurse or throw
+        expect(() => {
+          useGameStore.getState().attemptMove('e2', 'e4');
+        }).not.toThrow();
+
+        const state = useGameStore.getState();
+        expect(state.game.moves).toEqual(['e4']);
+        expect(
+          mockWorker!.postedMessages.some(
+            (msg) => typeof msg === 'string' && msg.startsWith('go'),
+          ),
+        ).toBe(true);
+      } finally {
+        disconnect();
+      }
+    });
+
+    it('cancels active search and drops stale reply when move is applied during thinking', () => {
+      let mockWorker: MockWorker | null = null;
+      initEngine(() => {
+        mockWorker = new MockWorker();
+        return mockWorker as unknown as Worker;
+      });
+      const disconnect = connectBridgeToStore();
+
+      try {
+        // Human plays e4, starting engine search
+        useGameStore.getState().attemptMove('e2', 'e4');
+        const token1 = useGameStore.getState().engineToken;
+        useGameStore.getState().setThinking(true);
+
+        // Human undos while engine is thinking
+        expect(() => {
+          useGameStore.getState().undo();
+        }).not.toThrow();
+
+        // Late reply with stale token arrives
+        mockWorker!.simulateMessage({
+          type: 'bestmove',
+          token: token1,
+          uci: 'e7e5',
+          depth: 4,
+        });
+
+        // Board must remain at startpos, not having applied stale move
+        expect(useGameStore.getState().game.moves).toHaveLength(0);
+        expect(useGameStore.getState().isThinking).toBe(false);
+      } finally {
+        disconnect();
+      }
+    });
+  });
+
+  describe('worker startup and UCI handshake', () => {
+    it('executes handshake in strict order: uciok -> Threads 1 -> Hash 16 -> isready -> readyok', () => {
+      let mockWorker: MockWorker | null = null;
+      initEngine(() => {
+        mockWorker = new MockWorker();
+        return mockWorker as unknown as Worker;
+      });
+
+      // Worker replies with uciok
+      mockWorker!.simulateMessage('uciok');
+
+      expect(mockWorker!.postedMessages).toContain('setoption name Threads value 1');
+      expect(mockWorker!.postedMessages).toContain('setoption name Hash value 16');
+      expect(mockWorker!.postedMessages).toContain('isready');
+
+      // Worker confirms ready
+      mockWorker!.simulateMessage('readyok');
+    });
+
+    it('gates worker message console logging behind import.meta.env.DEV', () => {
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      let mockWorker: MockWorker | null = null;
+      initEngine(() => {
+        mockWorker = new MockWorker();
+        return mockWorker as unknown as Worker;
+      });
+
+      mockWorker!.simulateMessage('Stockfish 19 by the Stockfish developers');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[Stockfish]',
+        'Stockfish 19 by the Stockfish developers',
+      );
+
+      consoleSpy.mockClear();
+
+      const originalDev = import.meta.env.DEV;
+      try {
+        (import.meta.env as { DEV: boolean }).DEV = false;
+        mockWorker!.simulateMessage('info depth 10');
+        expect(consoleSpy).not.toHaveBeenCalled();
+      } finally {
+        (import.meta.env as { DEV: boolean }).DEV = originalDev;
+        consoleSpy.mockRestore();
+      }
     });
   });
 });

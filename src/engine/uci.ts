@@ -11,11 +11,8 @@ export interface ParsedInfoLine {
   pvMove?: string;
 }
 
-// Formats position command for Stockfish: position fen <fen> [moves <m1> <m2> ...]
-export function formatPositionCommand(fen: string, uciMoves?: string[]): string {
-  if (uciMoves && uciMoves.length > 0) {
-    return `position fen ${fen} moves ${uciMoves.join(' ')}`;
-  }
+// Formats position command for Stockfish: position fen <fen>
+export function formatPositionCommand(fen: string): string {
   return `position fen ${fen}`;
 }
 

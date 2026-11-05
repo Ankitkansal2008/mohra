@@ -26,5 +26,3 @@ export {
   parseInfoLine,
 } from './uci.ts';
 export type { ParsedBestMove, ParsedInfoLine } from './uci.ts';
-
-export type { WorkerInMessage, WorkerOutMessage } from './worker.ts';

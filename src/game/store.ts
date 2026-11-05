@@ -1,19 +1,14 @@
 import { create } from 'zustand';
 import { en } from '../copy/en.ts';
+import { emitGameEvent } from './events.ts';
 import { syncPgnHeaders } from './pgn.ts';
 import { rules } from './rules.ts';
 import {
-  STARTING_FEN,
-  canUndo,
-  createInitialGameState,
-  createInitialUiState,
-  getRejectionMessage,
-  getResignWinner,
-  getTurn,
-  isGameOver,
+  STARTING_FEN, canUndo, createInitialGameState, createInitialUiState,
+  getRejectionMessage, getResignWinner, getTurn, isGameOver,
 } from './selectors.ts';
 import { executeUndoPlies, validateMoveIntent } from './storeHelpers.ts';
-import type { GameState, RejectionReason, ToastNotification, UiState } from './types.ts';
+import type { GameState, Level, RejectionReason, ToastNotification, UiState } from './types.ts';
 
 export { STARTING_FEN, canUndo, getPliesToUndo, getRejectionMessage, getTurn, isCheck, isGameOver } from './selectors.ts';
 
@@ -33,6 +28,7 @@ export interface GameStoreState {
   setEngineFailed: (failed: boolean) => void;
   setEngineToken: (token: number) => void;
   requestEngineToken: () => number;
+  setLevel: (level: Level) => void;
   selectSquare: (square: string) => void;
   clearSelection: () => void;
   cancelPromotion: () => void;
@@ -83,14 +79,18 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
       winner: result.winner,
     });
 
+    const nextFen = result.fen;
+    const nextMoves = [...state.game.moves, result.san];
+    const nextUciMoves = [...state.game.uciMoves, result.uci];
+
     set((s) => ({
       game: {
         ...s.game,
-        fen: result.fen,
+        fen: nextFen,
         status: result.status,
         winner: result.winner,
-        moves: [...s.game.moves, result.san],
-        uciMoves: [...s.game.uciMoves, result.uci],
+        moves: nextMoves,
+        uciMoves: nextUciMoves,
         pgn: rules.pgn(),
         savedAt: Date.now(),
       },
@@ -98,7 +98,18 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
       lastMove: [from, to],
       announcedMove: `${sideLabel} plays ${result.san}`,
       engineToken: isEngine ? s.engineToken : s.engineToken + 1,
+      isThinking: false,
     }));
+
+    if (!isEngine) {
+      emitGameEvent({
+        type: 'human-move',
+        fen: nextFen,
+        level: state.game.level,
+        uciMoves: nextUciMoves,
+      });
+    }
+
     return true;
   },
 
@@ -127,6 +138,10 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
     const next = get().engineToken + 1;
     set({ engineToken: next });
     return next;
+  },
+  setLevel: (level: Level): void => {
+    set((s) => ({ game: { ...s.game, level } }));
+    emitGameEvent({ type: 'level-change', level });
   },
 
   selectSquare: (square: string): void => {
@@ -175,6 +190,12 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
       game: initial, ui: createInitialUiState(), toast: null, lastMove: null,
       announcedMove: null, engineToken: s.engineToken + 1, isThinking: false,
     }));
+    emitGameEvent({
+      type: 'new-game',
+      fen: initial.fen,
+      level: initial.level,
+      uciMoves: initial.uciMoves,
+    });
   },
 
   loadFen: (fen: string): boolean => {
@@ -187,6 +208,12 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
       game: newGame, ui: createInitialUiState(), toast: null, lastMove: null,
       announcedMove: null, engineToken: s.engineToken + 1, isThinking: false,
     }));
+    emitGameEvent({
+      type: 'new-game',
+      fen: newGame.fen,
+      level: newGame.level,
+      uciMoves: newGame.uciMoves,
+    });
     return true;
   },
 
@@ -205,6 +232,7 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
       engineToken: s.engineToken + 1,
       isThinking: false,
     }));
+    emitGameEvent({ type: 'undo' });
     return true;
   },
 
