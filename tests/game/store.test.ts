@@ -395,4 +395,176 @@ describe('Game store and move pipeline', () => {
       expect(stateAfter.toast?.message).toBe('That position is not valid.');
     });
   });
+
+  describe('Undo functionality', () => {
+    it('disables undo with "Nothing to undo yet." toast at game start', () => {
+      const store = useGameStore.getState();
+      const success = store.undo();
+      expect(success).toBe(false);
+      expect(useGameStore.getState().toast?.message).toBe(en.undoStart);
+    });
+
+    it('takes back one ply in local mode so the other side is to move', () => {
+      const store = useGameStore.getState();
+      expect(store.game.mode).toBe('local');
+
+      // 1. e4
+      store.attemptMove('e2', 'e4');
+      expect(useGameStore.getState().game.moves).toEqual(['e4']);
+      expect(getTurn(useGameStore.getState().game.fen)).toBe('b');
+
+      // Undo 1 ply
+      const undone = store.undo();
+      expect(undone).toBe(true);
+
+      const state = useGameStore.getState();
+      expect(state.game.moves).toHaveLength(0);
+      expect(getTurn(state.game.fen)).toBe('w');
+      expect(state.game.fen).toBe('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+      expect(state.lastMove).toBeNull();
+    });
+
+    it('takes back exactly one ply in a multi-move local game', () => {
+      const store = useGameStore.getState();
+      store.attemptMove('e2', 'e4');
+      store.attemptMove('e7', 'e5');
+      store.attemptMove('g1', 'f3');
+
+      expect(useGameStore.getState().game.moves).toEqual(['e4', 'e5', 'Nf3']);
+      expect(getTurn(useGameStore.getState().game.fen)).toBe('b');
+
+      // Undo 1 ply (Nf3)
+      store.undo();
+      const state = useGameStore.getState();
+      expect(state.game.moves).toEqual(['e4', 'e5']);
+      expect(getTurn(state.game.fen)).toBe('w');
+      expect(state.lastMove).toEqual(['e7', 'e5']);
+    });
+
+    it('takes back two plies in computer mode when human is White so human is always to move', () => {
+      useGameStore.setState({
+        game: {
+          ...useGameStore.getState().game,
+          mode: 'computer',
+          humanSide: 'w',
+        },
+      });
+
+      const store = useGameStore.getState();
+      // White human plays 1. e4, black computer plays 1... e5
+      store.attemptMove('e2', 'e4');
+      store.attemptMove('e7', 'e5', undefined, true);
+      expect(useGameStore.getState().game.moves).toEqual(['e4', 'e5']);
+
+      // Undo in computer mode takes back 2 plies
+      const undone = store.undo();
+      expect(undone).toBe(true);
+
+      const state = useGameStore.getState();
+      expect(state.game.moves).toHaveLength(0);
+      expect(getTurn(state.game.fen)).toBe('w');
+      expect(state.lastMove).toBeNull();
+    });
+
+    it('takes back two plies in computer mode when human is Black after computer reply', () => {
+      useGameStore.setState({
+        game: {
+          ...useGameStore.getState().game,
+          mode: 'computer',
+          humanSide: 'b',
+        },
+      });
+
+      const store = useGameStore.getState();
+      // Computer 1. e4, human 1... e5, computer 2. Nf3
+      store.attemptMove('e2', 'e4', undefined, true);
+      // At ply 1, human (Black) has not moved yet -> undo is disabled
+      expect(store.undo()).toBe(false);
+      expect(useGameStore.getState().toast?.message).toBe(en.undoStart);
+
+      // Now human plays e5
+      store.attemptMove('e7', 'e5');
+      // Computer replies Nf3
+      store.attemptMove('g1', 'f3', undefined, true);
+      expect(useGameStore.getState().game.moves).toEqual(['e4', 'e5', 'Nf3']);
+      expect(getTurn(useGameStore.getState().game.fen)).toBe('b');
+
+      // Undo takes back 2 plies (Nf3 and e5), leaving 1. e4 so Black human is to move again
+      const undone = store.undo();
+      expect(undone).toBe(true);
+
+      const state = useGameStore.getState();
+      expect(state.game.moves).toEqual(['e4']);
+      expect(getTurn(state.game.fen)).toBe('b');
+      expect(state.lastMove).toEqual(['e2', 'e4']);
+    });
+
+    it('allows undo from checkmate to resume active play', () => {
+      const store = useGameStore.getState();
+      // Fool's mate: 1. f3 e5 2. g4 Qh4#
+      store.attemptMove('f2', 'f3');
+      store.attemptMove('e7', 'e5');
+      store.attemptMove('g2', 'g4');
+      store.attemptMove('d8', 'h4');
+
+      expect(useGameStore.getState().game.status).toBe('checkmate');
+      expect(useGameStore.getState().game.winner).toBe('b');
+
+      // Undo the checkmate move
+      store.undo();
+      const state = useGameStore.getState();
+      expect(state.game.status).toBe('playing');
+      expect(state.game.winner).toBeNull();
+      expect(state.game.moves).toEqual(['f3', 'e5', 'g4']);
+      expect(getTurn(state.game.fen)).toBe('b');
+    });
+  });
+
+  describe('Resign functionality', () => {
+    it('resigns in local mode with active player losing and sets status to resigned', () => {
+      const store = useGameStore.getState();
+      expect(getTurn(store.game.fen)).toBe('w');
+
+      // White resigns
+      store.resignGame();
+
+      const state = useGameStore.getState();
+      expect(state.game.status).toBe('resigned');
+      expect(state.game.winner).toBe('b');
+      expect(isGameOver(state.game.status)).toBe(true);
+    });
+
+    it('resigns in computer mode with human losing regardless of turn', () => {
+      useGameStore.setState({
+        game: {
+          ...useGameStore.getState().game,
+          mode: 'computer',
+          humanSide: 'w',
+        },
+      });
+
+      useGameStore.getState().resignGame();
+
+      const state = useGameStore.getState();
+      expect(state.game.status).toBe('resigned');
+      expect(state.game.winner).toBe('b');
+    });
+
+    it('freezes the board after resignation', () => {
+      useGameStore.getState().resignGame();
+      const moveAllowed = useGameStore.getState().attemptMove('e2', 'e4');
+      expect(moveAllowed).toBe(false);
+      expect(useGameStore.getState().game.moves).toHaveLength(0);
+    });
+  });
+
+  describe('Flip board functionality', () => {
+    it('toggles flipped UI state', () => {
+      expect(useGameStore.getState().ui.flipped).toBe(false);
+      useGameStore.getState().toggleFlip();
+      expect(useGameStore.getState().ui.flipped).toBe(true);
+      useGameStore.getState().toggleFlip();
+      expect(useGameStore.getState().ui.flipped).toBe(false);
+    });
+  });
 });

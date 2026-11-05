@@ -1,5 +1,7 @@
 import type React from 'react';
+import { en } from '../../copy/en.ts';
 import { getResultExplanation } from '../../game/selectors.ts';
+import { useGameStore } from '../../game/store.ts';
 import type { GameStatus, Side } from '../../game/types.ts';
 import './ResultDialog.css';
 
@@ -8,6 +10,9 @@ export interface ResultDialogProps {
   readonly winner: Side | null;
   readonly fen?: string;
   readonly className?: string;
+  readonly onRematch?: () => void;
+  readonly onReviewMoves?: () => void;
+  readonly onCopyPgn?: () => void;
 }
 
 export function ResultDialog({
@@ -15,12 +20,45 @@ export function ResultDialog({
   winner,
   fen,
   className = '',
+  onRematch,
+  onReviewMoves,
+  onCopyPgn,
 }: ResultDialogProps): React.JSX.Element | null {
   // Pure explanation helper handles copy formatting for all terminal outcomes.
   const explanation = getResultExplanation(status, winner, fen);
   if (!explanation) {
     return null;
   }
+
+  const handleRematch = (): void => {
+    if (onRematch) {
+      onRematch();
+    } else {
+      useGameStore.getState().resetGame();
+    }
+  };
+
+  const handleReviewMoves = (): void => {
+    if (onReviewMoves) {
+      onReviewMoves();
+    } else {
+      const moves = useGameStore.getState().game.moves;
+      useGameStore.getState().setReviewPly(moves.length);
+    }
+  };
+
+  const handleCopyPgn = (): void => {
+    if (onCopyPgn) {
+      onCopyPgn();
+      return;
+    }
+    const state = useGameStore.getState();
+    const pgnText = state.game.pgn;
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(pgnText).catch(() => {});
+    }
+    state.showToast(en.pgnCopied);
+  };
 
   return (
     <div
@@ -38,6 +76,29 @@ export function ResultDialog({
           {explanation.detail}
         </p>
       ) : null}
+      <div className="gambit-result-dialog-actions">
+        <button
+          type="button"
+          className="gambit-result-dialog-btn gambit-result-dialog-btn-primary"
+          onClick={handleRematch}
+        >
+          {en.rematch}
+        </button>
+        <button
+          type="button"
+          className="gambit-result-dialog-btn"
+          onClick={handleReviewMoves}
+        >
+          {en.reviewMoves}
+        </button>
+        <button
+          type="button"
+          className="gambit-result-dialog-btn"
+          onClick={handleCopyPgn}
+        >
+          {en.copyPgn}
+        </button>
+      </div>
     </div>
   );
 }

@@ -184,3 +184,33 @@ export function createInitialUiState(): UiState {
     showCoords: true,
   };
 }
+
+// Undo availability: 1 ply in local mode, 2 plies in computer mode so human always moves.
+export function canUndo(game: GameState): boolean {
+  if (game.moves.length === 0) {
+    return false;
+  }
+  if (game.mode === 'local') {
+    return game.moves.length >= 1;
+  }
+  return game.humanSide === 'w' ? game.moves.length >= 1 : game.moves.length >= 2;
+}
+
+export function getPliesToUndo(game: GameState): number {
+  if (!canUndo(game)) {
+    return 0;
+  }
+  if (game.mode === 'local') {
+    return 1;
+  }
+  if (game.humanSide === 'w') {
+    return game.moves.length >= 2 ? 2 : 1;
+  }
+  return game.moves.length >= 3 ? 2 : 1;
+}
+
+export function getResignWinner(game: GameState): Side {
+  const currentTurn = getTurn(game.fen);
+  const resigningSide: Side = game.mode === 'computer' ? game.humanSide : currentTurn;
+  return resigningSide === 'w' ? 'b' : 'w';
+}

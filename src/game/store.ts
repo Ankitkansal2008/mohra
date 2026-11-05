@@ -3,15 +3,18 @@ import { en } from '../copy/en.ts';
 import { rules } from './rules.ts';
 import {
   STARTING_FEN,
+  canUndo,
   createInitialGameState,
   createInitialUiState,
+  getPliesToUndo,
   getRejectionMessage,
+  getResignWinner,
   getTurn,
   isGameOver,
 } from './selectors.ts';
 import type { GameState, RejectionReason, ToastNotification, UiState } from './types.ts';
 
-export { STARTING_FEN, getRejectionMessage, getTurn, isCheck, isGameOver } from './selectors.ts';
+export { STARTING_FEN, canUndo, getPliesToUndo, getRejectionMessage, getTurn, isCheck, isGameOver } from './selectors.ts';
 
 export interface GameStoreState {
   game: GameState;
@@ -20,8 +23,7 @@ export interface GameStoreState {
   lastMove: [string, string] | null;
   announcedMove: string | null;
 
-  // Actions
-  attemptMove: (from: string, to: string, promotion?: string) => boolean;
+  attemptMove: (from: string, to: string, promotion?: string, isEngine?: boolean) => boolean;
   selectSquare: (square: string) => void;
   clearSelection: () => void;
   cancelPromotion: () => void;
@@ -31,6 +33,10 @@ export interface GameStoreState {
   dismissToast: () => void;
   resetGame: (customFen?: string) => void;
   loadFen: (fen: string) => boolean;
+  undo: () => boolean;
+  resignGame: () => void;
+  toggleFlip: () => void;
+  setReviewPly: (ply: number | null) => void;
 }
 
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -42,25 +48,18 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
   lastMove: null,
   announcedMove: null,
 
-  attemptMove: (from: string, to: string, promotion?: string): boolean => {
+  attemptMove: (from: string, to: string, promotion?: string, isEngine?: boolean): boolean => {
     const state = get();
     const currentFen = state.game.fen;
     const currentTurn = getTurn(currentFen);
 
-    // 1. Terminal status -> "game-over" (no toast, panel shows)
-    if (isGameOver(state.game.status)) {
-      return false;
-    }
-
-    // 2. Review mode active -> no toast at all
-    if (state.ui.reviewPly !== null) {
-      return false;
-    }
-
-    // 3. Wrong side to move -> "wrong-turn"
-    if (state.game.mode === 'computer' && currentTurn !== state.game.humanSide) {
-      get().setRejectionToast('wrong-turn');
-      return false;
+    if (isGameOver(state.game.status) || state.ui.reviewPly !== null) return false;
+    if (state.game.mode === 'computer') {
+      if (isEngine && currentTurn === state.game.humanSide) return false;
+      if (!isEngine && currentTurn !== state.game.humanSide) {
+        get().setRejectionToast('wrong-turn');
+        return false;
+      }
     }
 
     rules.reset(currentFen);
@@ -70,31 +69,25 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
       return false;
     }
 
-    // 2. Validate legality of target destination
     const legalTargets = rules.legalFrom(from);
     if (!legalTargets.includes(to)) {
-      const reason = rules.getRejectionReason(from, to);
-      get().setRejectionToast(reason);
+      get().setRejectionToast(rules.getRejectionReason(from, to));
       set((s) => ({ ui: { ...s.ui, selected: null, targets: [] } }));
       return false;
     }
 
-    // 3. Pawn promotion gate: reaching 8th or 1st rank without chosen piece
-    const isPawnPromotion =
+    const isPromotion =
       piece.type === 'p' &&
-      ((piece.color === 'w' && to.endsWith('8')) ||
-        (piece.color === 'b' && to.endsWith('1')));
+      ((piece.color === 'w' && to.endsWith('8')) || (piece.color === 'b' && to.endsWith('1')));
 
-    if (isPawnPromotion && !promotion) {
+    if (isPromotion && !promotion) {
       set((s) => ({
         ui: { ...s.ui, pendingPromotion: { from, to }, selected: null, targets: [] },
       }));
       return false;
     }
 
-    // 4. Authoritative apply committed in ONE atomic store transaction
     const result = rules.apply(from, to, promotion);
-    const movePgn = rules.pgn();
     const sideLabel = currentTurn === 'w' ? 'White' : 'Black';
 
     set((s) => ({
@@ -105,72 +98,42 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
         winner: result.winner,
         moves: [...s.game.moves, result.san],
         uciMoves: [...s.game.uciMoves, result.uci],
-        pgn: movePgn,
+        pgn: rules.pgn(),
         savedAt: Date.now(),
       },
-      ui: {
-        ...s.ui,
-        selected: null,
-        targets: [],
-        pendingPromotion: null,
-      },
+      ui: { ...s.ui, selected: null, targets: [], pendingPromotion: null },
       lastMove: [from, to],
       announcedMove: `${sideLabel} plays ${result.san}`,
     }));
-
     return true;
   },
 
   selectSquare: (square: string): void => {
     const state = get();
-    if (isGameOver(state.game.status) || state.ui.reviewPly !== null) {
-      return;
-    }
-
+    if (isGameOver(state.game.status) || state.ui.reviewPly !== null) return;
     const currentTurn = getTurn(state.game.fen);
-    if (state.game.mode === 'computer' && currentTurn !== state.game.humanSide) {
-      return;
-    }
+    if (state.game.mode === 'computer' && currentTurn !== state.game.humanSide) return;
 
     rules.reset(state.game.fen);
     const piece = rules.getPiece(square);
 
-    // Tapping the same square deselects it
     if (state.ui.selected === square) {
-      set((s) => ({
-        ui: { ...s.ui, selected: null, targets: [] },
-      }));
+      set((s) => ({ ui: { ...s.ui, selected: null, targets: [] } }));
       return;
     }
-
-    // If already selected and tapping an unselected square not of current piece, attempt move
     if (state.ui.selected && (!piece || piece.color !== currentTurn)) {
       get().attemptMove(state.ui.selected, square);
       return;
     }
-
-    // Tapping friendly piece switches selection and generates targets
     if (piece && piece.color === currentTurn) {
-      const targets = rules.legalFrom(square);
-      set((s) => ({
-        ui: { ...s.ui, selected: square, targets },
-      }));
+      set((s) => ({ ui: { ...s.ui, selected: square, targets: rules.legalFrom(square) } }));
       return;
     }
-
-    set((s) => ({
-      ui: { ...s.ui, selected: null, targets: [] },
-    }));
-  },
-
-  clearSelection: (): void => {
     set((s) => ({ ui: { ...s.ui, selected: null, targets: [] } }));
   },
 
-  cancelPromotion: (): void => {
-    set((s) => ({ ui: { ...s.ui, pendingPromotion: null, selected: null, targets: [] } }));
-  },
-
+  clearSelection: () => set((s) => ({ ui: { ...s.ui, selected: null, targets: [] } })),
+  cancelPromotion: () => set((s) => ({ ui: { ...s.ui, pendingPromotion: null, selected: null, targets: [] } })),
   confirmPromotion: (piece: 'q' | 'r' | 'b' | 'n'): boolean => {
     const pending = get().ui.pendingPromotion;
     return pending ? get().attemptMove(pending.from, pending.to, piece) : false;
@@ -182,19 +145,14 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
     toastTimer = setTimeout(() => get().dismissToast(), 3000);
   },
 
-  setRejectionToast: (reason: RejectionReason): void => {
-    get().showToast(getRejectionMessage(reason), reason);
-  },
-
-  dismissToast: (): void => {
-    if (toastTimer) {
-      clearTimeout(toastTimer);
-      toastTimer = null;
-    }
+  setRejectionToast: (reason: RejectionReason) => get().showToast(getRejectionMessage(reason), reason),
+  dismissToast: () => {
+    if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
     set({ toast: null });
   },
 
   resetGame: (customFen?: string): void => {
+    rules.reset(customFen);
     set({
       game: createInitialGameState(customFen ?? STARTING_FEN),
       ui: createInitialUiState(),
@@ -205,27 +163,76 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
   },
 
   loadFen: (fen: string): boolean => {
-    const trimmedFen = fen.trim();
-    const previousFen = get().game.fen;
+    const trimmed = fen.trim();
     try {
-      rules.reset(trimmedFen);
+      rules.reset(trimmed);
     } catch {
-      // Revert rules to active game to keep state untouched on invalid FEN
-      rules.reset(previousFen);
+      rules.reset(get().game.fen);
       get().showToast(en.invalidPosition);
       return false;
     }
-
     const { mode, humanSide, level } = get().game;
     set({
-      game: { ...createInitialGameState(trimmedFen), mode, humanSide, level },
-      ui: createInitialUiState(),
-      toast: null,
-      lastMove: null,
-      announcedMove: null,
+      game: { ...createInitialGameState(trimmed), mode, humanSide, level },
+      ui: createInitialUiState(), toast: null, lastMove: null, announcedMove: null,
     });
     return true;
   },
+
+  undo: (): boolean => {
+    const state = get();
+    if (!canUndo(state.game)) {
+      get().showToast(en.undoStart);
+      return false;
+    }
+
+    const plies = getPliesToUndo(state.game);
+    if (state.game.pgn) {
+      try { rules.loadPgn(state.game.pgn); } catch {}
+    }
+    for (let i = 0; i < plies; i++) {
+      rules.undo();
+    }
+
+    const newMoves = state.game.moves.slice(0, state.game.moves.length - plies);
+    const newUci = state.game.uciMoves.slice(0, state.game.uciMoves.length - plies);
+    const currentStatus = rules.status();
+    const lastUci = newUci[newUci.length - 1];
+    const lastMove: [string, string] | null = lastUci
+      ? [lastUci.slice(0, 2), lastUci.slice(2, 4)]
+      : null;
+
+    set((s) => ({
+      game: {
+        ...s.game,
+        fen: rules.fen(),
+        status: currentStatus.status,
+        winner: currentStatus.winner,
+        moves: newMoves,
+        uciMoves: newUci,
+        pgn: rules.pgn(),
+        savedAt: Date.now(),
+      },
+      ui: { ...s.ui, selected: null, targets: [], pendingPromotion: null, reviewPly: null },
+      lastMove,
+      announcedMove: null,
+    }));
+    return true;
+  },
+
+  resignGame: (): void => {
+    const state = get();
+    if (isGameOver(state.game.status)) return;
+    const winner = getResignWinner(state.game);
+    set((s) => ({
+      game: { ...s.game, status: 'resigned', winner, savedAt: Date.now() },
+      ui: { ...s.ui, selected: null, targets: [], pendingPromotion: null },
+      announcedMove: null,
+    }));
+  },
+
+  toggleFlip: () => set((s) => ({ ui: { ...s.ui, flipped: !s.ui.flipped } })),
+  setReviewPly: (ply: number | null) => set((s) => ({ ui: { ...s.ui, reviewPly: ply } })),
 }));
 
 export const useGameStore = Object.assign(

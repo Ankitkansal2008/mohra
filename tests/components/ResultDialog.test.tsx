@@ -1,7 +1,9 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../../src/App.tsx';
+import { ResultDialog } from '../../src/components/Dialogs/ResultDialog.tsx';
+import { en } from '../../src/copy/en.ts';
 import { useGameStore } from '../../src/game/store.ts';
 
 describe('Result dialog in game view', () => {
@@ -9,7 +11,8 @@ describe('Result dialog in game view', () => {
     useGameStore.getState().resetGame();
   });
 
-  it('renders result panel with "Checkmate. White wins." when store is in checkmate state', () => {
+  // 1. checkmate
+  it('renders checkmate panel with correct copy when White wins', () => {
     useGameStore.setState({
       game: {
         ...useGameStore.getState().game,
@@ -23,9 +26,12 @@ describe('Result dialog in game view', () => {
     expect(html).toContain('Black has no legal move and the king is attacked.');
     expect(html).toContain('role="dialog"');
     expect(html).toContain('gambit-result-dialog');
+    expect(html).toContain(en.rematch);
+    expect(html).toContain(en.reviewMoves);
+    expect(html).toContain(en.copyPgn);
   });
 
-  it('renders result panel with "Checkmate. Black wins." when Black wins by checkmate', () => {
+  it('renders checkmate panel with correct copy when Black wins', () => {
     useGameStore.setState({
       game: {
         ...useGameStore.getState().game,
@@ -39,7 +45,8 @@ describe('Result dialog in game view', () => {
     expect(html).toContain('White has no legal move and the king is attacked.');
   });
 
-  it('renders stalemate panel when game is in stalemate', () => {
+  // 2. stalemate
+  it('renders stalemate panel with correct copy', () => {
     useGameStore.setState({
       game: {
         ...useGameStore.getState().game,
@@ -50,11 +57,156 @@ describe('Result dialog in game view', () => {
 
     const html = renderToStaticMarkup(React.createElement(App));
     expect(html).toContain("Stalemate. It&#x27;s a draw.");
+    expect(html).toContain('White has no legal move, but the king is not attacked.');
   });
 
+  // 3. draw-repetition
+  it('renders draw by repetition panel with exact copy', () => {
+    useGameStore.setState({
+      game: {
+        ...useGameStore.getState().game,
+        status: 'draw-repetition',
+        winner: null,
+      },
+    });
+
+    const html = renderToStaticMarkup(React.createElement(App));
+    expect(html).toContain('Draw by repetition.');
+    expect(html).toContain('The same position occurred three times.');
+  });
+
+  // 4. draw-fifty
+  it('renders draw by fifty-move rule panel with exact copy', () => {
+    useGameStore.setState({
+      game: {
+        ...useGameStore.getState().game,
+        status: 'draw-fifty',
+        winner: null,
+      },
+    });
+
+    const html = renderToStaticMarkup(React.createElement(App));
+    expect(html).toContain('Draw by the fifty-move rule.');
+    expect(html).toContain('Fifty moves each with no capture and no pawn move.');
+  });
+
+  // 5. draw-material
+  it('renders insufficient material panel with exact copy', () => {
+    useGameStore.setState({
+      game: {
+        ...useGameStore.getState().game,
+        status: 'draw-material',
+        winner: null,
+      },
+    });
+
+    const html = renderToStaticMarkup(React.createElement(App));
+    expect(html).toContain('Draw. Not enough material to checkmate.');
+  });
+
+  // 6. resigned
+  it('renders resigned panel when Black resigns and White wins', () => {
+    useGameStore.setState({
+      game: {
+        ...useGameStore.getState().game,
+        status: 'resigned',
+        winner: 'w',
+      },
+    });
+
+    const html = renderToStaticMarkup(React.createElement(App));
+    expect(html).toContain('Black resigned. White wins.');
+  });
+
+  it('renders resigned panel when White resigns and Black wins', () => {
+    useGameStore.setState({
+      game: {
+        ...useGameStore.getState().game,
+        status: 'resigned',
+        winner: 'b',
+      },
+    });
+
+    const html = renderToStaticMarkup(React.createElement(App));
+    expect(html).toContain('White resigned. Black wins.');
+  });
+
+  // 7. timeout
+  it('renders timeout panel when Black flags and White wins', () => {
+    useGameStore.setState({
+      game: {
+        ...useGameStore.getState().game,
+        status: 'timeout',
+        winner: 'w',
+      },
+    });
+
+    const html = renderToStaticMarkup(React.createElement(App));
+    expect(html).toContain('Black ran out of time. White wins.');
+  });
+
+  it('renders timeout panel when White flags and Black wins', () => {
+    useGameStore.setState({
+      game: {
+        ...useGameStore.getState().game,
+        status: 'timeout',
+        winner: 'b',
+      },
+    });
+
+    const html = renderToStaticMarkup(React.createElement(App));
+    expect(html).toContain('White ran out of time. Black wins.');
+  });
+
+  // Active play guard
   it('does not render result panel during active play', () => {
     const html = renderToStaticMarkup(React.createElement(App));
     expect(html).not.toContain('gambit-result-dialog');
     expect(html).not.toContain('Checkmate');
+  });
+
+  // Actions and keyboard reachability
+  it('renders keyboard-reachable action buttons: Rematch, Review moves, Copy PGN', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(ResultDialog, {
+        status: 'checkmate',
+        winner: 'w',
+      }),
+    );
+
+    expect(html).toContain('role="dialog"');
+    expect(html).toContain('aria-modal="true"');
+    expect(html).toContain(`>${en.rematch}</button>`);
+    expect(html).toContain(`>${en.reviewMoves}</button>`);
+    expect(html).toContain(`>${en.copyPgn}</button>`);
+  });
+
+  it('invokes action handlers when provided via props', () => {
+    const onRematch = vi.fn();
+    const onReviewMoves = vi.fn();
+    const onCopyPgn = vi.fn();
+
+    const element = ResultDialog({
+      status: 'checkmate',
+      winner: 'w',
+      onRematch,
+      onReviewMoves,
+      onCopyPgn,
+    });
+
+    expect(element).not.toBeNull();
+    // Verify actions element structure
+    const actionsDiv = element?.props.children[2];
+    expect(actionsDiv.props.className).toBe('gambit-result-dialog-actions');
+
+    const [rematchBtn, reviewBtn, copyBtn] = actionsDiv.props.children;
+    rematchBtn.props.onClick();
+    expect(onRematch).toHaveBeenCalledTimes(1);
+
+    reviewBtn.props.onClick();
+    expect(onReviewMoves).toHaveBeenCalledTimes(1);
+
+    copyBtn.props.onClick();
+    expect(onCopyPgn).toHaveBeenCalledTimes(1);
   });
 });

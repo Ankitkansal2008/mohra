@@ -45,6 +45,15 @@ export const en: Record<string, string> = {
   engineFailed: 'The computer opponent could not start. You can keep playing on this device.',
   offline: 'You are offline. The game still works; only the online features will not.',
 
+  // Actions and controls (PRD FR-12, FR-13, FR-17, FR-19 and UI/UX Section 7, 8)
+  rematch: 'Rematch',
+  reviewMoves: 'Review moves',
+  copyPgn: 'Copy PGN',
+  undo: 'Undo',
+  flip: 'Flip',
+  resign: 'Resign',
+  cancel: 'Cancel',
+
   // Dev position loader
   loadFen: 'Load FEN',
   loadFenLabel: 'Load FEN',

@@ -42,7 +42,7 @@ export function BoardView({
   fen: propFen,
   status: propStatus,
   winner: propWinner,
-  boardOrientation = 'white',
+  boardOrientation: propBoardOrientation,
   theme: propTheme,
   selected: propSelected,
   lastMove: propLastMove,
@@ -87,6 +87,7 @@ export function BoardView({
   const lastMove = propLastMove !== undefined ? propLastMove : storeLastMove;
   const legalTargets = propLegalTargets !== undefined ? propLegalTargets : storeUi.targets;
   const turn = getTurn(fen);
+  const orientation = propBoardOrientation ?? (storeUi.flipped ? 'black' : 'white');
 
   const activeCheck =
     propCheck !== undefined
@@ -181,7 +182,7 @@ export function BoardView({
       <Chessboard
         options={{
           position: fen,
-          boardOrientation,
+          boardOrientation: orientation,
           lightSquareStyle: { backgroundColor: colors.light },
           darkSquareStyle: { backgroundColor: colors.dark },
           squareStyles,
@@ -196,19 +197,19 @@ export function BoardView({
             touchAction: 'none',
             ...(interactive ? {} : { pointerEvents: 'none' }),
           },
-          allowDragging: interactive,
+          allowDragging: interactive && !isGameOver(status),
           canDragPiece: ({ piece }) => {
-            if (!interactive) return false;
+            if (!interactive || isGameOver(status)) return false;
             return piece.pieceType[0] === turn;
           },
           onPieceDrop: ({ sourceSquare, targetSquare }) => {
-            if (!interactive || !targetSquare || sourceSquare === targetSquare) {
+            if (!interactive || isGameOver(status) || !targetSquare || sourceSquare === targetSquare) {
               return false;
             }
             return attemptMove(sourceSquare, targetSquare);
           },
           onSquareClick: ({ square }) => {
-            if (!interactive) return;
+            if (!interactive || isGameOver(status)) return;
             selectSquare(square);
           },
         }}
@@ -218,7 +219,7 @@ export function BoardView({
         <PromotionOverlay
           toSquare={storeUi.pendingPromotion.to}
           side={turn}
-          boardOrientation={boardOrientation}
+          boardOrientation={orientation}
           onSelect={(piece) => confirmPromotion(piece)}
           onCancel={cancelPromotion}
         />

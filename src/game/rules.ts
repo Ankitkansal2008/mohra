@@ -21,10 +21,10 @@ export interface LegalMove {
 const instance = new Chess();
 
 export function reset(fen?: string): void {
-  if (fen) {
-    instance.load(fen);
-  } else {
+  if (!fen) {
     instance.reset();
+  } else if (instance.fen() !== fen) {
+    instance.load(fen);
   }
 }
 
