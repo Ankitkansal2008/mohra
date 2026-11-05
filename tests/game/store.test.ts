@@ -83,6 +83,37 @@ describe('Game store and move pipeline', () => {
       expect(stateAfterBlack.announcedMove).toBe('Black plays e5');
     });
 
+    it('plays sequence e2e4, e7e5, g1f3, b8c6, f1c4, g8f6 and advances FEN on every ply', () => {
+      const sequence = [
+        { from: 'e2', to: 'e4', ply: 1 },
+        { from: 'e7', to: 'e5', ply: 2 },
+        { from: 'g1', to: 'f3', ply: 3 },
+        { from: 'b8', to: 'c6', ply: 4 },
+        { from: 'f1', to: 'c4', ply: 5 },
+        { from: 'g8', to: 'f6', ply: 6 },
+      ];
+
+      let previousFen = useGameStore.getState().game.fen;
+
+      for (const { from, to, ply } of sequence) {
+        const success = useGameStore.getState().attemptMove(from, to);
+        const currentFen = useGameStore.getState().game.fen;
+        const toast = useGameStore.getState().toast;
+
+        expect(
+          success,
+          `Ply ${ply} (${from}${to}) failed with reason: ${toast?.reason ?? 'none'}`,
+        ).toBe(true);
+
+        expect(
+          currentFen,
+          `Ply ${ply} (${from}${to}) did not advance FEN`,
+        ).not.toBe(previousFen);
+
+        previousFen = currentFen;
+      }
+    });
+
     it('refuses move when wrong side is to move', () => {
       const store = useGameStore.getState();
       // Black piece attempting move on White turn
