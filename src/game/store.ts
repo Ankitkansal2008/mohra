@@ -55,16 +55,17 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
     const currentFen = state.game.fen;
     const currentTurn = getTurn(currentFen);
 
-    // 1. Pre-check: terminal status, review mode, or wrong side to move
+    // 1. Terminal status -> "game-over" (no toast, panel shows)
     if (isGameOver(state.game.status)) {
-      get().setRejectionToast('game-over');
       return false;
     }
 
+    // 2. Review mode active -> no toast at all
     if (state.ui.reviewPly !== null) {
       return false;
     }
 
+    // 3. Wrong side to move -> "wrong-turn"
     if (state.game.mode === 'computer' && currentTurn !== state.game.humanSide) {
       get().setRejectionToast('wrong-turn');
       return false;

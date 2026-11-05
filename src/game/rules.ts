@@ -177,52 +177,57 @@ export function getRejectionReason(from: string, to: string): RejectionReason {
     return 'wrong-turn';
   }
 
-  // Castling attempt: king moving 2 squares horizontally
+  const opponentColor = turn === 'w' ? 'b' : 'w';
+
+  // 7. Castling attempted while in, through or into check, or after pieces moved
   if (piece.type === 'k') {
     const fromCol = from.charCodeAt(0);
     const toCol = to.charCodeAt(0);
-    if (Math.abs(toCol - fromCol) === 2) {
+    const isCastling =
+      Math.abs(toCol - fromCol) === 2 ||
+      (from === 'e1' && (to === 'g1' || to === 'c1' || to === 'h1' || to === 'a1')) ||
+      (from === 'e8' && (to === 'g8' || to === 'c8' || to === 'h8' || to === 'a8'));
+    if (isCastling) {
       return 'castling-blocked';
     }
   }
 
-  // If already in check, any illegal move fails to escape check
+  // 5. Moving piece is pinned (removing it would expose the king) - evaluated before in-check
+  if (piece.type !== 'k') {
+    let kingSquare: Square | null = null;
+    const board = instance.board();
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        const p = board[r][c];
+        if (p && p.type === 'k' && p.color === turn) {
+          kingSquare = p.square;
+          break;
+        }
+      }
+      if (kingSquare) break;
+    }
+
+    if (kingSquare) {
+      const clone = new Chess(instance.fen());
+      clone.remove(from as Square);
+      const beforeAttackers = instance.attackers(kingSquare, opponentColor).length;
+      const afterAttackers = clone.attackers(kingSquare, opponentColor).length;
+      if (afterAttackers > beforeAttackers) {
+        return 'pinned';
+      }
+    }
+  }
+
+  // 6. Side to move is in check, or king moving into check
   if (instance.inCheck()) {
     return 'in-check';
   }
 
-  // If king tries to move into an attacked square
-  if (piece.type === 'k') {
-    const opponentColor = turn === 'w' ? 'b' : 'w';
-    if (instance.isAttacked(to as Square, opponentColor)) {
-      return 'in-check';
-    }
-    return 'illegal-shape';
+  if (piece.type === 'k' && instance.isAttacked(to as Square, opponentColor)) {
+    return 'in-check';
   }
 
-  // Absolute pin check: if removing piece leaves friendly king under attack
-  let kingSquare: Square | null = null;
-  const board = instance.board();
-  for (let r = 0; r < 8; r++) {
-    for (let c = 0; c < 8; c++) {
-      const p = board[r][c];
-      if (p && p.type === 'k' && p.color === turn) {
-        kingSquare = p.square;
-        break;
-      }
-    }
-    if (kingSquare) break;
-  }
-
-  if (kingSquare) {
-    const clone = new Chess(instance.fen());
-    clone.remove(from as Square);
-    const opponentColor = turn === 'w' ? 'b' : 'w';
-    if (clone.isAttacked(kingSquare, opponentColor)) {
-      return 'pinned';
-    }
-  }
-
+  // 4. Target not in legalFrom -> illegal-shape
   return 'illegal-shape';
 }
 

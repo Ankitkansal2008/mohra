@@ -114,7 +114,7 @@ describe('Game store and move pipeline', () => {
       }
     });
 
-    it('refuses move when wrong side is to move', () => {
+    it('refuses move when wrong side is to move with exact sentence', () => {
       const store = useGameStore.getState();
       // Black piece attempting move on White turn
       const success = store.attemptMove('e7', 'e5');
@@ -123,11 +123,11 @@ describe('Game store and move pipeline', () => {
       const state = useGameStore.getState();
       expect(state.toast).not.toBeNull();
       expect(state.toast?.reason).toBe('wrong-turn');
-      expect(state.toast?.message).toBe(en.rejectionWrongTurn);
+      expect(state.toast?.message).toBe('It is not your turn to move.');
       expect(state.game.moves).toEqual([]);
     });
 
-    it('refuses illegal shape move with visible rejection toast', () => {
+    it('refuses illegal shape move with exact sentence', () => {
       const store = useGameStore.getState();
       // Bishop move attempted by pawn
       const success = store.attemptMove('e2', 'f3');
@@ -135,11 +135,11 @@ describe('Game store and move pipeline', () => {
       expect(success).toBe(false);
       const state = useGameStore.getState();
       expect(state.toast?.reason).toBe('illegal-shape');
-      expect(state.toast?.message).toBe(en.rejectionIllegalShape);
+      expect(state.toast?.message).toBe('That piece cannot reach that square from here.');
       expect(state.game.moves).toEqual([]);
     });
 
-    it('refuses move of pinned piece and identifies pin reason', () => {
+    it('refuses move of pinned piece with exact sentence', () => {
       // Position where White knight at c3 is pinned to king at e1 by Black bishop at b4
       const PIN_FEN =
         'rnbqk2r/pppp1ppp/4pn2/8/1bPP4/2N5/PP2PPPP/R1BQKBNR w KQkq - 2 4';
@@ -150,11 +150,11 @@ describe('Game store and move pipeline', () => {
       expect(success).toBe(false);
       const state = useGameStore.getState();
       expect(state.toast?.reason).toBe('pinned');
-      expect(state.toast?.message).toBe(en.rejectionPinned);
+      expect(state.toast?.message).toBe('That piece is pinned - moving it would expose your king.');
       expect(state.game.moves).toEqual([]);
     });
 
-    it('refuses move leaving king attacked when in check', () => {
+    it('refuses move leaving king attacked when in check with exact sentence', () => {
       // White in check by black rook at e8, King at e1, unrelated pawn at a2
       const CHECK_FEN = '4r1k1/8/8/8/8/8/P7/4K3 w - - 0 1';
       useGameStore.getState().resetGame(CHECK_FEN);
@@ -165,10 +165,10 @@ describe('Game store and move pipeline', () => {
       expect(success).toBe(false);
       const state = useGameStore.getState();
       expect(state.toast?.reason).toBe('in-check');
-      expect(state.toast?.message).toBe(en.rejectionInCheck);
+      expect(state.toast?.message).toBe('You are in check - that move leaves your king attacked.');
     });
 
-    it('refuses castling through check and returns castling-blocked', () => {
+    it('refuses castling through check with exact sentence', () => {
       // White e1 king trying to castle kingside through f1 attacked by black rook at f8
       const CASTLE_THROUGH_CHECK_FEN =
         '4kr2/8/8/8/8/8/8/R3K2R w KQ - 0 1';
@@ -179,10 +179,24 @@ describe('Game store and move pipeline', () => {
       expect(success).toBe(false);
       const state = useGameStore.getState();
       expect(state.toast?.reason).toBe('castling-blocked');
-      expect(state.toast?.message).toBe(en.rejectionCastlingBlocked);
+      expect(state.toast?.message).toBe('You cannot castle out of, through, or into check.');
     });
 
-    it('refuses move when game is already in a terminal state', () => {
+    it('refuses castling attempted while in check with exact sentence', () => {
+      // White e1 king in check by black rook at e8, trying to castle kingside
+      const CASTLE_IN_CHECK_FEN =
+        '4r1k1/8/8/8/8/8/8/R3K2R w KQ - 0 1';
+      useGameStore.getState().resetGame(CASTLE_IN_CHECK_FEN);
+
+      const success = useGameStore.getState().attemptMove('e1', 'g1');
+
+      expect(success).toBe(false);
+      const state = useGameStore.getState();
+      expect(state.toast?.reason).toBe('castling-blocked');
+      expect(state.toast?.message).toBe('You cannot castle out of, through, or into check.');
+    });
+
+    it('refuses move with no toast when game is in terminal status (panel shows instead)', () => {
       // Fool's mate position: Black delivered Qh4#
       const CHECKMATE_FEN =
         'rnb1kbnr/pppp1ppp/4p3/8/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3';
@@ -194,8 +208,20 @@ describe('Game store and move pipeline', () => {
       const success = useGameStore.getState().attemptMove('e2', 'e3');
 
       expect(success).toBe(false);
-      expect(useGameStore.getState().toast?.reason).toBe('game-over');
-      expect(useGameStore.getState().toast?.message).toBe(en.rejectionGameOver);
+      // Requirement: 1. terminal status -> "game-over" (no toast, panel shows)
+      expect(useGameStore.getState().toast).toBeNull();
+    });
+
+    it('refuses move with no toast when review mode is active', () => {
+      useGameStore.getState().resetGame();
+      useGameStore.setState((s) => ({
+        ui: { ...s.ui, reviewPly: 0 },
+      }));
+
+      const success = useGameStore.getState().attemptMove('e2', 'e4');
+      expect(success).toBe(false);
+      // Requirement: 2. review mode active -> no toast at all
+      expect(useGameStore.getState().toast).toBeNull();
     });
 
     it('intercepts pawn reaching 8th rank and sets pendingPromotion without applying', () => {
