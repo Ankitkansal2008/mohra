@@ -5,19 +5,24 @@ import {
   findKingSquare,
   getTurn,
   isCheck,
+  isGameOver,
   isSquareOccupied,
 } from '../../game/selectors.ts';
 import { useGameStore } from '../../game/store.ts';
+import type { GameStatus, Side } from '../../game/types.ts';
 import type { BoardTheme } from '../../styles/boardTokens.ts';
 import {
   BOARD_HIGHLIGHTS,
   BOARD_THEMES,
 } from '../../styles/boardTokens.ts';
+import { ResultDialog } from '../Dialogs/ResultDialog.tsx';
 import { Toast } from '../ui/Toast.tsx';
 import { PromotionOverlay } from './PromotionOverlay.tsx';
 
 export interface BoardViewProps {
   readonly fen?: string;
+  readonly status?: GameStatus;
+  readonly winner?: Side | null;
   readonly boardOrientation?: 'white' | 'black';
   readonly theme?: BoardTheme;
   readonly selected?: string | null;
@@ -35,6 +40,8 @@ export interface BoardViewProps {
 
 export function BoardView({
   fen: propFen,
+  status: propStatus,
+  winner: propWinner,
   boardOrientation = 'white',
   theme: propTheme,
   selected: propSelected,
@@ -73,6 +80,8 @@ export function BoardView({
   }, []);
 
   const fen = propFen ?? storeGame.fen;
+  const status = propStatus ?? storeGame.status;
+  const winner = propWinner !== undefined ? propWinner : storeGame.winner;
   const theme = propTheme ?? storeUi.theme;
   const selected = propSelected !== undefined ? propSelected : storeUi.selected;
   const lastMove = propLastMove !== undefined ? propLastMove : storeLastMove;
@@ -82,7 +91,7 @@ export function BoardView({
   const activeCheck =
     propCheck !== undefined
       ? propCheck
-      : isCheck(storeGame.status)
+      : isCheck(status)
         ? findKingSquare(fen, turn)
         : null;
 
@@ -212,6 +221,14 @@ export function BoardView({
           boardOrientation={boardOrientation}
           onSelect={(piece) => confirmPromotion(piece)}
           onCancel={cancelPromotion}
+        />
+      ) : null}
+
+      {isGameOver(status) ? (
+        <ResultDialog
+          status={status}
+          winner={winner}
+          fen={fen}
         />
       ) : null}
     </div>

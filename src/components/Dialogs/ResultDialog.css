@@ -1,0 +1,28 @@
+.gambit-result-dialog {
+  position: absolute;
+  bottom: var(--spacing-16);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  width: calc(100% - var(--spacing-32));
+  max-width: 420px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-10);
+  padding: var(--spacing-16) var(--spacing-24);
+  box-shadow: 0 4px 16px rgba(20, 26, 20, 0.15);
+  text-align: center;
+}
+
+.gambit-result-dialog-headline {
+  margin: 0 0 var(--spacing-4);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.gambit-result-dialog-detail {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-muted);
+}

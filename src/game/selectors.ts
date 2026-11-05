@@ -50,6 +50,65 @@ export function getRejectionMessage(reason: RejectionReason): string {
   }
 }
 
+export function getResultExplanation(
+  status: GameStatus,
+  winner: Side | null,
+  fen?: string,
+): { headline: string; detail: string } | null {
+  if (!isGameOver(status)) {
+    return null;
+  }
+
+  if (status === 'checkmate') {
+    const winnerLabel = winner === 'b' ? 'Black' : 'White';
+    const loserLabel = winner === 'b' ? 'White' : 'Black';
+    return {
+      headline: en.checkmate.replace('{Winner}', winnerLabel),
+      detail: en.checkmateDetail.replace('{Loser}', loserLabel),
+    };
+  }
+
+  if (status === 'stalemate') {
+    const turn = fen ? getTurn(fen) : 'w';
+    const sideLabel = turn === 'b' ? 'Black' : 'White';
+    return {
+      headline: en.stalemate,
+      detail: en.stalemateDetail.replace('{Side}', sideLabel),
+    };
+  }
+
+  if (status === 'draw-repetition') {
+    return { headline: en.repetition, detail: en.repetitionDetail };
+  }
+
+  if (status === 'draw-fifty') {
+    return { headline: en.fiftyMove, detail: en.fiftyMoveDetail };
+  }
+
+  if (status === 'draw-material') {
+    return { headline: en.insufficientMaterial, detail: '' };
+  }
+
+  const winnerLabel = winner === 'b' ? 'Black' : 'White';
+  const loserLabel = winner === 'b' ? 'White' : 'Black';
+
+  if (status === 'resigned') {
+    return {
+      headline: en.resigned.replace('{Player}', loserLabel).replace('{Winner}', winnerLabel),
+      detail: '',
+    };
+  }
+
+  if (status === 'timeout') {
+    return {
+      headline: en.timeout.replace('{Player}', loserLabel).replace('{Winner}', winnerLabel),
+      detail: '',
+    };
+  }
+
+  return null;
+}
+
 export function isSquareOccupied(fen: string, square: string): boolean {
   if (!/^[a-h][1-8]$/.test(square)) return false;
   const rows = fen.split(' ')[0].split('/');

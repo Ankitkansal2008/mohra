@@ -9,20 +9,9 @@ import {
   getTurn,
   isGameOver,
 } from './selectors.ts';
-import type {
-  GameState,
-  RejectionReason,
-  ToastNotification,
-  UiState,
-} from './types.ts';
+import type { GameState, RejectionReason, ToastNotification, UiState } from './types.ts';
 
-export {
-  STARTING_FEN,
-  getRejectionMessage,
-  getTurn,
-  isCheck,
-  isGameOver,
-} from './selectors.ts';
+export { STARTING_FEN, getRejectionMessage, getTurn, isCheck, isGameOver } from './selectors.ts';
 
 export interface GameStoreState {
   game: GameState;
@@ -46,7 +35,7 @@ export interface GameStoreState {
 
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
-export const useGameStore = create<GameStoreState>((set, get) => ({
+export const useGameStoreBase = create<GameStoreState>((set, get) => ({
   game: createInitialGameState(),
   ui: createInitialUiState(),
   toast: null,
@@ -238,5 +227,15 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
     return true;
   },
 }));
+
+export const useGameStore = Object.assign(
+  <U = GameStoreState>(selector?: (state: GameStoreState) => U): U =>
+    typeof window === 'undefined'
+      ? selector
+        ? selector(useGameStoreBase.getState())
+        : (useGameStoreBase.getState() as unknown as U)
+      : useGameStoreBase(selector as (state: GameStoreState) => U),
+  useGameStoreBase,
+);
 
 export default useGameStore;
