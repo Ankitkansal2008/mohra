@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { en } from '../../copy/en.ts';
 import {
+  findKingSquare,
   getTurn,
   isCheck,
-  useGameStore,
-} from '../../game/store.ts';
+  isSquareOccupied,
+} from '../../game/selectors.ts';
+import { useGameStore } from '../../game/store.ts';
 import type { BoardTheme } from '../../styles/boardTokens.ts';
 import {
   BOARD_HIGHLIGHTS,
@@ -29,50 +31,6 @@ export interface BoardViewProps {
   readonly interactive?: boolean;
   readonly className?: string;
   readonly style?: React.CSSProperties;
-}
-
-function isSquareOccupied(fen: string, square: string): boolean {
-  if (!/^[a-h][1-8]$/.test(square)) return false;
-  const placement = fen.split(' ')[0];
-  const rows = placement.split('/');
-  const fileIndex = square.charCodeAt(0) - 'a'.charCodeAt(0);
-  const rank = parseInt(square[1], 10);
-  const rowIndex = 8 - rank;
-  const rowStr = rows[rowIndex];
-  if (!rowStr) return false;
-
-  let currentFile = 0;
-  for (let i = 0; i < rowStr.length; i++) {
-    const char = rowStr[i];
-    if (char >= '1' && char <= '8') {
-      currentFile += parseInt(char, 10);
-    } else {
-      if (currentFile === fileIndex) return true;
-      currentFile += 1;
-    }
-    if (currentFile > fileIndex) break;
-  }
-  return false;
-}
-
-function findKingSquare(fen: string, color: 'w' | 'b'): string | null {
-  const rows = fen.split(' ')[0].split('/');
-  const kingChar = color === 'w' ? 'K' : 'k';
-  for (let r = 0; r < 8; r++) {
-    const rank = 8 - r;
-    let file = 0;
-    for (const char of rows[r]) {
-      if (char >= '1' && char <= '8') {
-        file += parseInt(char, 10);
-      } else {
-        if (char === kingChar) {
-          return `${String.fromCharCode('a'.charCodeAt(0) + file)}${rank}`;
-        }
-        file += 1;
-      }
-    }
-  }
-  return null;
 }
 
 export function BoardView({

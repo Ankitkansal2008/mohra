@@ -59,6 +59,30 @@ describe('Game store and move pipeline', () => {
       expect(state.announcedMove).toBe('White plays e4');
     });
 
+    it('allows Black to play a move after White plays a move in local mode', () => {
+      const store = useGameStore.getState();
+      expect(store.game.mode).toBe('local');
+      expect(getTurn(store.game.fen)).toBe('w');
+
+      // White plays 1. e4
+      const whiteMove = store.attemptMove('e2', 'e4');
+      expect(whiteMove).toBe(true);
+
+      const stateAfterWhite = useGameStore.getState();
+      expect(getTurn(stateAfterWhite.game.fen)).toBe('b');
+      expect(stateAfterWhite.game.moves).toEqual(['e4']);
+
+      // Black plays 1... e5 in response
+      const blackMove = store.attemptMove('e7', 'e5');
+      expect(blackMove).toBe(true);
+
+      const stateAfterBlack = useGameStore.getState();
+      expect(getTurn(stateAfterBlack.game.fen)).toBe('w');
+      expect(stateAfterBlack.game.moves).toEqual(['e4', 'e5']);
+      expect(stateAfterBlack.lastMove).toEqual(['e7', 'e5']);
+      expect(stateAfterBlack.announcedMove).toBe('Black plays e5');
+    });
+
     it('refuses move when wrong side is to move', () => {
       const store = useGameStore.getState();
       // Black piece attempting move on White turn

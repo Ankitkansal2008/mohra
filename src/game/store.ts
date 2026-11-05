@@ -1,56 +1,27 @@
 import { create } from 'zustand';
-import { en } from '../copy/en.ts';
 import { rules } from './rules.ts';
+import {
+  STARTING_FEN,
+  createInitialGameState,
+  createInitialUiState,
+  getRejectionMessage,
+  getTurn,
+  isGameOver,
+} from './selectors.ts';
 import type {
   GameState,
-  GameStatus,
   RejectionReason,
-  Side,
   ToastNotification,
   UiState,
 } from './types.ts';
 
-export const STARTING_FEN =
-  'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-
-// Pure derived helpers calculate state on demand from FEN without redundant storage.
-export function getTurn(fen: string): Side {
-  const parts = fen.split(' ');
-  return (parts[1] as Side) || 'w';
-}
-
-export function isCheck(status: GameStatus): boolean {
-  return status === 'check';
-}
-
-export function isGameOver(status: GameStatus): boolean {
-  return (
-    status === 'checkmate' ||
-    status === 'stalemate' ||
-    status === 'draw-repetition' ||
-    status === 'draw-fifty' ||
-    status === 'draw-material' ||
-    status === 'resigned' ||
-    status === 'timeout'
-  );
-}
-
-export function getRejectionMessage(reason: RejectionReason): string {
-  switch (reason) {
-    case 'pinned':
-      return en.rejectionPinned;
-    case 'wrong-turn':
-      return en.rejectionWrongTurn;
-    case 'illegal-shape':
-      return en.rejectionIllegalShape;
-    case 'in-check':
-      return en.rejectionInCheck;
-    case 'castling-blocked':
-      return en.rejectionCastlingBlocked;
-    case 'game-over':
-      return en.rejectionGameOver;
-  }
-}
+export {
+  STARTING_FEN,
+  getRejectionMessage,
+  getTurn,
+  isCheck,
+  isGameOver,
+} from './selectors.ts';
 
 export interface GameStoreState {
   game: GameState;
@@ -71,40 +42,6 @@ export interface GameStoreState {
 }
 
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
-
-function createInitialGameState(fen: string = STARTING_FEN): GameState {
-  rules.reset(fen);
-  const currentStatus = rules.status();
-  return {
-    id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'game-1',
-    fen,
-    pgn: '',
-    moves: [],
-    uciMoves: [],
-    status: currentStatus.status,
-    winner: currentStatus.winner,
-    mode: 'computer',
-    humanSide: 'w',
-    level: 2,
-    clock: null,
-    startedAt: Date.now(),
-    savedAt: Date.now(),
-  };
-}
-
-function createInitialUiState(): UiState {
-  return {
-    selected: null,
-    targets: [],
-    pendingPromotion: null,
-    reviewPly: null,
-    flipped: false,
-    theme: 'default',
-    soundOn: true,
-    animationOn: true,
-    showCoords: true,
-  };
-}
 
 export const useGameStore = create<GameStoreState>((set, get) => ({
   game: createInitialGameState(),
