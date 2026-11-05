@@ -7,12 +7,12 @@ import {
   canUndo,
   createInitialGameState,
   createInitialUiState,
-  getPliesToUndo,
   getRejectionMessage,
   getResignWinner,
   getTurn,
   isGameOver,
 } from './selectors.ts';
+import { executeUndoPlies, validateMoveIntent } from './storeHelpers.ts';
 import type { GameState, RejectionReason, ToastNotification, UiState } from './types.ts';
 
 export { STARTING_FEN, canUndo, getPliesToUndo, getRejectionMessage, getTurn, isCheck, isGameOver } from './selectors.ts';
@@ -23,8 +23,16 @@ export interface GameStoreState {
   toast: ToastNotification | null;
   lastMove: [string, string] | null;
   announcedMove: string | null;
+  engineToken: number;
+  isThinking: boolean;
+  engineFailed: boolean;
 
   attemptMove: (from: string, to: string, promotion?: string, isEngine?: boolean) => boolean;
+  applyEngineMove: (token: number, uci: string) => boolean;
+  setThinking: (thinking: boolean) => void;
+  setEngineFailed: (failed: boolean) => void;
+  setEngineToken: (token: number) => void;
+  requestEngineToken: () => number;
   selectSquare: (square: string) => void;
   clearSelection: () => void;
   cancelPromotion: () => void;
@@ -48,46 +56,24 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
   toast: null,
   lastMove: null,
   announcedMove: null,
+  engineToken: 0,
+  isThinking: false,
+  engineFailed: false,
 
   attemptMove: (from: string, to: string, promotion?: string, isEngine?: boolean): boolean => {
     const state = get();
-    const currentFen = state.game.fen;
-    const currentTurn = getTurn(currentFen);
-
-    if (isGameOver(state.game.status) || state.ui.reviewPly !== null) return false;
-    if (state.game.mode === 'computer') {
-      if (isEngine && currentTurn === state.game.humanSide) return false;
-      if (!isEngine && currentTurn !== state.game.humanSide) {
-        get().setRejectionToast('wrong-turn');
-        return false;
-      }
-    }
-
-    rules.reset(currentFen);
-    const piece = rules.getPiece(from);
-    if (!piece || piece.color !== currentTurn) {
-      get().setRejectionToast('wrong-turn');
-      return false;
-    }
-
-    const legalTargets = rules.legalFrom(from);
-    if (!legalTargets.includes(to)) {
-      get().setRejectionToast(rules.getRejectionReason(from, to));
+    const check = validateMoveIntent(state.game, state.ui, from, to, isEngine);
+    if (!check.valid) {
+      if (check.reason) get().setRejectionToast(check.reason);
       set((s) => ({ ui: { ...s.ui, selected: null, targets: [] } }));
       return false;
     }
-
-    const isPromotion =
-      piece.type === 'p' &&
-      ((piece.color === 'w' && to.endsWith('8')) || (piece.color === 'b' && to.endsWith('1')));
-
-    if (isPromotion && !promotion) {
-      set((s) => ({
-        ui: { ...s.ui, pendingPromotion: { from, to }, selected: null, targets: [] },
-      }));
+    if (check.isPromotion && !promotion) {
+      set((s) => ({ ui: { ...s.ui, pendingPromotion: { from, to }, selected: null, targets: [] } }));
       return false;
     }
 
+    const currentTurn = getTurn(state.game.fen);
     const result = rules.apply(from, to, promotion);
     const sideLabel = currentTurn === 'w' ? 'White' : 'Black';
     syncPgnHeaders({
@@ -111,8 +97,36 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
       ui: { ...s.ui, selected: null, targets: [], pendingPromotion: null },
       lastMove: [from, to],
       announcedMove: `${sideLabel} plays ${result.san}`,
+      engineToken: isEngine ? s.engineToken : s.engineToken + 1,
     }));
     return true;
+  },
+
+  applyEngineMove: (token: number, uci: string): boolean => {
+    const state = get();
+    // Guard 1: token is current
+    if (token !== state.engineToken) return false;
+    // Guard 2: it is still the engine's turn
+    const turn = getTurn(state.game.fen);
+    if (state.game.mode !== 'computer' || turn === state.game.humanSide) return false;
+    // Guard 3: status is playing or check
+    if (state.game.status !== 'playing' && state.game.status !== 'check') return false;
+
+    const from = uci.slice(0, 2);
+    const to = uci.slice(2, 4);
+    const promotion = uci.length > 4 ? uci.slice(4, 5) : undefined;
+    set((s) => ({ engineToken: s.engineToken + 1, isThinking: false }));
+    return get().attemptMove(from, to, promotion, true);
+  },
+
+  setThinking: (isThinking: boolean) => set({ isThinking }),
+  setEngineFailed: (failed: boolean) =>
+    set((s) => ({ engineFailed: failed, isThinking: false, game: failed ? { ...s.game, mode: 'local' } : s.game })),
+  setEngineToken: (engineToken: number) => set({ engineToken }),
+  requestEngineToken: (): number => {
+    const next = get().engineToken + 1;
+    set({ engineToken: next });
+    return next;
   },
 
   selectSquare: (square: string): void => {
@@ -123,7 +137,6 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
 
     rules.reset(state.game.fen);
     const piece = rules.getPiece(square);
-
     if (state.ui.selected === square) {
       set((s) => ({ ui: { ...s.ui, selected: null, targets: [] } }));
       return;
@@ -141,17 +154,13 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
 
   clearSelection: () => set((s) => ({ ui: { ...s.ui, selected: null, targets: [] } })),
   cancelPromotion: () => set((s) => ({ ui: { ...s.ui, pendingPromotion: null, selected: null, targets: [] } })),
-  confirmPromotion: (piece: 'q' | 'r' | 'b' | 'n'): boolean => {
-    const pending = get().ui.pendingPromotion;
-    return pending ? get().attemptMove(pending.from, pending.to, piece) : false;
-  },
-
+  confirmPromotion: (piece) =>
+    get().ui.pendingPromotion ? get().attemptMove(get().ui.pendingPromotion!.from, get().ui.pendingPromotion!.to, piece) : false,
   showToast: (message: string, reason?: RejectionReason): void => {
     if (toastTimer) clearTimeout(toastTimer);
     set({ toast: { id: String(Date.now()), message, ...(reason ? { reason } : {}) } });
     toastTimer = setTimeout(() => get().dismissToast(), 3000);
   },
-
   setRejectionToast: (reason: RejectionReason) => get().showToast(getRejectionMessage(reason), reason),
   dismissToast: () => {
     if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
@@ -162,7 +171,10 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
     rules.reset(customFen);
     const initial = createInitialGameState(customFen ?? STARTING_FEN);
     syncPgnHeaders(initial);
-    set({ game: initial, ui: createInitialUiState(), toast: null, lastMove: null, announcedMove: null });
+    set((s) => ({
+      game: initial, ui: createInitialUiState(), toast: null, lastMove: null,
+      announcedMove: null, engineToken: s.engineToken + 1, isThinking: false,
+    }));
   },
 
   loadFen: (fen: string): boolean => {
@@ -171,7 +183,10 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
     const { mode, humanSide, level } = get().game;
     const newGame = { ...createInitialGameState(trimmed), mode, humanSide, level };
     syncPgnHeaders(newGame);
-    set({ game: newGame, ui: createInitialUiState(), toast: null, lastMove: null, announcedMove: null });
+    set((s) => ({
+      game: newGame, ui: createInitialUiState(), toast: null, lastMove: null,
+      announcedMove: null, engineToken: s.engineToken + 1, isThinking: false,
+    }));
     return true;
   },
 
@@ -181,30 +196,14 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
       get().showToast(en.undoStart);
       return false;
     }
-    const plies = getPliesToUndo(state.game);
-    if (state.game.pgn) {
-      try { rules.loadPgn(state.game.pgn); } catch {}
-    }
-    for (let i = 0; i < plies; i++) rules.undo();
-    const newMoves = state.game.moves.slice(0, state.game.moves.length - plies);
-    const newUci = state.game.uciMoves.slice(0, state.game.uciMoves.length - plies);
-    const cur = rules.status();
-    syncPgnHeaders({ mode: state.game.mode, humanSide: state.game.humanSide, status: cur.status, winner: cur.winner });
-    const last = newUci[newUci.length - 1];
+    const undone = executeUndoPlies(state.game);
     set((s) => ({
-      game: {
-        ...s.game,
-        fen: rules.fen(),
-        status: cur.status,
-        winner: cur.winner,
-        moves: newMoves,
-        uciMoves: newUci,
-        pgn: rules.pgn(),
-        savedAt: Date.now(),
-      },
+      game: { ...s.game, ...undone, savedAt: Date.now() },
       ui: { ...s.ui, selected: null, targets: [], pendingPromotion: null, reviewPly: null },
-      lastMove: last ? [last.slice(0, 2), last.slice(2, 4)] : null,
+      lastMove: undone.lastMove,
       announcedMove: null,
+      engineToken: s.engineToken + 1,
+      isThinking: false,
     }));
     return true;
   },
@@ -218,6 +217,8 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
       game: { ...s.game, status: 'resigned', winner, pgn: rules.pgn(), savedAt: Date.now() },
       ui: { ...s.ui, selected: null, targets: [], pendingPromotion: null },
       announcedMove: null,
+      engineToken: s.engineToken + 1,
+      isThinking: false,
     }));
   },
 

@@ -43,6 +43,14 @@ describe('Game store and move pipeline', () => {
     });
   });
 
+  describe('Default configuration', () => {
+    it('initialises with default mode "computer" and humanSide "w"', () => {
+      const store = useGameStore.getState();
+      expect(store.game.mode).toBe('computer');
+      expect(store.game.humanSide).toBe('w');
+    });
+  });
+
   describe('attemptMove pipeline', () => {
     it('plays legal move 1. e4 in a single atomic store update', () => {
       const store = useGameStore.getState();
@@ -61,6 +69,7 @@ describe('Game store and move pipeline', () => {
     });
 
     it('allows Black to play a move after White plays a move in local mode', () => {
+      useGameStore.setState((s) => ({ game: { ...s.game, mode: 'local' } }));
       const store = useGameStore.getState();
       expect(store.game.mode).toBe('local');
       expect(getTurn(store.game.fen)).toBe('w');
@@ -85,6 +94,7 @@ describe('Game store and move pipeline', () => {
     });
 
     it('plays sequence e2e4, e7e5, g1f3, b8c6, f1c4, g8f6 and advances FEN on every ply', () => {
+      useGameStore.setState((s) => ({ game: { ...s.game, mode: 'local' } }));
       const sequence = [
         { from: 'e2', to: 'e4', ply: 1 },
         { from: 'e7', to: 'e5', ply: 2 },
@@ -406,6 +416,7 @@ describe('Game store and move pipeline', () => {
     });
 
     it('takes back one ply in local mode so the other side is to move', () => {
+      useGameStore.setState((s) => ({ game: { ...s.game, mode: 'local' } }));
       const store = useGameStore.getState();
       expect(store.game.mode).toBe('local');
 
@@ -426,6 +437,7 @@ describe('Game store and move pipeline', () => {
     });
 
     it('takes back exactly one ply in a multi-move local game', () => {
+      useGameStore.setState((s) => ({ game: { ...s.game, mode: 'local' } }));
       const store = useGameStore.getState();
       store.attemptMove('e2', 'e4');
       store.attemptMove('e7', 'e5');
@@ -501,6 +513,7 @@ describe('Game store and move pipeline', () => {
     });
 
     it('allows undo from checkmate to resume active play', () => {
+      useGameStore.setState((s) => ({ game: { ...s.game, mode: 'local' } }));
       const store = useGameStore.getState();
       // Fool's mate: 1. f3 e5 2. g4 Qh4#
       store.attemptMove('f2', 'f3');
@@ -559,6 +572,7 @@ describe('Game store and move pipeline', () => {
     });
 
     it('after a resignation win for White, pgn() contains [Result "1-0"] and ends with 1-0', () => {
+      useGameStore.setState((s) => ({ game: { ...s.game, mode: 'local' } }));
       const store = useGameStore.getState();
       store.attemptMove('e2', 'e4');
       // Black's turn in local mode: Black resigns, so White wins

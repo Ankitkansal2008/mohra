@@ -162,7 +162,7 @@ export function createInitialGameState(fen: string = STARTING_FEN): GameState {
     uciMoves: [],
     status: currentStatus.status,
     winner: currentStatus.winner,
-    mode: 'local',
+    mode: 'computer',
     humanSide: 'w',
     level: 2,
     clock: null,
