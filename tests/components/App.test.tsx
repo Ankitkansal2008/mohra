@@ -26,3 +26,4 @@ describe('App component', () => {
     expect(html).toContain('chessboard-piece-bK-e8');
   });
 });
+
