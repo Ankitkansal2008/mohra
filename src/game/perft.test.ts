@@ -1,4 +1,3 @@
-// @ts-expect-error vitest is provided at test runtime
 import { beforeEach, describe, expect, it } from 'vitest';
 import { apply, legalMovesAll, reset, undo } from './rules.ts';
 

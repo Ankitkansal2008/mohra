@@ -105,3 +105,4 @@ describe('BoardView component', () => {
     expect(html).toContain('var(--board-legal-dot');
   });
 });
+

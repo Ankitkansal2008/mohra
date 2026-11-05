@@ -37,3 +37,4 @@ export const BOARD_HIGHLIGHTS = {
     borderRadius: '50%',
   },
 } satisfies Record<string, React.CSSProperties>;
+
