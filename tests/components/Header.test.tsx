@@ -31,3 +31,4 @@ describe('Header and FenLoader component', () => {
     expect(html).toContain('class="fen-loader-button"');
   });
 });
+
