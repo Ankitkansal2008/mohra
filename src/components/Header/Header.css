@@ -1,0 +1,50 @@
+.gambit-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: var(--spacing-8) var(--spacing-16);
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+}
+
+.gambit-header:empty {
+  display: none;
+}
+
+.fen-loader-form {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-8);
+}
+
+.fen-loader-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+.fen-loader-input {
+  font-size: 13px;
+  padding: var(--spacing-4) var(--spacing-8);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-6);
+  background-color: var(--color-panel);
+  color: var(--color-ink);
+  width: 260px;
+  max-width: 100%;
+}
+
+.fen-loader-input:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.fen-loader-button {
+  font-size: 13px;
+  padding: var(--spacing-4) var(--spacing-12);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-6);
+  background-color: var(--color-primary);
+  color: var(--color-panel);
+  cursor: pointer;
+}

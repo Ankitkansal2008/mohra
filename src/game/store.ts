@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { en } from '../copy/en.ts';
 import { rules } from './rules.ts';
 import {
   STARTING_FEN,
@@ -37,8 +38,10 @@ export interface GameStoreState {
   cancelPromotion: () => void;
   confirmPromotion: (piece: 'q' | 'r' | 'b' | 'n') => boolean;
   setRejectionToast: (reason: RejectionReason) => void;
+  showToast: (message: string, reason?: RejectionReason) => void;
   dismissToast: () => void;
   resetGame: (customFen?: string) => void;
+  loadFen: (fen: string) => boolean;
 }
 
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
@@ -83,9 +86,7 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
     if (!legalTargets.includes(to)) {
       const reason = rules.getRejectionReason(from, to);
       get().setRejectionToast(reason);
-      set((s) => ({
-        ui: { ...s.ui, selected: null, targets: [] },
-      }));
+      set((s) => ({ ui: { ...s.ui, selected: null, targets: [] } }));
       return false;
     }
 
@@ -97,12 +98,7 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
 
     if (isPawnPromotion && !promotion) {
       set((s) => ({
-        ui: {
-          ...s.ui,
-          pendingPromotion: { from, to },
-          selected: null,
-          targets: [],
-        },
+        ui: { ...s.ui, pendingPromotion: { from, to }, selected: null, targets: [] },
       }));
       return false;
     }
@@ -179,40 +175,26 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
   },
 
   clearSelection: (): void => {
-    set((s) => ({
-      ui: { ...s.ui, selected: null, targets: [] },
-    }));
+    set((s) => ({ ui: { ...s.ui, selected: null, targets: [] } }));
   },
 
   cancelPromotion: (): void => {
-    set((s) => ({
-      ui: { ...s.ui, pendingPromotion: null, selected: null, targets: [] },
-    }));
+    set((s) => ({ ui: { ...s.ui, pendingPromotion: null, selected: null, targets: [] } }));
   },
 
   confirmPromotion: (piece: 'q' | 'r' | 'b' | 'n'): boolean => {
     const pending = get().ui.pendingPromotion;
-    if (!pending) return false;
-    return get().attemptMove(pending.from, pending.to, piece);
+    return pending ? get().attemptMove(pending.from, pending.to, piece) : false;
+  },
+
+  showToast: (message: string, reason?: RejectionReason): void => {
+    if (toastTimer) clearTimeout(toastTimer);
+    set({ toast: { id: String(Date.now()), message, ...(reason ? { reason } : {}) } });
+    toastTimer = setTimeout(() => get().dismissToast(), 3000);
   },
 
   setRejectionToast: (reason: RejectionReason): void => {
-    if (toastTimer) {
-      clearTimeout(toastTimer);
-    }
-
-    const message = getRejectionMessage(reason);
-    set({
-      toast: {
-        id: String(Date.now()),
-        reason,
-        message,
-      },
-    });
-
-    toastTimer = setTimeout(() => {
-      get().dismissToast();
-    }, 3000);
+    get().showToast(getRejectionMessage(reason), reason);
   },
 
   dismissToast: (): void => {
@@ -224,14 +206,36 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
   },
 
   resetGame: (customFen?: string): void => {
-    const fen = customFen ?? STARTING_FEN;
     set({
-      game: createInitialGameState(fen),
+      game: createInitialGameState(customFen ?? STARTING_FEN),
       ui: createInitialUiState(),
       toast: null,
       lastMove: null,
       announcedMove: null,
     });
+  },
+
+  loadFen: (fen: string): boolean => {
+    const trimmedFen = fen.trim();
+    const previousFen = get().game.fen;
+    try {
+      rules.reset(trimmedFen);
+    } catch {
+      // Revert rules to active game to keep state untouched on invalid FEN
+      rules.reset(previousFen);
+      get().showToast(en.invalidPosition);
+      return false;
+    }
+
+    const { mode, humanSide, level } = get().game;
+    set({
+      game: { ...createInitialGameState(trimmedFen), mode, humanSide, level },
+      ui: createInitialUiState(),
+      toast: null,
+      lastMove: null,
+      announcedMove: null,
+    });
+    return true;
   },
 }));
 

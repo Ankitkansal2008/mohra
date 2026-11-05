@@ -322,4 +322,77 @@ describe('Game store and move pipeline', () => {
       expect(useGameStore.getState().toast).toBeNull();
     });
   });
+
+  describe('Position loader (loadFen)', () => {
+    it('loads a valid FEN, resetting to fresh GameState while preserving mode and humanSide', () => {
+      // Configure existing custom game state
+      useGameStore.setState({
+        game: {
+          ...useGameStore.getState().game,
+          mode: 'computer',
+          humanSide: 'b',
+          moves: ['e4', 'e5'],
+          uciMoves: ['e2e4', 'e7e5'],
+          pgn: '1. e4 e5',
+        },
+      });
+
+      const validFen = 'r1bqkb1r/pppp1Qpp/2n5/4p3/2B1n3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4'; // Scholar's mate
+      const success = useGameStore.getState().loadFen(validFen);
+
+      expect(success).toBe(true);
+
+      const state = useGameStore.getState();
+      expect(state.game.fen).toBe(validFen);
+      expect(state.game.mode).toBe('computer');
+      expect(state.game.humanSide).toBe('b');
+      expect(state.game.status).toBe('checkmate');
+      expect(state.game.winner).toBe('w');
+      expect(state.game.moves).toHaveLength(0);
+      expect(state.game.uciMoves).toHaveLength(0);
+      expect(state.game.pgn).toBe('');
+      expect(state.toast).toBeNull();
+      expect(state.lastMove).toBeNull();
+      expect(state.announcedMove).toBeNull();
+    });
+
+    it('rejects an invalid FEN, shows "That position is not valid." toast, and leaves game untouched', () => {
+      // Play a move first to establish initial state
+      useGameStore.getState().attemptMove('e2', 'e4');
+      const stateBefore = useGameStore.getState();
+      const fenBefore = stateBefore.game.fen;
+      const movesBefore = [...stateBefore.game.moves];
+
+      // Attempt invalid FEN (malformed structure)
+      const success = useGameStore.getState().loadFen('invalid-fen-string');
+
+      expect(success).toBe(false);
+
+      const stateAfter = useGameStore.getState();
+      // Game state left completely untouched
+      expect(stateAfter.game.fen).toBe(fenBefore);
+      expect(stateAfter.game.moves).toEqual(movesBefore);
+      expect(stateAfter.game.mode).toBe(stateBefore.game.mode);
+      expect(stateAfter.game.humanSide).toBe(stateBefore.game.humanSide);
+
+      // Toast displays exact expected string from en.ts
+      expect(stateAfter.toast).not.toBeNull();
+      expect(stateAfter.toast?.message).toBe('That position is not valid.');
+      expect(stateAfter.toast?.message).toBe(en.invalidPosition);
+    });
+
+    it('rejects an illegal chess position (missing kings), leaves game untouched, and shows toast', () => {
+      const fenBefore = useGameStore.getState().game.fen;
+
+      // 8 empty ranks with no kings
+      const invalidPosition = '8/8/8/8/8/8/8/8 w - - 0 1';
+      const success = useGameStore.getState().loadFen(invalidPosition);
+
+      expect(success).toBe(false);
+
+      const stateAfter = useGameStore.getState();
+      expect(stateAfter.game.fen).toBe(fenBefore);
+      expect(stateAfter.toast?.message).toBe('That position is not valid.');
+    });
+  });
 });

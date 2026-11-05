@@ -7,6 +7,9 @@
   --color-muted: #5A5A5A;
   --color-primary: #2F4F3E;
   --color-danger: #C0392B;
+  --color-surface: #FAFAF7;
+  --color-panel: #FFFFFF;
+  --color-border: #E2E6DE;
 
   --spacing-4: 4px;
   --spacing-8: 8px;
@@ -51,6 +54,9 @@
   --color-muted: #5A5A5A;
   --color-primary: #2F4F3E;
   --color-danger: #C0392B;
+  --color-surface: #FAFAF7;
+  --color-panel: #FFFFFF;
+  --color-border: #E2E6DE;
 
   /* Spacing scale: 4, 8, 12, 16, 24, 32, 48 */
   --space-4: 4px;

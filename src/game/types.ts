@@ -57,6 +57,6 @@ export type RejectionReason =
 
 export interface ToastNotification {
   id: string;
-  reason: RejectionReason;
+  reason?: RejectionReason;
   message: string;
 }

@@ -44,6 +44,14 @@ export const en: Record<string, string> = {
   pgnCopied: 'Game copied as PGN.',
   engineFailed: 'The computer opponent could not start. You can keep playing on this device.',
   offline: 'You are offline. The game still works; only the online features will not.',
+
+  // Dev position loader
+  loadFen: 'Load FEN',
+  loadFenLabel: 'Load FEN',
+  loadFenPlaceholder: 'Paste FEN...',
+  loadFenSubmit: 'Load',
+  invalidPosition: 'That position is not valid.',
+  invalidFen: 'That position is not valid.',
 };
 
 export const copy: Record<string, string> = en;
