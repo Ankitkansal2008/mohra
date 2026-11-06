@@ -57,7 +57,7 @@ export const en: Record<string, string> = {
   cancel: 'Cancel',
   newGame: 'New game',
 
-  // Player labels and turn indicators
+  // Player labels, clock and turn indicators
   you: 'You',
   gambit: 'Gambit',
   player1: 'Player 1',
@@ -66,12 +66,33 @@ export const en: Record<string, string> = {
   black: 'Black',
   toMove: 'To move',
   levelLabel: 'Level {level}',
+  playerClock: '{player} clock: {time}',
 
-  // Moves list & review mode
+  // Moves list, drawer & review mode
   moves: 'Moves',
   noMovesYet: 'No moves yet. White to play.',
   returnToGame: 'Return to game',
   reviewingMove: 'Reviewing move {move}',
+  movesDrawerTitle: 'Moves',
+  closeMovesDrawer: 'Close moves list',
+  openMovesDrawer: 'Moves',
+
+  // Screen reader piece & square announcements (UI/UX Section 9)
+  piecePawn: 'pawn',
+  pieceKnight: 'knight',
+  pieceBishop: 'bishop',
+  pieceRook: 'rook',
+  pieceQueen: 'queen',
+  pieceKing: 'king',
+  moveAnnounce: '{side} plays {piece} to {square}',
+  moveAnnounceCastleKingside: '{side} castles kingside',
+  moveAnnounceCastleQueenside: '{side} castles queenside',
+  moveAnnouncePromotion: '{side} plays pawn to {square}, promotes to {piece}',
+  checkSuffix: ', check',
+  checkmateSuffix: ', checkmate',
+  squareEmpty: '{square}, empty',
+  squarePiece: '{square}, {color} {piece}',
+  boardKeyboardInstructions: 'Chess board. Use arrow keys to navigate squares, Enter or Space to select and move, Escape to cancel, F to flip.',
 
   // Persistence & Resume
   resumeGame: 'Resume game - {turn} to move, move {move}',

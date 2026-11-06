@@ -28,6 +28,25 @@
   margin: 0;
 }
 
+.gambit-move-panel-close {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--color-muted, #5A5A5A);
+  cursor: pointer;
+  padding: var(--space-4, 4px) var(--space-8, 8px);
+  border-radius: var(--radius-6, 6px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--duration-120, 120ms);
+}
+
+.gambit-move-panel-close:hover {
+  color: var(--color-ink, #1A1A1A);
+}
+
 .gambit-review-banner {
   display: flex;
   align-items: center;

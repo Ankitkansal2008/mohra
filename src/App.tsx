@@ -8,6 +8,7 @@ import { MoveListPanel } from './components/Panels/MoveListPanel.tsx';
 import { ResumeBanner } from './components/Panels/ResumeBanner.tsx';
 import { ThinkingIndicator } from './components/Panels/ThinkingIndicator.tsx';
 import { TurnIndicator } from './components/Panels/TurnIndicator.tsx';
+import { en } from './copy/en.ts';
 import { connectBridgeToStore, initEngine } from './engine/bridge.ts';
 import { useGameStore } from './game/store.ts';
 import type { GameState } from './game/types.ts';
@@ -18,6 +19,29 @@ export function App(): React.JSX.Element {
   const [savedGame, setSavedGame] = useState<GameState | null>(null);
   const [showResumeBanner, setShowResumeBanner] = useState<boolean>(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const [isMovesOpen, setIsMovesOpen] = useState<boolean>(false);
+
+  const movesCount = useGameStore((s) => s.game.moves.length);
+  const reviewPly = useGameStore((s) => s.ui.reviewPly);
+
+  // Automatically reveal move panel when entering review mode from ResultDialog
+  useEffect(() => {
+    if (reviewPly !== null) {
+      setIsMovesOpen(true);
+    }
+  }, [reviewPly]);
+
+  // Close drawer or bottom sheet on Escape key press
+  useEffect(() => {
+    if (!isMovesOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsMovesOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMovesOpen]);
 
   useEffect(() => {
     initEngine();
@@ -46,8 +70,22 @@ export function App(): React.JSX.Element {
 
   return (
     <div className="app-shell">
-      <Header onOpenSettings={() => setIsSettingsOpen(true)} />
+      <Header
+        onOpenSettings={() => setIsSettingsOpen(true)}
+        onToggleMoves={() => setIsMovesOpen((prev) => !prev)}
+        isMovesOpen={isMovesOpen}
+        movesCount={movesCount}
+      />
+
       <main className="board-container">
+        {/* Left column (240px on >=1100px). On <1100px, display: contents places indicators top & bottom */}
+        <div className="left-column">
+          <TurnIndicator position="top" />
+          <div className="left-column-spacer" />
+          <TurnIndicator position="bottom" />
+        </div>
+
+        {/* Center column on >=1100px. On <1100px, display: contents preserves mobile-first order */}
         <div className="board-layout">
           {showResumeBanner && savedGame ? (
             <ResumeBanner
@@ -56,14 +94,27 @@ export function App(): React.JSX.Element {
             />
           ) : null}
           <EngineBanner />
-          <TurnIndicator position="top" />
           <BoardView />
-          <TurnIndicator position="bottom" />
           <ThinkingIndicator />
           <Controls />
         </div>
-        <div className="sidebar-layout">
-          <MoveListPanel />
+
+        {/* Right column on >=1100px (280px). On 768-1099px: side drawer. Below 768px: bottom sheet */}
+        <div
+          className={`sidebar-layout ${isMovesOpen ? 'sidebar-open' : ''}`}
+          role="region"
+          aria-label={en.moves}
+        >
+          {isMovesOpen ? (
+            <div
+              className="gambit-drawer-backdrop"
+              role="presentation"
+              onClick={() => setIsMovesOpen(false)}
+            />
+          ) : null}
+          <div className="sidebar-inner">
+            <MoveListPanel onClose={() => setIsMovesOpen(false)} />
+          </div>
         </div>
       </main>
 

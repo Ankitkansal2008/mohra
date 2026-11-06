@@ -6,7 +6,13 @@
   --color-ink: #1A1A1A;
   --color-muted: #5A5A5A;
   --color-primary: #2F4F3E;
+  --color-primary-hover: #253F31;
+  --color-accent: #8A9A5B;
+  --color-success: #3F7D4E;
+  --color-warning: #C8892E;
   --color-danger: #C0392B;
+  --color-info: #2F6F9F;
+  --color-focus: #1A73E8;
   --color-surface: #FAFAF7;
   --color-panel: #FFFFFF;
   --color-border: #E2E6DE;
@@ -22,9 +28,14 @@
   --radius-6: 6px;
   --radius-10: 10px;
   --radius-14: 14px;
+  --radius-pill: 999px;
 
+  --duration-80: 80ms;
+  --duration-90: 90ms;
   --duration-120: 120ms;
+  --duration-150: 150ms;
   --duration-180: 180ms;
+  --duration-220: 220ms;
   --duration-260: 260ms;
 }
 
@@ -53,7 +64,13 @@
   --color-ink: #1A1A1A;
   --color-muted: #5A5A5A;
   --color-primary: #2F4F3E;
+  --color-primary-hover: #253F31;
+  --color-accent: #8A9A5B;
+  --color-success: #3F7D4E;
+  --color-warning: #C8892E;
   --color-danger: #C0392B;
+  --color-info: #2F6F9F;
+  --color-focus: #1A73E8;
   --color-surface: #FAFAF7;
   --color-panel: #FFFFFF;
   --color-border: #E2E6DE;
@@ -74,15 +91,31 @@
   --spacing-32: 32px;
   --spacing-48: 48px;
 
-  /* Radii: 6, 10, 14 */
+  /* Radii: 6, 10, 14, 999 */
   --radius-6: 6px;
   --radius-10: 10px;
   --radius-14: 14px;
+  --radius-pill: 999px;
 
-  /* Motion durations: 120, 180, 260ms */
+  /* Elevation */
+  --elevation-1: 0 2px 8px rgba(20, 26, 20, 0.10);
+
+  /* Touch minimums */
+  --touch-min: 44px;
+  --touch-gap: 8px;
+
+  /* Motion durations */
+  --duration-80: 80ms;
+  --duration-90: 90ms;
   --duration-120: 120ms;
+  --duration-150: 150ms;
   --duration-180: 180ms;
+  --duration-220: 220ms;
   --duration-260: 260ms;
+
+  /* Coordinates */
+  --coord-font-size: 11px;
+  --coord-color: #5A5A5A;
 }
 
 /* Board layout container: square aspect-ratio, minimum 40px square (320px board) */
@@ -92,9 +125,12 @@
   aspect-ratio: 1 / 1;
 }
 
-/* Coordinate labels hidden below 360px viewport width */
-@media (max-width: 359.98px) {
-  .gambit-board-wrapper [data-square] > span:first-child {
-    display: none !important;
+/* UI/UX Design Section 9 & 10: prefers-reduced-motion removes all animation */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

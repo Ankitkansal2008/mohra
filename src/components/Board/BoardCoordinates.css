@@ -1,0 +1,86 @@
+.gambit-board-coords-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.gambit-board-ranks-row {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: stretch;
+}
+
+.gambit-coords-ranks {
+  display: flex;
+  flex-direction: column;
+  width: 16px;
+  flex-shrink: 0;
+  justify-content: space-around;
+  align-items: center;
+  user-select: none;
+}
+
+.gambit-coord-rank-label {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--coord-font-size, 11px);
+  color: var(--coord-color, var(--color-muted, #5A5A5A));
+  line-height: 1;
+  font-weight: 500;
+}
+
+.gambit-board-core-slot {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+  aspect-ratio: 1 / 1;
+}
+
+.gambit-coords-files {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 16px;
+  flex-shrink: 0;
+  align-items: center;
+  user-select: none;
+}
+
+.gambit-coord-spacer {
+  width: 16px;
+  flex-shrink: 0;
+}
+
+.gambit-coord-files-list {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  align-items: center;
+}
+
+.gambit-coord-file-label {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--coord-font-size, 11px);
+  color: var(--coord-color, var(--color-muted, #5A5A5A));
+  line-height: 1;
+  font-weight: 500;
+}
+
+/* UI/UX Section 4: Coordinates outside board are hidden below 360px viewport width */
+@media (max-width: 359.98px) {
+  .gambit-coords-ranks,
+  .gambit-coords-files {
+    display: none !important;
+  }
+}

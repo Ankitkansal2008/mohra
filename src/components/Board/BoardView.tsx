@@ -1,24 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { en } from '../../copy/en.ts';
-import {
-  findKingSquare,
-  getFenAtPly,
-  getTurn,
-  isCheck,
-  isGameOver,
-  isSquareOccupied,
-} from '../../game/selectors.ts';
+import { findKingSquare, getFenAtPly, getTurn, isCheck, isGameOver } from '../../game/selectors.ts';
 import { useGameStore } from '../../game/store.ts';
 import type { GameStatus, Side } from '../../game/types.ts';
+import { formatLiveMoveAnnouncement } from '../../lib/moveAnnouncement.ts';
 import type { BoardTheme } from '../../styles/boardTokens.ts';
-import {
-  BOARD_HIGHLIGHTS,
-  BOARD_THEMES,
-} from '../../styles/boardTokens.ts';
+import { BOARD_THEMES } from '../../styles/boardTokens.ts';
 import { ResultDialog } from '../Dialogs/ResultDialog.tsx';
 import { Toast } from '../ui/Toast.tsx';
+import { BoardCoordinates } from './BoardCoordinates.tsx';
+import { BoardScreenReaderGrid } from './BoardScreenReaderGrid.tsx';
+import { buildSquareStyles } from './boardStyles.ts';
 import { PromotionOverlay } from './PromotionOverlay.tsx';
+import { useBoardKeyboard } from './useBoardKeyboard.ts';
 
 export interface BoardViewProps {
   readonly fen?: string;
@@ -27,11 +22,7 @@ export interface BoardViewProps {
   readonly boardOrientation?: 'white' | 'black';
   readonly theme?: BoardTheme;
   readonly selected?: string | null;
-  readonly lastMove?:
-    | readonly [string, string]
-    | { readonly from: string; readonly to: string }
-    | readonly string[]
-    | null;
+  readonly lastMove?: readonly [string, string] | { readonly from: string; readonly to: string } | readonly string[] | null;
   readonly legalTargets?: readonly string[] | null;
   readonly check?: string | null;
   readonly interactive?: boolean;
@@ -93,49 +84,22 @@ export function BoardView({
   const orientation = propBoardOrientation ?? (storeUi.flipped ? 'black' : 'white');
   const isInteractive = interactive && !isReviewing && !isGameOver(status);
 
-  const activeCheck =
-    propCheck !== undefined
-      ? propCheck
-      : isCheck(status)
-        ? findKingSquare(fen, turn)
-        : null;
+  // Keyboard navigation hook provides single-tab-stop board play (UI/UX Section 9).
+  const { cursorSquare, isFocused, handleFocus, handleBlur, handleKeyDown } = useBoardKeyboard({
+    orientation,
+    isInteractive,
+    selected,
+    onSelectSquare: selectSquare,
+    onAttemptMove: attemptMove,
+    onCancelPromotion: cancelPromotion,
+    hasPendingPromotion: storeUi.pendingPromotion !== null,
+  });
 
+  const activeCheck = propCheck !== undefined ? propCheck : isCheck(status) ? findKingSquare(fen, turn) : null;
   const colors = BOARD_THEMES[theme] ?? BOARD_THEMES.default;
-  const squareStyles: Record<string, React.CSSProperties> = {};
-
-  if (lastMove) {
-    const squares: readonly string[] =
-      'from' in lastMove ? [lastMove.from, lastMove.to] : lastMove;
-    for (const square of squares) {
-      if (square) {
-        squareStyles[square] = { ...squareStyles[square], ...BOARD_HIGHLIGHTS.lastMove };
-      }
-    }
-  }
-
-  if (selected) {
-    squareStyles[selected] = { ...squareStyles[selected], ...BOARD_HIGHLIGHTS.selected };
-  }
-
-  if (activeCheck) {
-    squareStyles[activeCheck] = { ...squareStyles[activeCheck], ...BOARD_HIGHLIGHTS.check };
-  }
-
-  if (legalTargets) {
-    for (const target of legalTargets) {
-      if (target) {
-        const isOccupied = isSquareOccupied(fen, target);
-        squareStyles[target] = {
-          ...squareStyles[target],
-          ...(isOccupied
-            ? BOARD_HIGHLIGHTS.legalTargetOccupied
-            : BOARD_HIGHLIGHTS.legalTargetEmpty),
-        };
-      }
-    }
-  }
-
+  const squareStyles = buildSquareStyles({ lastMove, selected, activeCheck, legalTargets, fen, isFocused, cursorSquare });
   const animationDuration = reducedMotion || !storeUi.animationOn ? 0 : 150;
+  const liveAnnouncement = formatLiveMoveAnnouncement(storeAnnounced);
 
   return (
     <div
@@ -148,19 +112,18 @@ export function BoardView({
         pointerEvents: interactive ? 'auto' : 'none',
         ...style,
       }}
-      aria-label={en.boardAriaLabel}
+      tabIndex={0}
+      role="grid"
+      aria-label={en.boardKeyboardInstructions}
+      aria-rowcount={8}
+      aria-colcount={8}
+      aria-activedescendant={isFocused ? `gambit-cell-${cursorSquare}` : undefined}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
     >
       {storeToast ? (
-        <div
-          style={{
-            position: 'absolute',
-            top: '8px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 60,
-            maxWidth: '90%',
-          }}
-        >
+        <div style={{ position: 'absolute', top: '8px', left: '50%', transform: 'translateX(-50%)', zIndex: 60, maxWidth: '90%' }}>
           <Toast message={storeToast.message} onDismiss={dismissToast} />
         </div>
       ) : null}
@@ -180,44 +143,35 @@ export function BoardView({
         aria-live="polite"
         aria-atomic="true"
       >
-        {storeAnnounced}
+        {liveAnnouncement}
       </div>
 
-      <Chessboard
-        options={{
-          position: fen,
-          boardOrientation: orientation,
-          lightSquareStyle: { backgroundColor: colors.light },
-          darkSquareStyle: { backgroundColor: colors.dark },
-          squareStyles,
-          animationDurationInMs: animationDuration,
-          showAnimations: animationDuration > 0,
-          showNotation: storeUi.showCoords,
-          alphaNotationStyle: { fontSize: '11px' },
-          numericNotationStyle: { fontSize: '11px' },
-          darkSquareNotationStyle: { color: 'var(--color-muted, #5A5A5A)', fontSize: '11px' },
-          lightSquareNotationStyle: { color: 'var(--color-muted, #5A5A5A)', fontSize: '11px' },
-          boardStyle: {
-            touchAction: 'none',
-            ...(isInteractive ? {} : { pointerEvents: 'none' }),
-          },
-          allowDragging: isInteractive,
-          canDragPiece: ({ piece }) => {
-            if (!isInteractive) return false;
-            return piece.pieceType[0] === turn;
-          },
-          onPieceDrop: ({ sourceSquare, targetSquare }) => {
-            if (!isInteractive || !targetSquare || sourceSquare === targetSquare) {
-              return false;
-            }
-            return attemptMove(sourceSquare, targetSquare);
-          },
-          onSquareClick: ({ square }) => {
-            if (!isInteractive) return;
-            selectSquare(square);
-          },
-        }}
-      />
+      <BoardScreenReaderGrid fen={fen} selected={selected} orientation={orientation} />
+
+      <BoardCoordinates boardOrientation={orientation} showCoords={storeUi.showCoords}>
+        <Chessboard
+          options={{
+            position: fen,
+            boardOrientation: orientation,
+            lightSquareStyle: { backgroundColor: colors.light },
+            darkSquareStyle: { backgroundColor: colors.dark },
+            squareStyles,
+            animationDurationInMs: animationDuration,
+            showAnimations: animationDuration > 0,
+            showNotation: false,
+            boardStyle: { touchAction: 'none', ...(isInteractive ? {} : { pointerEvents: 'none' }) },
+            allowDragging: isInteractive,
+            canDragPiece: ({ piece }) => (isInteractive ? piece.pieceType[0] === turn : false),
+            onPieceDrop: ({ sourceSquare, targetSquare }) => {
+              if (!isInteractive || !targetSquare || sourceSquare === targetSquare) return false;
+              return attemptMove(sourceSquare, targetSquare);
+            },
+            onSquareClick: ({ square }) => {
+              if (isInteractive) selectSquare(square);
+            },
+          }}
+        />
+      </BoardCoordinates>
 
       {storeUi.pendingPromotion ? (
         <PromotionOverlay
@@ -230,11 +184,7 @@ export function BoardView({
       ) : null}
 
       {isGameOver(status) && !isReviewing ? (
-        <ResultDialog
-          status={status}
-          winner={winner}
-          fen={fen}
-        />
+        <ResultDialog status={status} winner={winner} fen={fen} />
       ) : null}
     </div>
   );

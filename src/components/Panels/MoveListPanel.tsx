@@ -7,10 +7,12 @@ import './MoveListPanel.css';
 
 export interface MoveListPanelProps {
   readonly className?: string;
+  readonly onClose?: () => void;
 }
 
 export function MoveListPanel({
   className = '',
+  onClose,
 }: MoveListPanelProps): React.JSX.Element {
   const moves = useGameStore((s) => s.game.moves);
   const pgn = useGameStore((s) => s.game.pgn);
@@ -42,6 +44,16 @@ export function MoveListPanel({
     <aside className={`gambit-move-panel ${className}`.trim()} aria-label={en.moves}>
       <div className="gambit-move-panel-header">
         <h2 className="gambit-move-panel-title">{en.moves}</h2>
+        {onClose ? (
+          <button
+            type="button"
+            className="gambit-move-panel-close"
+            onClick={onClose}
+            aria-label={en.closeMovesDrawer}
+          >
+            ×
+          </button>
+        ) : null}
       </div>
 
       {isReviewing ? (

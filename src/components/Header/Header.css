@@ -38,6 +38,22 @@
   border-color: var(--color-primary);
 }
 
+.gambit-header-btn-active {
+  background-color: var(--color-primary);
+  color: var(--color-panel, #ffffff);
+  border-color: var(--color-primary);
+}
+
+.gambit-header-moves-btn {
+  display: none;
+}
+
+@media (max-width: 1099.98px) {
+  .gambit-header-moves-btn {
+    display: inline-flex;
+  }
+}
+
 .fen-loader-form {
   display: inline-flex;
   align-items: center;

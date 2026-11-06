@@ -76,7 +76,9 @@ export function TurnIndicator({
         <div
           className={clockClass}
           role="timer"
-          aria-label={`${playerName} clock: ${formatClock(clockMs)}`}
+          aria-label={en.playerClock
+            .replace('{player}', playerName)
+            .replace('{time}', formatClock(clockMs))}
         >
           {formatClock(clockMs)}
         </div>
