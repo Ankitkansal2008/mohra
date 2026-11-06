@@ -35,9 +35,9 @@ describe('Header component', () => {
     expect(html).toContain('Mohra');
   });
 
-  it('asserts document title is "Mohra" in index.html', () => {
+  it('asserts document title is "Mohra - play chess in your browser" in index.html', () => {
     const indexHtml = fs.readFileSync(path.resolve(__dirname, '../../index.html'), 'utf-8');
-    expect(indexHtml).toContain('<title>Mohra</title>');
+    expect(indexHtml).toContain('<title>Mohra - play chess in your browser</title>');
   });
 
   it('never renders any testing-only FEN loader control anywhere in desktop or mobile UI', () => {
