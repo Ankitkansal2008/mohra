@@ -3,6 +3,7 @@ import { en } from '../../src/copy/en.ts';
 import {
   cancelEngineSearch,
   connectBridgeToStore,
+  getEngineUrl,
   getLevelConfig,
   handleEngineFailure,
   handleWorkerMessage,
@@ -489,6 +490,80 @@ describe('Stockfish Engine Opponent', () => {
       } finally {
         (import.meta.env as { DEV: boolean }).DEV = originalDev;
         consoleSpy.mockRestore();
+      }
+    });
+  });
+
+  describe('engine asset path portability', () => {
+    it('resolves engine asset path relative to document.baseURI without hardcoded protocol', () => {
+      const originalDocument = globalThis.document;
+      try {
+        // Root domain deployment
+        (globalThis as unknown as { document: { baseURI: string } }).document = {
+          baseURI: 'https://gambit.example.com/',
+        };
+        const rootUrl = getEngineUrl();
+        expect(rootUrl).toBe('https://gambit.example.com/engine/stockfish-19-lite-single.js');
+        expect(rootUrl.endsWith('/engine/stockfish-19-lite-single.js')).toBe(true);
+
+        // Subpath deployment (e.g. GitHub Pages or reverse proxy prefix)
+        (globalThis as unknown as { document: { baseURI: string } }).document = {
+          baseURI: 'https://example.com/chess/app/',
+        };
+        const subpathUrl = getEngineUrl();
+        expect(subpathUrl).toBe('https://example.com/chess/app/engine/stockfish-19-lite-single.js');
+        expect(subpathUrl.endsWith('/engine/stockfish-19-lite-single.js')).toBe(true);
+
+        // Capacitor shell deployment
+        (globalThis as unknown as { document: { baseURI: string } }).document = {
+          baseURI: 'capacitor://localhost/',
+        };
+        const capacitorUrl = getEngineUrl();
+        expect(capacitorUrl).toBe('capacitor://localhost/engine/stockfish-19-lite-single.js');
+        expect(capacitorUrl.endsWith('/engine/stockfish-19-lite-single.js')).toBe(true);
+        expect(capacitorUrl.startsWith('capacitor://')).toBe(true);
+        expect(capacitorUrl.startsWith('http://')).toBe(false);
+        expect(capacitorUrl.startsWith('https://')).toBe(false);
+
+        // Custom mobile or desktop scheme
+        const customUrl = getEngineUrl('custom-scheme://app/root/');
+        expect(customUrl.endsWith('/engine/stockfish-19-lite-single.js')).toBe(true);
+        expect(customUrl.startsWith('custom-scheme://')).toBe(true);
+        expect(customUrl.startsWith('http://')).toBe(false);
+        expect(customUrl.startsWith('https://')).toBe(false);
+      } finally {
+        (globalThis as unknown as { document: typeof originalDocument }).document = originalDocument;
+      }
+    });
+
+    it('initializes worker with portable URL resolved from document.baseURI', () => {
+      const originalDocument = globalThis.document;
+      const originalWorker = globalThis.Worker;
+      let spawnedUrl = '';
+
+      class TestWorker extends MockWorker {
+        constructor(url: string | URL) {
+          super();
+          spawnedUrl = String(url);
+        }
+      }
+
+      try {
+        (globalThis as unknown as { document: { baseURI: string } }).document = {
+          baseURI: 'capacitor://localhost/',
+        };
+        (globalThis as unknown as { Worker: typeof Worker }).Worker = TestWorker as unknown as typeof Worker;
+
+        initEngine();
+
+        expect(spawnedUrl.endsWith('/engine/stockfish-19-lite-single.js')).toBe(true);
+        expect(spawnedUrl).toBe('capacitor://localhost/engine/stockfish-19-lite-single.js');
+        expect(spawnedUrl.startsWith('capacitor://')).toBe(true);
+        expect(spawnedUrl.startsWith('http://')).toBe(false);
+      } finally {
+        (globalThis as unknown as { document: typeof originalDocument }).document = originalDocument;
+        (globalThis as unknown as { Worker: typeof originalWorker }).Worker = originalWorker;
+        terminateEngine();
       }
     });
   });

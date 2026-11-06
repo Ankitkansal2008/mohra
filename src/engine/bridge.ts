@@ -158,15 +158,18 @@ export function cancelEngineSearch(): void {
   }
 }
 
+export function getEngineUrl(baseUri?: string): string {
+  const base = baseUri ?? (typeof document !== 'undefined' ? document.baseURI : 'http://localhost/');
+  return new URL('engine/stockfish-19-lite-single.js', base).href;
+}
+
 export function initEngine(workerFactory?: () => Worker): void {
   if (isInitialized && worker) return;
 
   const start = (): void => {
     try {
-      // Plain classic worker pointing directly to static file - no Vite bundling or module wrapper
-      worker = workerFactory
-        ? workerFactory()
-        : new Worker('/engine/stockfish-19-lite-single.js');
+      const engineUrl = getEngineUrl();
+      worker = workerFactory ? workerFactory() : new Worker(engineUrl);
       worker.onmessage = handleWorkerMessage;
       worker.onerror = (err) => {
         console.error('[Stockfish error]', err);

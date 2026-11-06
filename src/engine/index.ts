@@ -3,6 +3,7 @@ export {
   cancelEngineSearch,
   connectBridgeToStore,
   getActiveToken,
+  getEngineUrl,
   handleEngineFailure,
   handleWorkerMessage,
   initEngine,
