@@ -141,3 +141,4 @@ describe('Mobile move-list bottom sheet and backdrop', () => {
     expect(openHtml).toContain('sidebar-open');
   });
 });
+
