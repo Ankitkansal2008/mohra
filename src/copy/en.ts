@@ -133,6 +133,9 @@ export const en: Record<string, string> = {
   loadFenSubmit: 'Load',
   invalidPosition: 'That position is not valid.',
   invalidFen: 'That position is not valid.',
+
+  // Footer & Version Marker
+  versionMarker: 'v{version} • {buildDate}',
 };
 
 export const copy: Record<string, string> = en;

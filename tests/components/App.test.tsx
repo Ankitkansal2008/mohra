@@ -40,5 +40,11 @@ describe('App component', () => {
     expect(html).toContain('class="gambit-move-panel"');
     expect(html).toContain('No moves yet. White to play.');
   });
+
+  it('renders version marker footer below board with v1.0.0 and build date', () => {
+    const html = renderToStaticMarkup(React.createElement(App));
+    expect(html).toContain('class="gambit-footer"');
+    expect(html).toContain('v1.0.0');
+  });
 });
 

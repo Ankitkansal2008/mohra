@@ -1,0 +1,19 @@
+/* Centred 11px muted version footer (compact padding keeps it out of the board path on mobile) */
+.gambit-footer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: var(--coord-font-size, 11px);
+  color: var(--color-muted, #5A5A5A);
+  padding: var(--space-4, 4px) var(--space-16, 16px) var(--space-8, 8px);
+  margin-top: auto;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+@media (max-width: 767.98px) {
+  .gambit-footer {
+    padding: var(--space-4, 4px) var(--space-8, 8px);
+  }
+}

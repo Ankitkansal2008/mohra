@@ -3,6 +3,7 @@ import { Chess } from 'chess.js';
 import { BoardView } from './components/Board/BoardView.tsx';
 import { ResultDialog } from './components/Dialogs/ResultDialog.tsx';
 import { SettingsDialog } from './components/Dialogs/SettingsDialog.tsx';
+import { Footer } from './components/Footer/Footer.tsx';
 import { Header } from './components/Header/Header.tsx';
 import { HomeScreen } from './components/Home/HomeScreen.tsx';
 import { Controls } from './components/Panels/Controls.tsx';
@@ -176,6 +177,8 @@ export function App(): React.JSX.Element {
           </div>
         </div>
       </main>
+
+      <Footer />
 
       <SettingsDialog
         isOpen={isSettingsOpen}
