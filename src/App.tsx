@@ -35,6 +35,17 @@ export function App(): React.JSX.Element {
     }
   }, [reviewPly]);
 
+  // Lock body scroll while mobile bottom sheet or tablet drawer is open
+  useEffect(() => {
+    if (!isMovesOpen) return;
+    if (typeof document === 'undefined') return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isMovesOpen]);
+
   // Close drawer or bottom sheet on Escape key press
   useEffect(() => {
     if (!isMovesOpen) return;
@@ -119,19 +130,21 @@ export function App(): React.JSX.Element {
           )}
         </div>
 
+        {/* Drawer / bottom sheet backdrop (covers full viewport on <1100px) */}
+        {isMovesOpen ? (
+          <div
+            className="gambit-drawer-backdrop"
+            role="presentation"
+            onClick={() => setIsMovesOpen(false)}
+          />
+        ) : null}
+
         {/* Right column on >=1100px (280px). On 768-1099px: side drawer. Below 768px: bottom sheet */}
         <div
           className={`sidebar-layout ${isMovesOpen ? 'sidebar-open' : ''}`}
           role="region"
           aria-label={en.moves}
         >
-          {isMovesOpen ? (
-            <div
-              className="gambit-drawer-backdrop"
-              role="presentation"
-              onClick={() => setIsMovesOpen(false)}
-            />
-          ) : null}
           <div className="sidebar-inner">
             <MoveListPanel onClose={() => setIsMovesOpen(false)} />
           </div>

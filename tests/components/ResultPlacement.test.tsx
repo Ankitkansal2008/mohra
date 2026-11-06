@@ -89,3 +89,4 @@ describe('Result dialog placement and mobile responsive checks', () => {
     expect(html).toContain(`aria-label="${en.moves}"`);
   });
 });
+
