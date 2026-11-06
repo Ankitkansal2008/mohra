@@ -1,0 +1,162 @@
+.gambit-home-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(20, 26, 20, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: var(--space-16);
+  box-sizing: border-box;
+}
+
+.gambit-home-dialog {
+  background-color: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-14);
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 16px rgba(20, 26, 20, 0.16);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.gambit-home-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-16);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.gambit-home-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-ink);
+  margin: 0;
+}
+
+.gambit-home-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--color-muted);
+  padding: var(--space-4);
+  border-radius: var(--radius-6);
+  line-height: 1;
+}
+
+.gambit-home-close:hover {
+  color: var(--color-ink);
+}
+
+.gambit-home-body {
+  padding: var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  box-sizing: border-box;
+}
+
+.gambit-home-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.gambit-home-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.gambit-home-group {
+  display: flex;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-8);
+  padding: var(--space-2);
+  gap: var(--space-2);
+  box-sizing: border-box;
+}
+
+.gambit-home-group-stack {
+  flex-direction: column;
+}
+
+.gambit-home-group-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.gambit-home-btn {
+  background: none;
+  border: none;
+  border-radius: var(--radius-6);
+  padding: var(--space-8) var(--space-12);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: all var(--duration-120);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 38px;
+  box-sizing: border-box;
+}
+
+.gambit-home-btn:hover {
+  color: var(--color-ink);
+}
+
+.gambit-home-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.gambit-home-btn-active {
+  background-color: var(--color-primary);
+  color: var(--color-panel);
+  font-weight: 600;
+}
+
+.gambit-home-btn-active:hover {
+  color: var(--color-panel);
+}
+
+.gambit-home-help {
+  font-size: 12px;
+  color: var(--color-muted);
+  margin: var(--space-2) 0 0;
+  line-height: 1.4;
+}
+
+.gambit-home-start-btn {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-12) var(--space-16);
+  background-color: var(--color-primary);
+  color: var(--color-panel);
+  border: none;
+  border-radius: var(--radius-8);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--duration-120);
+  margin-top: var(--space-4);
+  box-sizing: border-box;
+}
+
+.gambit-home-start-btn:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.gambit-home-start-btn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}

@@ -35,7 +35,7 @@ export function ResultDialog({
     if (onRematch) {
       onRematch();
     } else {
-      useGameStore.getState().resetGame();
+      useGameStore.getState().rematch();
     }
   };
 

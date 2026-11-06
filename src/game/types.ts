@@ -61,6 +61,13 @@ export interface ToastNotification {
   message: string;
 }
 
+export interface NewGameOptions {
+  mode?: 'computer' | 'local';
+  humanSide?: Side;
+  level?: Level;
+  clockEnabled?: boolean;
+}
+
 export interface GameStoreState {
   game: GameState;
   ui: UiState;
@@ -86,6 +93,8 @@ export interface GameStoreState {
   showToast: (message: string, reason?: RejectionReason) => void;
   dismissToast: () => void;
   resetGame: (customFen?: string) => void;
+  rematch: () => void;
+  startNewGame: (options?: NewGameOptions) => void;
   loadFen: (fen: string) => boolean;
   undo: () => boolean;
   resignGame: () => void;

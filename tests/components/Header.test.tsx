@@ -1,34 +1,52 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { FenLoader } from '../../src/components/Header/FenLoader.tsx';
 import { Header } from '../../src/components/Header/Header.tsx';
 import { en } from '../../src/copy/en.ts';
 import { useGameStore } from '../../src/game/store.ts';
 
-describe('Header and FenLoader component', () => {
+describe('Header component', () => {
   beforeEach(() => {
     useGameStore.getState().resetGame();
   });
 
-  it('renders Header with FenLoader input labelled "Load FEN" in development', () => {
-    const html = renderToStaticMarkup(React.createElement(Header));
+  it('renders Header with brand, New game button, and settings button when callback provided', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(Header, {
+        onOpenSettings: () => {},
+        onNewGame: () => {},
+      }),
+    );
 
     expect(html).toContain('class="gambit-header"');
-    expect(html).toContain('class="fen-loader-form"');
-    expect(html).toContain('for="load-fen-input"');
-    expect(html).toContain(en.loadFen);
-    expect(html).toContain('aria-label="Load FEN"');
-    expect(html).toContain('type="submit"');
+    expect(html).toContain(en.gambit);
+    expect(html).toContain(en.newGame);
+    expect(html).toContain(en.settings);
   });
 
-  it('renders small input with placeholder and accessible attributes', () => {
-    const html = renderToStaticMarkup(React.createElement(FenLoader));
+  it('never renders any testing-only FEN loader control anywhere in desktop or mobile UI', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(Header, {
+        onOpenSettings: () => {},
+        onNewGame: () => {},
+      }),
+    );
 
-    expect(html).toContain('id="load-fen-input"');
-    expect(html).toContain('placeholder="Paste FEN..."');
-    expect(html).toContain('class="fen-loader-input"');
-    expect(html).toContain('class="fen-loader-button"');
+    expect(html).not.toContain('fen-loader');
+    expect(html).not.toContain('Load FEN');
+    expect(html).not.toContain('Paste FEN');
+    expect(html).not.toContain('load-fen-input');
+  });
+
+  it('renders New game button with accessible label and semantic button element', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(Header, {
+        onNewGame: () => {},
+      }),
+    );
+
+    expect(html).toContain('type="button"');
+    expect(html).toContain(`aria-label="${en.newGame}"`);
+    expect(html).toContain(en.newGame);
   });
 });
-

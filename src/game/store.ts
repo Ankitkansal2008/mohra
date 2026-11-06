@@ -2,29 +2,24 @@ import { create } from 'zustand';
 import { en } from '../copy/en.ts';
 import { clearSavedGame, saveGame, saveGameDebounced } from '../lib/persist.ts';
 import { playMoveSound, playSound } from '../lib/sound.ts';
+import { createClockState } from './clock.ts';
 import { emitGameEvent } from './events.ts';
 import { rules } from './rules.ts';
-import { canUndo, createInitialGameState, getRejectionMessage, getTurn, isGameOver } from './selectors.ts';
+import { canUndo, createInitialGameState, getRejectionMessage, getTurn, isGameOver, STARTING_FEN } from './selectors.ts';
 import {
   buildAppliedMoveState, buildFreshGameState, buildResignedGameState, buildRestoredGameState,
   executeClockTick, executeUndoPlies, getInitialBootUiState, persistUiSettings, toggleClockEnabled, validateMoveIntent,
 } from './storeHelpers.ts';
-import type { GameState, GameStoreState, Level, RejectionReason } from './types.ts';
+import type { GameState, GameStoreState, Level, NewGameOptions, RejectionReason } from './types.ts';
 
 export { STARTING_FEN, canUndo, getPliesToUndo, getRejectionMessage, getTurn, isCheck, isGameOver } from './selectors.ts';
-export type { GameStoreState } from './types.ts';
+export type { GameStoreState, NewGameOptions } from './types.ts';
 
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
 export const useGameStoreBase = create<GameStoreState>((set, get) => ({
-  game: createInitialGameState(),
-  ui: getInitialBootUiState(),
-  toast: null,
-  lastMove: null,
-  announcedMove: null,
-  engineToken: 0,
-  isThinking: false,
-  engineFailed: false,
+  game: createInitialGameState(), ui: getInitialBootUiState(), toast: null,
+  lastMove: null, announcedMove: null, engineToken: 0, isThinking: false, engineFailed: false,
 
   attemptMove: (from: string, to?: string, promotion?: string, isEngine?: boolean): boolean => {
     let resolvedFrom = from;
@@ -120,7 +115,6 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
     if (isGameOver(state.game.status) || state.ui.reviewPly !== null) return;
     const turn = getTurn(state.game.fen);
     if (state.game.mode === 'computer' && turn !== state.game.humanSide) return;
-
     rules.reset(state.game.fen);
     const piece = rules.getPiece(square);
     if (state.ui.selected === square) return get().clearSelection();
@@ -149,7 +143,26 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
     clearSavedGame();
     set((s) => ({
       game: initial, ui: { ...s.ui, reviewPly: null, selected: null, targets: [] },
-      toast: null, lastMove: null, announcedMove: null, engineToken: s.engineToken + 1, isThinking: false,
+      toast: null, lastMove: null, announcedMove: null, engineToken: s.engineToken + 1, isThinking: false, engineFailed: false,
+    }));
+    emitGameEvent({ type: 'new-game', fen: initial.fen, level: initial.level, uciMoves: initial.uciMoves });
+  },
+
+  rematch: (): void => {
+    const cur = get().game;
+    get().startNewGame({ mode: cur.mode, humanSide: cur.humanSide, level: cur.level, clockEnabled: cur.clock !== null });
+  },
+
+  startNewGame: (options?: NewGameOptions): void => {
+    const mode = options?.mode ?? 'computer';
+    const humanSide = options?.humanSide ?? 'w';
+    const level = options?.level ?? 2;
+    const clock = options?.clockEnabled ? createClockState('w') : null;
+    const initial = buildFreshGameState(STARTING_FEN, { mode, humanSide, level, clock });
+    clearSavedGame();
+    set((s) => ({
+      game: initial, ui: { ...s.ui, reviewPly: null, selected: null, targets: [], flipped: humanSide === 'b' },
+      toast: null, lastMove: null, announcedMove: null, engineToken: s.engineToken + 1, isThinking: false, engineFailed: false,
     }));
     emitGameEvent({ type: 'new-game', fen: initial.fen, level: initial.level, uciMoves: initial.uciMoves });
   },
@@ -208,10 +221,8 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
     set({ game: updatedGame });
   },
 
-  setTheme: (theme) => set((s) => ({ ui: persistUiSettings(s.ui, { theme }) })),
-  setSoundOn: (soundOn) => set((s) => ({ ui: persistUiSettings(s.ui, { soundOn }) })),
-  setAnimationOn: (animationOn) => set((s) => ({ ui: persistUiSettings(s.ui, { animationOn }) })),
-  setShowCoords: (showCoords) => set((s) => ({ ui: persistUiSettings(s.ui, { showCoords }) })),
+  setTheme: (theme) => set((s) => ({ ui: persistUiSettings(s.ui, { theme }) })), setSoundOn: (soundOn) => set((s) => ({ ui: persistUiSettings(s.ui, { soundOn }) })),
+  setAnimationOn: (animationOn) => set((s) => ({ ui: persistUiSettings(s.ui, { animationOn }) })), setShowCoords: (showCoords) => set((s) => ({ ui: persistUiSettings(s.ui, { showCoords }) })),
   setClockEnabled: (enabled) => set((s) => ({ game: toggleClockEnabled(s.game, s.ui, enabled) })),
 
   restoreGame: (savedGame: GameState) => {

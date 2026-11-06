@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { en } from '../../copy/en.ts';
 import { useGameStore } from '../../game/store.ts';
-import { FenLoader } from './FenLoader.tsx';
 import './Header.css';
 
 export interface HeaderProps {
   readonly onOpenSettings?: () => void;
   readonly onToggleMoves?: () => void;
+  readonly onNewGame?: () => void;
   readonly isMovesOpen?: boolean;
   readonly movesCount?: number;
 }
@@ -14,6 +14,7 @@ export interface HeaderProps {
 export function Header({
   onOpenSettings,
   onToggleMoves,
+  onNewGame,
   isMovesOpen,
   movesCount,
 }: HeaderProps): React.JSX.Element {
@@ -21,7 +22,11 @@ export function Header({
   const resetGame = useGameStore((s) => s.resetGame);
 
   const handleNewGame = (): void => {
-    resetGame();
+    if (onNewGame) {
+      onNewGame();
+    } else {
+      resetGame();
+    }
     setIsMenuOpen(false);
   };
 
@@ -36,7 +41,6 @@ export function Header({
 
       {/* Desktop / tablet header actions (>= 768px) */}
       <div className="gambit-header-actions gambit-header-desktop-actions">
-        {import.meta.env.DEV ? <FenLoader /> : null}
         {onToggleMoves ? (
           <button
             type="button"
@@ -108,11 +112,6 @@ export function Header({
               </button>
             </div>
             <div className="gambit-mobile-menu-body">
-              {import.meta.env.DEV ? (
-                <div className="gambit-mobile-menu-item">
-                  <FenLoader />
-                </div>
-              ) : null}
               <button
                 type="button"
                 className="gambit-mobile-menu-action"
