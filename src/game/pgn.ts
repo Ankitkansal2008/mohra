@@ -22,8 +22,8 @@ export function getPlayerNames(
 ): { white: string; black: string } {
   if (mode === 'computer') {
     return {
-      white: humanSide === 'w' ? 'You' : 'Gambit',
-      black: humanSide === 'b' ? 'You' : 'Gambit',
+      white: humanSide === 'w' ? 'You' : 'Mohra',
+      black: humanSide === 'b' ? 'You' : 'Mohra',
     };
   }
   return {
@@ -42,7 +42,7 @@ export function syncPgnHeaders(
 }
 
 // PRD FR-17: Download the active game representation as valid PGN file.
-export function downloadPgnFile(pgnText: string, filename: string = 'gambit.pgn'): void {
+export function downloadPgnFile(pgnText: string, filename: string = 'mohra.pgn'): void {
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
   const blob = new Blob([pgnText], { type: 'application/x-chess-pgn;charset=utf-8' });
   const url = URL.createObjectURL(blob);

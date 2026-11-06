@@ -71,7 +71,8 @@ export const en: Record<string, string> = {
 
   // Player labels, clock and turn indicators
   you: 'You',
-  gambit: 'Gambit',
+  mohra: 'Mohra',
+  gambit: 'Mohra',
   player1: 'Player 1',
   player2: 'Player 2',
   white: 'White',

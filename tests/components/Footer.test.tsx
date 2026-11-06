@@ -21,3 +21,4 @@ describe('Footer component', () => {
     expect(en.versionMarker).toBe('v{version} • {buildDate}');
   });
 });
+

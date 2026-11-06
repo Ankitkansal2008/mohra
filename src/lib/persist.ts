@@ -2,8 +2,8 @@ import { en } from '../copy/en.ts';
 import { getTurn, isGameOver } from '../game/selectors.ts';
 import type { GameState, Level, UiState } from '../game/types.ts';
 
-export const STORAGE_KEY_GAME = 'gambit:game:v1';
-export const STORAGE_KEY_SETTINGS = 'gambit:settings:v1';
+export const STORAGE_KEY_GAME = 'mohra:game:v1';
+export const STORAGE_KEY_SETTINGS = 'mohra:settings:v1';
 export const CURRENT_SCHEMA_VERSION = 1;
 export const MAX_RESUME_AGE_MS = 24 * 60 * 60 * 1000;
 

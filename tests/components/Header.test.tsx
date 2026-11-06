@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -19,9 +21,23 @@ describe('Header component', () => {
     );
 
     expect(html).toContain('class="gambit-header"');
-    expect(html).toContain(en.gambit);
+    expect(html).toContain(en.mohra);
     expect(html).toContain(en.newGame);
     expect(html).toContain(en.settings);
+  });
+
+  it('renders mark and wordmark "Mohra" in header', () => {
+    const html = renderToStaticMarkup(React.createElement(Header));
+    expect(html).toContain('class="gambit-brand-mark"');
+    expect(html).toContain('src="/favicon.svg"');
+    expect(html).toContain('width="24"');
+    expect(html).toContain('height="24"');
+    expect(html).toContain('Mohra');
+  });
+
+  it('asserts document title is "Mohra" in index.html', () => {
+    const indexHtml = fs.readFileSync(path.resolve(__dirname, '../../index.html'), 'utf-8');
+    expect(indexHtml).toContain('<title>Mohra</title>');
   });
 
   it('never renders any testing-only FEN loader control anywhere in desktop or mobile UI', () => {

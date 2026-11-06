@@ -27,11 +27,11 @@ describe('App component', () => {
   });
 
   it('renders turn indicators above and below board with correct player names', () => {
-    // Computer mode: Top is Gambit (Black), Bottom is You (White)
+    // Computer mode: Top is Mohra (Black), Bottom is You (White)
     const htmlComputer = renderToStaticMarkup(React.createElement(App));
     expect(htmlComputer).toContain('data-testid="turn-indicator-top"');
     expect(htmlComputer).toContain('data-testid="turn-indicator-bottom"');
-    expect(htmlComputer).toContain('Gambit');
+    expect(htmlComputer).toContain('Mohra');
     expect(htmlComputer).toContain('You');
   });
 

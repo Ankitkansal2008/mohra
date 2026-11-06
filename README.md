@@ -1,32 +1,26 @@
-# React + TypeScript + Vite
+# Mohra
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A clean, fast, offline-first browser chess game. Play against the computer across three difficulty levels, or with a friend on one device.
 
-Currently, two official plugins are available:
+## Architecture
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Rules Authority**: `chess.js` wrapped as the single source of truth for move legality.
+- **Engine Subsystem**: Single-threaded Stockfish WASM running in a dedicated Web Worker off the main thread.
+- **Store & Event Pipeline**: Zustand store orchestrating board intent, move execution, clocks, and persistence.
+- **UI & Presentation**: React 19 + TypeScript + Vite with custom tokens and mobile-first responsive layout.
+- **Testing & Verification**: Vitest unit/component suite and Playwright end-to-end integration tests.
 
-## React Compiler
+## Development
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Verification
+
+```bash
+npm run build
+npm test
+npm run lint
+```

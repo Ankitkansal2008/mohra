@@ -37,7 +37,16 @@ export function Header({
 
   return (
     <header className="gambit-header" role="banner">
-      <div className="gambit-brand">{en.gambit}</div>
+      <div className="gambit-brand">
+        <img
+          src="/favicon.svg"
+          alt=""
+          width={24}
+          height={24}
+          className="gambit-brand-mark"
+        />
+        <span>{en.mohra}</span>
+      </div>
 
       {/* Desktop / tablet header actions (>= 768px) */}
       <div className="gambit-header-actions gambit-header-desktop-actions">

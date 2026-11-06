@@ -11,12 +11,22 @@
 }
 
 .gambit-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8, 8px);
   font-size: 18px;
   font-weight: 700;
   color: var(--color-primary);
   text-decoration: none;
   margin: 0;
   white-space: nowrap;
+}
+
+.gambit-brand-mark {
+  width: 24px;
+  height: 24px;
+  display: block;
+  flex-shrink: 0;
 }
 
 .gambit-header-actions {

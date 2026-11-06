@@ -18,3 +18,4 @@ export function getVersionMarker(
     .replace('{version}', version)
     .replace('{buildDate}', buildDate);
 }
+

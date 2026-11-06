@@ -592,7 +592,7 @@ describe('Game store and move pipeline', () => {
       expect(pgn().trim().endsWith('1-0')).toBe(true);
     });
 
-    it('sets computer mode headers White "You" and Black "Gambit" when human is White', () => {
+    it('sets computer mode headers White "You" and Black "Mohra" when human is White', () => {
       useGameStore.setState({
         game: {
           ...useGameStore.getState().game,
@@ -609,7 +609,7 @@ describe('Game store and move pipeline', () => {
       const state = useGameStore.getState();
       expect(state.game.winner).toBe('b');
       expect(state.game.pgn).toContain('[White "You"]');
-      expect(state.game.pgn).toContain('[Black "Gambit"]');
+      expect(state.game.pgn).toContain('[Black "Mohra"]');
       expect(state.game.pgn).toContain('[Result "0-1"]');
       expect(state.game.pgn.trim().endsWith('0-1')).toBe(true);
     });
