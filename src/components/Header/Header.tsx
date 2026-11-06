@@ -1,4 +1,4 @@
-import type React from 'react';
+import React, { useState } from 'react';
 import { en } from '../../copy/en.ts';
 import { useGameStore } from '../../game/store.ts';
 import { FenLoader } from './FenLoader.tsx';
@@ -17,13 +17,25 @@ export function Header({
   isMovesOpen,
   movesCount,
 }: HeaderProps): React.JSX.Element {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const resetGame = useGameStore((s) => s.resetGame);
+
+  const handleNewGame = (): void => {
+    resetGame();
+    setIsMenuOpen(false);
+  };
+
+  const handleOpenSettings = (): void => {
+    if (onOpenSettings) onOpenSettings();
+    setIsMenuOpen(false);
+  };
 
   return (
     <header className="gambit-header" role="banner">
       <div className="gambit-brand">{en.gambit}</div>
 
-      <div className="gambit-header-actions">
+      {/* Desktop / tablet header actions (>= 768px) */}
+      <div className="gambit-header-actions gambit-header-desktop-actions">
         {import.meta.env.DEV ? <FenLoader /> : null}
         {onToggleMoves ? (
           <button
@@ -40,7 +52,7 @@ export function Header({
         <button
           type="button"
           className="gambit-header-btn"
-          onClick={() => resetGame()}
+          onClick={handleNewGame}
           aria-label={en.newGame}
         >
           {en.newGame}
@@ -49,13 +61,78 @@ export function Header({
           <button
             type="button"
             className="gambit-header-btn"
-            onClick={onOpenSettings}
+            onClick={handleOpenSettings}
             aria-label={en.settings}
           >
             {en.settings}
           </button>
         ) : null}
       </div>
+
+      {/* Mobile single-button menu trigger (< 768px per UI/UX Section 3) */}
+      <div className="gambit-header-mobile-trigger">
+        <button
+          type="button"
+          className="gambit-header-btn gambit-header-menu-btn"
+          onClick={() => setIsMenuOpen(true)}
+          aria-label={en.menu}
+          aria-expanded={isMenuOpen}
+        >
+          {en.menu}
+        </button>
+      </div>
+
+      {/* Mobile menu modal dialog */}
+      {isMenuOpen ? (
+        <div
+          className="gambit-mobile-menu-backdrop"
+          role="presentation"
+          onClick={() => setIsMenuOpen(false)}
+        >
+          <div
+            className="gambit-mobile-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label={en.menu}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="gambit-mobile-menu-header">
+              <span className="gambit-mobile-menu-title">{en.menu}</span>
+              <button
+                type="button"
+                className="gambit-mobile-menu-close"
+                onClick={() => setIsMenuOpen(false)}
+                aria-label={en.close}
+              >
+                ×
+              </button>
+            </div>
+            <div className="gambit-mobile-menu-body">
+              {import.meta.env.DEV ? (
+                <div className="gambit-mobile-menu-item">
+                  <FenLoader />
+                </div>
+              ) : null}
+              <button
+                type="button"
+                className="gambit-mobile-menu-action"
+                onClick={handleNewGame}
+              >
+                {en.newGame}
+              </button>
+              {onOpenSettings ? (
+                <button
+                  type="button"
+                  className="gambit-mobile-menu-action"
+                  onClick={handleOpenSettings}
+                >
+                  {en.settings}
+                </button>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </header>
   );
 }

@@ -1,41 +1,36 @@
-/* UI/UX Section 7 & 10: Result panel slides up over the lower third of the board area */
+/* UI/UX Section 7 & 10: Result panel rendered below the board in place of controls */
 .gambit-result-dialog {
-  position: absolute;
-  bottom: var(--space-8, 8px);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 50;
-  width: calc(100% - var(--space-16, 16px));
-  max-width: 420px;
-  max-height: 33%;
-  background-color: var(--color-surface, #FAFAF7);
-  border: 1px solid var(--color-border, #E2E6DE);
-  border-radius: var(--radius-10, 10px);
-  padding: var(--space-8, 8px) var(--space-12, 12px);
-  box-shadow: var(--elevation-1, 0 2px 8px rgba(20, 26, 20, 0.10));
-  text-align: center;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  overflow-y: auto;
+  align-items: center;
+  width: 100%;
+  max-width: 560px;
+  background-color: var(--color-panel, #FFFFFF);
+  border: 1px solid var(--color-border, #E2E6DE);
+  border-radius: var(--radius-10, 10px);
+  padding: var(--space-12, 12px) var(--space-16, 16px);
+  box-shadow: var(--elevation-1, 0 2px 8px rgba(20, 26, 20, 0.10));
+  text-align: center;
+  box-sizing: border-box;
+  margin-top: var(--space-12, 12px);
   animation: gambitResultSlideUp var(--duration-180, 180ms) ease-out;
 }
 
 @keyframes gambitResultSlideUp {
   from {
-    transform: translate(-50%, 8px);
+    transform: translateY(8px);
     opacity: 0;
   }
   to {
-    transform: translate(-50%, 0);
+    transform: translateY(0);
     opacity: 1;
   }
 }
 
 .gambit-result-dialog-headline {
   margin: 0 0 var(--space-4, 4px);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--color-ink, #1A1A1A);
   line-height: 1.25;
@@ -43,7 +38,7 @@
 
 .gambit-result-dialog-detail {
   margin: 0 0 var(--space-8, 8px);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--color-muted, #5A5A5A);
   line-height: 1.25;
 }
@@ -57,7 +52,7 @@
 }
 
 .gambit-result-dialog-btn {
-  min-height: 36px;
+  min-height: 38px;
   padding: var(--space-4, 4px) var(--space-12, 12px);
   font-size: 13px;
   font-weight: 500;

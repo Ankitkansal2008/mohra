@@ -1,3 +1,4 @@
+/* Main application layout and responsive breakpoints (UI/UX Section 3 & 10) */
 .app-shell {
   display: flex;
   flex-direction: column;
@@ -8,10 +9,7 @@
   box-sizing: border-box;
 }
 
-/* ==========================================================================
-   Desktop layout (1100px and up): Three columns (240px / board / 280px)
-   UI/UX Design Section 3 & Section 10
-   ========================================================================== */
+/* Three columns on >=1100px (240px / board / 280px) */
 .board-container {
   display: flex;
   flex-direction: row;
@@ -54,6 +52,10 @@
   flex-direction: column;
 }
 
+.sidebar-layout::before {
+  display: none;
+}
+
 .sidebar-inner {
   width: 100%;
   height: 100%;
@@ -63,20 +65,19 @@
   display: none;
 }
 
-/* ==========================================================================
-   Collapse to single board column under 1100px
-   Left column indicators move above & below board
-   ========================================================================== */
+/* Single board column under 1100px; zero dead gap */
 @media (max-width: 1099.98px) {
   .board-container {
     flex-direction: column;
+    justify-content: flex-start;
     align-items: center;
-    gap: var(--space-12, 12px);
-    padding: var(--space-16, 16px);
+    gap: var(--space-8, 8px);
+    padding: var(--space-8, 8px) var(--space-16, 16px);
     max-width: 640px;
   }
 
-  .left-column {
+  .left-column,
+  .board-layout {
     display: contents;
   }
 
@@ -84,56 +85,29 @@
     display: none;
   }
 
-  .board-layout {
-    display: contents;
-  }
-
-  .gambit-resume-banner {
-    order: 1;
+  .gambit-resume-banner,
+  .gambit-engine-banner,
+  [data-testid="turn-indicator-top"],
+  .gambit-board-wrapper,
+  [data-testid="turn-indicator-bottom"],
+  .gambit-thinking-slot,
+  .gambit-controls,
+  .gambit-result-dialog {
     width: 100%;
     max-width: 600px;
   }
 
-  .gambit-engine-banner {
-    order: 2;
-    width: 100%;
-    max-width: 600px;
-  }
-
-  [data-testid="turn-indicator-top"] {
-    order: 3;
-    width: 100%;
-    max-width: 600px;
-  }
-
-  .gambit-board-wrapper {
-    order: 4;
-    width: 100%;
-    max-width: 600px;
-  }
-
-  [data-testid="turn-indicator-bottom"] {
-    order: 5;
-    width: 100%;
-    max-width: 600px;
-  }
-
-  .gambit-thinking-slot {
-    order: 6;
-    width: 100%;
-    max-width: 600px;
-  }
-
-  .gambit-controls {
-    order: 7;
-    width: 100%;
-    max-width: 600px;
-  }
+  .gambit-resume-banner { order: 1; }
+  .gambit-engine-banner { order: 2; }
+  [data-testid="turn-indicator-top"] { order: 3; }
+  .gambit-board-wrapper { order: 4; }
+  [data-testid="turn-indicator-bottom"] { order: 5; }
+  .gambit-thinking-slot { order: 6; }
+  .gambit-controls,
+  .gambit-result-dialog { order: 7; }
 }
 
-/* ==========================================================================
-   Tablet (768px - 1099px): Board plus right collapsible drawer
-   ========================================================================== */
+/* Tablet (768px - 1099px): Board plus right collapsible drawer */
 @media (min-width: 768px) and (max-width: 1099.98px) {
   .sidebar-layout {
     position: fixed;
@@ -181,9 +155,7 @@
   }
 }
 
-/* ==========================================================================
-   Mobile portrait (<768px): Single column, move list in bottom sheet
-   ========================================================================== */
+/* Mobile portrait (<768px): Single column, move list in bottom sheet with handle */
 @media (max-width: 767.98px) {
   .sidebar-layout {
     position: fixed;
@@ -201,6 +173,17 @@
     pointer-events: none;
     visibility: hidden;
     overflow: hidden;
+  }
+
+  .sidebar-layout::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    border-radius: var(--radius-pill, 999px);
+    background-color: var(--color-border, #E2E6DE);
+    margin: var(--space-8, 8px) auto 0;
+    flex-shrink: 0;
   }
 
   .sidebar-layout.sidebar-open {
@@ -233,10 +216,7 @@
   }
 }
 
-/* ==========================================================================
-   Small viewports (320px - 359px): Zero page gutters so 320px board fits
-   without horizontal scrolling, maintaining 40px square minimum floor.
-   ========================================================================== */
+/* Small viewports (320px - 359px): Zero gutters for 320px board (40px square min) */
 @media (max-width: 359.98px) {
   .board-container {
     padding: 0 !important;
@@ -252,6 +232,7 @@
   [data-testid="turn-indicator-top"],
   [data-testid="turn-indicator-bottom"],
   .gambit-controls,
+  .gambit-result-dialog,
   .gambit-thinking-slot {
     width: 100% !important;
     padding-left: var(--space-8, 8px);

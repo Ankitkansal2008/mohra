@@ -3,11 +3,10 @@ import { Chessboard } from 'react-chessboard';
 import { en } from '../../copy/en.ts';
 import { findKingSquare, getFenAtPly, getTurn, isCheck, isGameOver } from '../../game/selectors.ts';
 import { useGameStore } from '../../game/store.ts';
-import type { GameStatus, Side } from '../../game/types.ts';
+import type { GameStatus } from '../../game/types.ts';
 import { formatLiveMoveAnnouncement } from '../../lib/moveAnnouncement.ts';
 import type { BoardTheme } from '../../styles/boardTokens.ts';
 import { BOARD_THEMES } from '../../styles/boardTokens.ts';
-import { ResultDialog } from '../Dialogs/ResultDialog.tsx';
 import { Toast } from '../ui/Toast.tsx';
 import { BoardCoordinates } from './BoardCoordinates.tsx';
 import { BoardScreenReaderGrid } from './BoardScreenReaderGrid.tsx';
@@ -18,7 +17,6 @@ import { useBoardKeyboard } from './useBoardKeyboard.ts';
 export interface BoardViewProps {
   readonly fen?: string;
   readonly status?: GameStatus;
-  readonly winner?: Side | null;
   readonly boardOrientation?: 'white' | 'black';
   readonly theme?: BoardTheme;
   readonly selected?: string | null;
@@ -33,7 +31,6 @@ export interface BoardViewProps {
 export function BoardView({
   fen: propFen,
   status: propStatus,
-  winner: propWinner,
   boardOrientation: propBoardOrientation,
   theme: propTheme,
   selected: propSelected,
@@ -75,7 +72,6 @@ export function BoardView({
   const reviewPos = isReviewing ? getFenAtPly(storeGame.moves, storeUi.reviewPly!) : null;
   const fen = propFen ?? (reviewPos ? reviewPos.fen : storeGame.fen);
   const status = propStatus ?? storeGame.status;
-  const winner = propWinner !== undefined ? propWinner : storeGame.winner;
   const theme = propTheme ?? storeUi.theme;
   const selected = isReviewing ? null : (propSelected !== undefined ? propSelected : storeUi.selected);
   const lastMove = propLastMove !== undefined ? propLastMove : (reviewPos ? reviewPos.lastMove : storeLastMove);
@@ -181,10 +177,6 @@ export function BoardView({
           onSelect={(piece) => confirmPromotion(piece)}
           onCancel={cancelPromotion}
         />
-      ) : null}
-
-      {isGameOver(status) && !isReviewing ? (
-        <ResultDialog status={status} winner={winner} fen={fen} />
       ) : null}
     </div>
   );

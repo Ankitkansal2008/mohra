@@ -2,10 +2,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-8) var(--spacing-16);
+  padding: var(--space-8, 8px) var(--space-16, 16px);
   border-bottom: 1px solid var(--color-border);
   background-color: var(--color-surface);
-  gap: var(--spacing-12);
+  gap: var(--space-12, 12px);
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .gambit-brand {
@@ -14,12 +16,21 @@
   color: var(--color-primary);
   text-decoration: none;
   margin: 0;
+  white-space: nowrap;
 }
 
 .gambit-header-actions {
   display: flex;
   align-items: center;
-  gap: var(--spacing-8);
+  gap: var(--space-8, 8px);
+}
+
+.gambit-header-desktop-actions {
+  display: flex;
+}
+
+.gambit-header-mobile-trigger {
+  display: none;
 }
 
 .gambit-header-btn {
@@ -32,6 +43,10 @@
   color: var(--color-ink);
   cursor: pointer;
   transition: all var(--duration-120);
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .gambit-header-btn:hover {
@@ -48,33 +63,146 @@
   display: none;
 }
 
-@media (max-width: 1099.98px) {
+@media (min-width: 768px) and (max-width: 1099.98px) {
   .gambit-header-moves-btn {
     display: inline-flex;
   }
 }
 
-.fen-loader-form {
-  display: inline-flex;
+/* UI/UX Section 3: On mobile (<768px), header collapses to logo + menu button */
+@media (max-width: 767.98px) {
+  .gambit-header-desktop-actions {
+    display: none !important;
+  }
+
+  .gambit-header-mobile-trigger {
+    display: flex !important;
+  }
+}
+
+/* Mobile menu modal styles */
+.gambit-mobile-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 150;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--space-16, 16px);
+}
+
+.gambit-mobile-menu {
+  background-color: var(--color-panel, #ffffff);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-10, 10px);
+  width: 100%;
+  max-width: 360px;
+  box-shadow: var(--elevation-1, 0 2px 8px rgba(20, 26, 20, 0.10));
+  box-sizing: border-box;
+  overflow: hidden;
+  margin-top: var(--space-24, 24px);
+  animation: gambitMenuIn var(--duration-180, 180ms) ease-out;
+}
+
+@keyframes gambitMenuIn {
+  from {
+    transform: translateY(-8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gambit-mobile-menu {
+    animation: none !important;
+  }
+}
+
+.gambit-mobile-menu-header {
+  display: flex;
   align-items: center;
-  gap: var(--spacing-8);
+  justify-content: space-between;
+  padding: var(--space-12, 12px) var(--space-16, 16px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.gambit-mobile-menu-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.gambit-mobile-menu-close {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--color-muted);
+  cursor: pointer;
+  padding: var(--space-4, 4px);
+}
+
+.gambit-mobile-menu-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12, 12px);
+  padding: var(--space-16, 16px);
+}
+
+.gambit-mobile-menu-item {
+  width: 100%;
+}
+
+.gambit-mobile-menu-action {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-8, 8px) var(--space-16, 16px);
+  background-color: var(--color-surface, #fafaf7);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-6);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--duration-120);
+}
+
+.gambit-mobile-menu-action:hover {
+  background-color: var(--color-panel, #ffffff);
+  border-color: var(--color-primary);
+}
+
+.fen-loader-form {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-8, 8px);
+  width: 100%;
 }
 
 .fen-loader-label {
   font-size: 13px;
   font-weight: 500;
   color: var(--color-ink);
+  white-space: nowrap;
 }
 
 .fen-loader-input {
   font-size: 13px;
-  padding: var(--spacing-4) var(--spacing-8);
+  padding: var(--space-4, 4px) var(--space-8, 8px);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-6);
   background-color: var(--color-panel);
   color: var(--color-ink);
-  width: 260px;
-  max-width: 100%;
+  flex: 1;
+  min-width: 0;
 }
 
 .fen-loader-input:focus {
@@ -84,11 +212,11 @@
 
 .fen-loader-button {
   font-size: 13px;
-  padding: var(--spacing-4) var(--spacing-12);
+  padding: var(--space-4, 4px) var(--space-12, 12px);
   border: 1px solid var(--color-primary);
   border-radius: var(--radius-6);
   background-color: var(--color-primary);
   color: var(--color-panel);
   cursor: pointer;
+  white-space: nowrap;
 }
-

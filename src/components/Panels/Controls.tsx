@@ -9,6 +9,8 @@ export interface ControlsProps {
   readonly onUndo?: () => void;
   readonly onFlip?: () => void;
   readonly onResign?: () => void;
+  readonly onToggleMoves?: () => void;
+  readonly isMovesOpen?: boolean;
 }
 
 export function Controls({
@@ -16,6 +18,8 @@ export function Controls({
   onUndo,
   onFlip,
   onResign,
+  onToggleMoves,
+  isMovesOpen,
 }: ControlsProps): React.JSX.Element {
   const game = useGameStore((s) => s.game);
   const undo = useGameStore((s) => s.undo);
@@ -132,6 +136,19 @@ export function Controls({
         >
           {en.resign}
         </button>
+
+        {onToggleMoves ? (
+          <button
+            type="button"
+            className={`gambit-control-btn gambit-control-moves-btn ${isMovesOpen ? 'gambit-control-btn-active' : ''}`}
+            onClick={onToggleMoves}
+            title={en.moves}
+            aria-label={en.moves}
+            aria-expanded={isMovesOpen}
+          >
+            {en.moves}
+          </button>
+        ) : null}
       </div>
 
       {isConfirmingResign ? (

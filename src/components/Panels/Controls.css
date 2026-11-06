@@ -44,6 +44,16 @@
   color: var(--color-danger);
 }
 
+.gambit-control-moves-btn {
+  display: inline-flex;
+}
+
+@media (min-width: 1100px) {
+  .gambit-control-moves-btn {
+    display: none;
+  }
+}
+
 /* Resign confirmation modal overlay */
 .gambit-resign-overlay {
   position: fixed;

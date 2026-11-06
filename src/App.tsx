@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BoardView } from './components/Board/BoardView.tsx';
+import { ResultDialog } from './components/Dialogs/ResultDialog.tsx';
 import { SettingsDialog } from './components/Dialogs/SettingsDialog.tsx';
 import { Header } from './components/Header/Header.tsx';
 import { Controls } from './components/Panels/Controls.tsx';
@@ -22,8 +23,10 @@ export function App(): React.JSX.Element {
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isMovesOpen, setIsMovesOpen] = useState<boolean>(false);
 
-  const movesCount = useGameStore((s) => s.game.moves.length);
+  const game = useGameStore((s) => s.game);
+  const movesCount = game.moves.length;
   const reviewPly = useGameStore((s) => s.ui.reviewPly);
+  const isTerminal = isGameOver(game.status);
 
   // Automatically reveal move panel when entering review mode from ResultDialog
   useEffect(() => {
@@ -101,7 +104,19 @@ export function App(): React.JSX.Element {
           <EngineBanner />
           <BoardView />
           <ThinkingIndicator />
-          <Controls />
+          {/* UI/UX Section 7 & 10: Result panel renders below board in place of controls row */}
+          {isTerminal && reviewPly === null ? (
+            <ResultDialog
+              status={game.status}
+              winner={game.winner}
+              fen={game.fen}
+            />
+          ) : (
+            <Controls
+              onToggleMoves={() => setIsMovesOpen((prev) => !prev)}
+              isMovesOpen={isMovesOpen}
+            />
+          )}
         </div>
 
         {/* Right column on >=1100px (280px). On 768-1099px: side drawer. Below 768px: bottom sheet */}

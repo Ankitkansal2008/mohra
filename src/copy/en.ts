@@ -103,6 +103,7 @@ export const en: Record<string, string> = {
   settings: 'Settings',
   settingsTitle: 'Settings',
   close: 'Close',
+  menu: 'Menu',
   soundSetting: 'Sound',
   themeSetting: 'Board theme',
   themeDefault: 'Green',
