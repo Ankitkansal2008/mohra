@@ -57,3 +57,4 @@ export function buildSquareStyles(params: BuildSquareStylesParams): Record<strin
 }
 
 export default buildSquareStyles;
+

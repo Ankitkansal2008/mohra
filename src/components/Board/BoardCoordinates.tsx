@@ -55,3 +55,4 @@ export function BoardCoordinates({
 }
 
 export default BoardCoordinates;
+

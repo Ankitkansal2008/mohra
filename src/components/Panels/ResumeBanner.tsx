@@ -8,25 +8,34 @@ import './ResumeBanner.css';
 export interface ResumeBannerProps {
   readonly savedGame: GameState;
   readonly onDismiss: () => void;
+  readonly onResume?: () => void;
+  readonly onDiscard?: () => void;
 }
 
 export function ResumeBanner({
   savedGame,
   onDismiss,
+  onResume,
+  onDiscard,
 }: ResumeBannerProps): React.JSX.Element {
-  const restoreGame = useGameStore((s) => s.restoreGame);
-  const resetGame = useGameStore((s) => s.resetGame);
-
   const label = formatResumeLabel(savedGame);
 
   const handleResume = (): void => {
-    restoreGame(savedGame);
+    if (onResume) {
+      onResume();
+    } else {
+      useGameStore.getState().restoreGame(savedGame);
+    }
     onDismiss();
   };
 
   const handleDiscard = (): void => {
-    clearSavedGame();
-    resetGame();
+    if (onDiscard) {
+      onDiscard();
+    } else {
+      clearSavedGame();
+      useGameStore.getState().resetGame();
+    }
     onDismiss();
   };
 
@@ -60,4 +69,3 @@ export function ResumeBanner({
 }
 
 export default ResumeBanner;
-

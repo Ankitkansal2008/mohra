@@ -135,3 +135,4 @@ describe('Board Accessibility, Coordinates, Keyboard Play & Responsive Pass', ()
     expect(html).toContain('class="gambit-move-panel"');
   });
 });
+

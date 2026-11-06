@@ -1,5 +1,5 @@
 import { en } from '../copy/en.ts';
-import { getTurn } from '../game/selectors.ts';
+import { getTurn, isGameOver } from '../game/selectors.ts';
 import type { GameState, Level, UiState } from '../game/types.ts';
 
 export const STORAGE_KEY_GAME = 'gambit:game:v1';
@@ -51,6 +51,11 @@ function isValidGameState(obj: unknown): obj is GameState {
 
 export function saveGame(game: GameState): void {
   if (typeof window === 'undefined' || !window.localStorage) return;
+  // Finished games must not be offered for resume; clean storage immediately.
+  if (isGameOver(game.status)) {
+    clearSavedGame();
+    return;
+  }
   try {
     const envelope: PersistedGameEnvelope = {
       schemaVersion: CURRENT_SCHEMA_VERSION,
@@ -100,6 +105,12 @@ export function loadSavedGame(): GameState | null {
 
     const game = envelope.game;
     if (!isValidGameState(game)) {
+      clearSavedGame();
+      return null;
+    }
+
+    // Only in-progress games may be resumed; terminal games must be cleared silently.
+    if (isGameOver(game.status)) {
       clearSavedGame();
       return null;
     }

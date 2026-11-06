@@ -10,9 +10,10 @@ import { ThinkingIndicator } from './components/Panels/ThinkingIndicator.tsx';
 import { TurnIndicator } from './components/Panels/TurnIndicator.tsx';
 import { en } from './copy/en.ts';
 import { connectBridgeToStore, initEngine } from './engine/bridge.ts';
+import { isGameOver } from './game/selectors.ts';
 import { useGameStore } from './game/store.ts';
 import type { GameState } from './game/types.ts';
-import { isSaveUnder24Hours, loadSavedGame } from './lib/persist.ts';
+import { clearSavedGame, isSaveUnder24Hours, loadSavedGame } from './lib/persist.ts';
 import './App.css';
 
 export function App(): React.JSX.Element {
@@ -47,14 +48,18 @@ export function App(): React.JSX.Element {
     initEngine();
     const disconnect = connectBridgeToStore();
 
-    // PRD FR-21 / TRD Section 8: Auto-restore on mount; corrupt state falls back to clean game
+    // PRD FR-21 / TRD Section 8: Only in-progress games are offered; board stays at start until Resume
     const saved = loadSavedGame();
-    if (saved) {
-      useGameStore.getState().restoreGame(saved);
-      if (isSaveUnder24Hours(saved.savedAt) && saved.moves.length > 0) {
-        setSavedGame(saved);
-        setShowResumeBanner(true);
-      }
+    if (
+      saved &&
+      !isGameOver(saved.status) &&
+      isSaveUnder24Hours(saved.savedAt) &&
+      saved.moves.length > 0
+    ) {
+      setSavedGame(saved);
+      setShowResumeBanner(true);
+    } else if (saved && isGameOver(saved.status)) {
+      clearSavedGame();
     }
 
     // PRD FR-18: Running clock timer ticks active side every 200ms
