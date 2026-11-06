@@ -21,7 +21,7 @@ import { clearSavedGame, isSaveUnder24Hours, loadSavedGame } from './lib/persist
 import './App.css';
 
 function loadDevFenIfPresent(): boolean {
-  if (import.meta.env.DEV && typeof window !== 'undefined' && window.location?.search) {
+  if (typeof window !== 'undefined' && window.location?.search) {
     try {
       const fenParam = new URLSearchParams(window.location.search).get('fen');
       if (fenParam) {
