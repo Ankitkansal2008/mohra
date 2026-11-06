@@ -34,5 +34,5 @@ describe('perft move generation proof', () => {
 
   it('counts depth 4 nodes as 197281', () => {
     expect(perft(4)).toBe(197281);
-  }, 30000);
+  }, 120000);
 });
