@@ -1,3 +1,4 @@
+export * from './analytics.ts';
 export * from './format.ts';
 export * from './moveAnnouncement.ts';
 export * from './persist.ts';

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { en } from '../../copy/en.ts';
 import { useGameStore } from '../../game/store.ts';
+import { track } from '../../lib/analytics.ts';
 import './Header.css';
 
 export interface HeaderProps {
@@ -22,6 +23,7 @@ export function Header({
   const resetGame = useGameStore((s) => s.resetGame);
 
   const handleNewGame = (): void => {
+    track('new_game', { from: 'header' });
     if (onNewGame) {
       onNewGame();
     } else {

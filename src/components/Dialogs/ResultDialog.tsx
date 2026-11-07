@@ -3,6 +3,7 @@ import { en } from '../../copy/en.ts';
 import { getResultExplanation } from '../../game/selectors.ts';
 import { useGameStore } from '../../game/store.ts';
 import type { GameStatus, Side } from '../../game/types.ts';
+import { track } from '../../lib/analytics.ts';
 import './ResultDialog.css';
 
 export interface ResultDialogProps {
@@ -32,6 +33,7 @@ export function ResultDialog({
   }
 
   const handleRematch = (): void => {
+    track('new_game', { from: 'result_panel' });
     if (onRematch) {
       onRematch();
     } else {

@@ -37,5 +37,15 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script type="module">
+      const umamiId = import.meta.env.VITE_UMAMI_ID;
+      if (umamiId) {
+        const script = document.createElement('script');
+        script.defer = true;
+        script.src = 'https://cloud.umami.is/script.js';
+        script.setAttribute('data-website-id', umamiId);
+        document.body.appendChild(script);
+      }
+    </script>
   </body>
 </html>
