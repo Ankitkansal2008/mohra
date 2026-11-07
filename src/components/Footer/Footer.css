@@ -2,8 +2,10 @@
 .gambit-footer {
   width: 100%;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: var(--space-4, 4px);
   font-size: var(--coord-font-size, 11px);
   color: var(--color-muted, #5A5A5A);
   padding: var(--space-4, 4px) var(--space-16, 16px) var(--space-8, 8px);

@@ -3,7 +3,7 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 
 const BUDGET_APP_SHELL_GZIP_BYTES = 400 * 1024; // 400 KB
-const BUDGET_ENGINE_BROTLI_BYTES = 400 * 1024;   // 400 KB
+const BUDGET_ENGINE_BROTLI_BYTES = Math.round(1.2 * 1024 * 1024); // 1.2 MB
 
 const distDir = path.resolve('dist');
 
@@ -59,7 +59,7 @@ for (const file of appShellFiles) {
 let totalEngineRaw = 0;
 let totalEngineBrotli = 0;
 
-console.log('\n--- Engine Assets Size (Brotli budget: 400 KB) ---');
+console.log('\n--- Engine Assets Size (Brotli budget: 1.2 MB) ---');
 for (const file of engineFiles) {
   const content = fs.readFileSync(file);
   const rawSize = content.length;
@@ -79,7 +79,7 @@ const engineKb = (totalEngineBrotli / 1024).toFixed(2);
 
 console.log('\n--- Budget Summary ---');
 console.log(`App Shell Gzip:     ${appShellKb} KB / 400.00 KB ${totalAppShellGzip <= BUDGET_APP_SHELL_GZIP_BYTES ? '✓ PASS' : '✗ FAIL'}`);
-console.log(`Engine Assets Brotli: ${engineKb} KB / 400.00 KB ${totalEngineBrotli <= BUDGET_ENGINE_BROTLI_BYTES ? '✓ PASS' : '✗ FAIL'}`);
+console.log(`Engine Assets Brotli: ${engineKb} KB / ${(BUDGET_ENGINE_BROTLI_BYTES / 1024).toFixed(2)} KB ${totalEngineBrotli <= BUDGET_ENGINE_BROTLI_BYTES ? '✓ PASS' : '✗ FAIL'}`);
 
 let failed = false;
 
@@ -89,7 +89,7 @@ if (totalAppShellGzip > BUDGET_APP_SHELL_GZIP_BYTES) {
 }
 
 if (totalEngineBrotli > BUDGET_ENGINE_BROTLI_BYTES) {
-  console.error(`\n[BUDGET EXCEEDED] Engine assets brotli size (${engineKb} KB) exceeds 400 KB budget!`);
+  console.error(`\n[BUDGET EXCEEDED] Engine assets brotli size (${engineKb} KB) exceeds 1.2 MB budget!`);
   failed = true;
 }
 

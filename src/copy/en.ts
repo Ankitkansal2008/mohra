@@ -141,6 +141,7 @@ export const en: Record<string, string> = {
 
   // Footer & Version Marker
   versionMarker: 'v{version} • {buildDate}',
+  copyright: '© {year} Mohra. All rights reserved.',
 };
 
 export const copy: Record<string, string> = en;

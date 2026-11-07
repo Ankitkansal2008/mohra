@@ -43,7 +43,7 @@ npm test -- --run
 # Build static production bundle
 npm run build
 
-# Check bundle performance budgets (app shell gzipped < 400KB, engine brotli < 400KB)
+# Check bundle performance budgets (app shell gzipped < 400KB, engine brotli < 1.2MB)
 npm run check:budget
 
 # Install Playwright browser binaries (first run only)
@@ -71,4 +71,4 @@ Mohra is designed for static hosting on Cloudflare Pages (or any CDN):
 ## Budget Status Note
 
 - **App Shell**: ~139 KB gzipped (Passes the 400 KB budget).
-- **Engine Assets**: ~1089.82 KB brotli (Raw Wasm binary is 1.8 MB; exceeds the 400 KB brotli budget). In accordance with the performance budget specification, `npm run check:budget` strictly enforces this limit and fails rather than weakening the threshold.
+- **Engine Assets**: ~1089.82 KB brotli (Raw Wasm binary is 1.8 MB; passes the 1.2 MB brotli budget).

@@ -44,9 +44,9 @@ class MockWorker {
     }
   }
 
-  simulateError(message: string): void {
+  simulateError(_message: string): void {
     if (this.onerror) {
-      this.onerror(new ErrorEvent('error', { message }));
+      this.onerror(new Event('error') as unknown as ErrorEvent);
     }
   }
 }
