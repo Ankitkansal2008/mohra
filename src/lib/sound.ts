@@ -8,7 +8,9 @@ import {
   playCheck,
   playEndGame,
   playMove,
+  playNotify,
   playPromote,
+  playRefuse,
 } from './soundEffects.ts';
 
 export type { GameEndOutcome };
@@ -19,12 +21,16 @@ export type SoundEffect =
   | 'castle'
   | 'check'
   | 'promote'
-  | 'gameEnd';
+  | 'gameEnd'
+  | 'refuse'
+  | 'notify';
 
+const TOAST_THROTTLE_MS = 250;
 let audioCtx: AudioContext | null = null;
 let unlockListenersAttached = false;
 let isReviewingProvider: (() => boolean) | null = null;
 const activeInstances = new Map<SoundEffect, ActiveSoundInstance[]>();
+const lastToastTime = new Map<SoundEffect, number>();
 
 export function setReviewingProvider(fn: (() => boolean) | null): void {
   isReviewingProvider = fn;
@@ -110,6 +116,14 @@ export function playSound(effect: SoundEffect, enabled: boolean, outcome: GameEn
   if (!audioCtx || audioCtx.state !== 'running') return;
   if (isReviewingProvider && isReviewingProvider()) return;
 
+  // Rate-limit toast feedback sounds to at most once per 250 ms
+  if (effect === 'refuse' || effect === 'notify') {
+    const last = lastToastTime.get(effect) ?? 0;
+    const nowMs = Date.now();
+    if (nowMs - last < TOAST_THROTTLE_MS) return;
+    lastToastTime.set(effect, nowMs);
+  }
+
   try {
     const now = audioCtx.currentTime;
     let instance: ActiveSoundInstance;
@@ -132,6 +146,12 @@ export function playSound(effect: SoundEffect, enabled: boolean, outcome: GameEn
         break;
       case 'gameEnd':
         instance = playEndGame(audioCtx, now, outcome);
+        break;
+      case 'refuse':
+        instance = playRefuse(audioCtx, now);
+        break;
+      case 'notify':
+        instance = playNotify(audioCtx, now);
         break;
     }
 
@@ -195,6 +215,7 @@ export function resetAudioForTesting(): void {
     audioCtx = null;
   }
   activeInstances.clear();
+  lastToastTime.clear();
   isReviewingProvider = null;
 }
 

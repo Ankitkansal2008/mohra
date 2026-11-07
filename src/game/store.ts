@@ -136,16 +136,17 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
   cancelPromotion: () => set((s) => ({ ui: { ...s.ui, pendingPromotion: null, selected: null, targets: [] } })),
   confirmPromotion: (piece) =>
     get().ui.pendingPromotion ? get().attemptMove(get().ui.pendingPromotion!.from, get().ui.pendingPromotion!.to, piece) : false,
-  showToast: (message: string, reason?: RejectionReason): void => {
+  showToast: (message: string, reason?: RejectionReason, type?: 'notify' | 'refuse'): void => {
     if (toastTimer) clearTimeout(toastTimer);
     set({ toast: { id: String(Date.now()), message, ...(reason ? { reason } : {}) } });
     toastTimer = setTimeout(() => get().dismissToast(), 3000);
+    const soundOn = get().ui.soundOn;
+    if (reason && reason !== 'wrong-turn') playSound('refuse', soundOn);
+    else if (!reason && (type === 'notify' || message === en.pgnCopied || message === en.linkCopied)) playSound('notify', soundOn);
+    else if (type === 'refuse') playSound('refuse', soundOn);
   },
   setRejectionToast: (reason: RejectionReason) => get().showToast(getRejectionMessage(reason), reason),
-  dismissToast: () => {
-    if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
-    set({ toast: null });
-  },
+  dismissToast: () => { if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; } set({ toast: null }); },
 
   resetGame: (customFen?: string): void => {
     const initial = buildFreshGameState(customFen);

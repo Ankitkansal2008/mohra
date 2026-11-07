@@ -92,7 +92,7 @@ export interface GameStoreState {
   cancelPromotion: () => void;
   confirmPromotion: (piece: 'q' | 'r' | 'b' | 'n') => boolean;
   setRejectionToast: (reason: RejectionReason) => void;
-  showToast: (message: string, reason?: RejectionReason) => void;
+  showToast: (message: string, reason?: RejectionReason, type?: 'notify' | 'refuse') => void;
   dismissToast: () => void;
   resetGame: (customFen?: string) => void;
   rematch: () => void;
