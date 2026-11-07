@@ -74,11 +74,12 @@ export function ResultDialog({
       return;
     }
     const shareUrl = en.shareUrl;
-    const shareText = `${en.shareText} ${shareUrl}`;
+    const shareText = en.shareText;
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       try {
         navigator
           .share({
+            title: en.mohra,
             text: shareText,
             url: shareUrl,
           })
@@ -88,7 +89,7 @@ export function ResultDialog({
       }
     } else {
       if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-        navigator.clipboard.writeText(shareUrl).catch(() => {});
+        navigator.clipboard.writeText(`${shareText}\n${shareUrl}`).catch(() => {});
       }
       useGameStore.getState().showToast(en.linkCopied);
     }

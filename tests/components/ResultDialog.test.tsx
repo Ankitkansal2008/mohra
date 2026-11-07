@@ -242,9 +242,11 @@ describe('Result dialog in game view', () => {
 
     expect(shareMock).toHaveBeenCalledTimes(1);
     expect(shareMock).toHaveBeenCalledWith({
-      text: `${en.shareText} ${en.shareUrl}`,
+      title: en.mohra,
+      text: en.shareText,
       url: en.shareUrl,
     });
+    expect(shareMock.mock.calls[0][0].text).not.toContain('http');
     expect(showToastSpy).not.toHaveBeenCalledWith(en.linkCopied);
 
     Object.defineProperty(globalThis, 'navigator', {
@@ -254,7 +256,7 @@ describe('Result dialog in game view', () => {
     });
   });
 
-  it('copies URL to clipboard and shows toast when navigator.share is unavailable', () => {
+  it('copies text and URL to clipboard and shows toast when navigator.share is unavailable', () => {
     const originalNavigator = globalThis.navigator;
     const writeTextMock = vi.fn().mockResolvedValue(undefined);
 
@@ -275,7 +277,7 @@ describe('Result dialog in game view', () => {
 
     shareBtn.props.onClick();
 
-    expect(writeTextMock).toHaveBeenCalledWith(en.shareUrl);
+    expect(writeTextMock).toHaveBeenCalledWith(`${en.shareText}\n${en.shareUrl}`);
     expect(useGameStore.getState().toast?.message).toBe(en.linkCopied);
 
     Object.defineProperty(globalThis, 'navigator', {
