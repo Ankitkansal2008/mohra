@@ -14,6 +14,7 @@ describe('Footer component', () => {
     expect(html).toContain('v1.0.0');
     expect(html).toContain(BUILD_DATE);
     expect(html).toContain(`© ${new Date().getFullYear()} Mohra. All rights reserved.`);
+    expect(html).toContain('Developed by Ankit Kansal');
   });
 
   it('formats custom version and build date through en.versionMarker template', () => {
@@ -24,6 +25,7 @@ describe('Footer component', () => {
 
   it('contains copyright template in en copy dictionary', () => {
     expect(en.copyright).toBe('© {year} Mohra. All rights reserved.');
+    expect(en.developerCredit).toBe('Developed by Ankit Kansal');
   });
 });
 

@@ -93,5 +93,42 @@ describe('Chess rules validation and threefold repetition authority', () => {
     expect(rules.isThreefoldRepetition()).toBe(true);
     expect(useGameStore.getState().game.status).toBe('draw-repetition');
   });
+
+  it('play the 8-ply knight shuffle through selectSquare + attemptMove and assert the status becomes draw-repetition', () => {
+    // UI flow: selectSquare() then attemptMove() for every single ply
+    const knightShuffle = [
+      ['g1', 'f3'],
+      ['g8', 'f6'],
+      ['f3', 'g1'],
+      ['f6', 'g8'],
+      ['g1', 'f3'],
+      ['g8', 'f6'],
+      ['f3', 'g1'],
+      ['f6', 'g8'],
+    ];
+
+    useGameStore.setState((s) => ({ game: { ...s.game, mode: 'local' } }));
+
+    for (let i = 0; i < 7; i++) {
+      const [from, to] = knightShuffle[i];
+      useGameStore.getState().selectSquare(from);
+      const ok = useGameStore.getState().attemptMove(from, to);
+      expect(ok).toBe(true);
+      expect(useGameStore.getState().game.status).toBe('playing');
+      expect(rules.isThreefoldRepetition()).toBe(false);
+    }
+
+    const [from8, to8] = knightShuffle[7];
+    useGameStore.getState().selectSquare(from8);
+    const ok8 = useGameStore.getState().attemptMove(from8, to8);
+    expect(ok8).toBe(true);
+    expect(rules.isThreefoldRepetition()).toBe(true);
+    expect(useGameStore.getState().game.status).toBe('draw-repetition');
+
+    // Resetting game after threefold draw must cleanly clear position counts so a fresh game doesn't falsely draw
+    useGameStore.getState().resetGame();
+    expect(useGameStore.getState().game.status).toBe('playing');
+    expect(rules.isThreefoldRepetition()).toBe(false);
+  });
 });
 

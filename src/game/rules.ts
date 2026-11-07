@@ -27,14 +27,25 @@ export function getRepetitionKey(fenString: string): string {
 let instance = new Chess();
 let positionCounts = new Map<string, number>();
 
+function initPositionCounts(): void {
+  positionCounts = new Map<string, number>([[getRepetitionKey(instance.fen()), 1]]);
+}
+
 export function reset(fen?: string): void {
   if (!fen) {
     instance.reset();
+    initPositionCounts();
   } else if (instance.fen() !== fen) {
     instance.load(fen);
+    initPositionCounts();
   }
-  positionCounts = new Map<string, number>();
-  positionCounts.set(getRepetitionKey(instance.fen()), 1);
+}
+
+export function syncTo(fen: string): void {
+  if (instance.fen() !== fen) {
+    instance.load(fen);
+    initPositionCounts();
+  }
 }
 
 export function isThreefoldRepetition(): boolean {
@@ -51,23 +62,23 @@ export function legalFrom(square: string): string[] {
 }
 
 export function legalMovesAll(): LegalMove[] {
-  const moves = instance.moves({ verbose: true });
-  return moves.map((move) =>
-    move.promotion
-      ? { from: move.from, to: move.to, promotion: move.promotion }
-      : { from: move.from, to: move.to },
+  return instance.moves({ verbose: true }).map((move) =>
+    move.promotion ? { from: move.from, to: move.to, promotion: move.promotion } : { from: move.from, to: move.to },
   );
 }
 
 export function findLegalMove(moveStr: string): { from: string; to: string; promotion?: string; san: string } | null {
   const clean = moveStr.replace(/[+#]/g, '');
+  const lower = moveStr.toLowerCase();
   const moves = instance.moves({ verbose: true });
   const matched = moves.find(
     (m) =>
       m.san === moveStr ||
       m.san.replace(/[+#]/g, '') === clean ||
       m.lan === moveStr ||
-      `${m.from}${m.to}` === moveStr,
+      `${m.from}${m.to}` === moveStr ||
+      `${m.from}${m.to}${m.promotion ?? ''}` === moveStr ||
+      `${m.from}${m.to}${m.promotion ?? ''}`.toLowerCase() === lower,
   );
   if (!matched) return null;
   return { from: matched.from, to: matched.to, promotion: matched.promotion, san: matched.san };
@@ -106,7 +117,7 @@ export function apply(fromOrSan: string, to?: string, promotion?: string): MoveR
   return {
     san: move.san,
     fen: newFen,
-    uci: move.lan,
+    uci: `${move.from}${move.to}${move.promotion ?? ''}`,
     status: currentStatus.status,
     winner: currentStatus.winner,
   };
@@ -126,7 +137,7 @@ export function undo(): MoveResult | null {
   return {
     san: undone.san,
     fen: instance.fen(),
-    uci: undone.lan,
+    uci: `${undone.from}${undone.to}${undone.promotion ?? ''}`,
     status: currentStatus.status,
     winner: currentStatus.winner,
   };
@@ -144,12 +155,7 @@ export function pgn(): string {
   const currentStatus = status();
   if (currentStatus.status === 'checkmate') {
     instance.header('Result', currentStatus.winner === 'w' ? '1-0' : '0-1');
-  } else if (
-    currentStatus.status === 'stalemate' ||
-    currentStatus.status === 'draw-repetition' ||
-    currentStatus.status === 'draw-fifty' ||
-    currentStatus.status === 'draw-material'
-  ) {
+  } else if (['stalemate', 'draw-repetition', 'draw-fifty', 'draw-material'].includes(currentStatus.status)) {
     instance.header('Result', '1/2-1/2');
   }
   return instance.pgn();
@@ -217,6 +223,7 @@ export function getRejectionReason(from: string, to: string): RejectionReason {
 
 export const rules = {
   reset,
+  syncTo,
   legalFrom,
   legalMovesAll,
   findLegalMove,

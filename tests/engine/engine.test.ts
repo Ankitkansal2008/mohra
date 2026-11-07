@@ -21,6 +21,7 @@ import {
   parseInfoLine,
 } from '../../src/engine/uci.ts';
 import { getTurn } from '../../src/game/selectors.ts';
+import { rules } from '../../src/game/rules.ts';
 import { useGameStore } from '../../src/game/store.ts';
 
 // Lightweight mock Worker implementing standard postMessage / onmessage eventing.
@@ -305,6 +306,48 @@ describe('Stockfish Engine Opponent', () => {
       expect(state.game.moves[0]).toBe('e4');
       expect(getTurn(state.game.fen)).toBe('w');
       expect(state.isThinking).toBe(false);
+    });
+
+    it('after the fallback path runs, assert repetition counting and pgn() are still intact', () => {
+      vi.useFakeTimers();
+      let mockWorker: MockWorker | null = null;
+      initEngine(() => {
+        mockWorker = new MockWorker();
+        return mockWorker as unknown as Worker;
+      });
+
+      // Play moves in local mode: 1. Nf3 Nf6 2. Ng1 Ng8 (starting position reached 2nd time)
+      useGameStore.setState((s) => ({ game: { ...s.game, mode: 'local' } }));
+      useGameStore.getState().attemptMove('g1', 'f3');
+      useGameStore.getState().attemptMove('g8', 'f6');
+      useGameStore.getState().attemptMove('f3', 'g1');
+      useGameStore.getState().attemptMove('f6', 'g8');
+
+      // Switch to computer mode and White plays 3. e4
+      useGameStore.setState((s) => ({ game: { ...s.game, mode: 'computer', humanSide: 'w' } }));
+      useGameStore.getState().attemptMove('e2', 'e4');
+
+      const pgnBeforeFallback = rules.pgn();
+      expect(pgnBeforeFallback).toContain('1. Nf3 Nf6 2. Ng1 Ng8 3. e4');
+
+      // Request engine move for Black and allow 5000ms ceiling + 500ms fallback timeout to elapse
+      requestEngineMove(useGameStore.getState().game.fen, 2);
+      vi.advanceTimersByTime(5000);
+      vi.advanceTimersByTime(500);
+
+      // Verify that engine move was applied
+      const stateAfter = useGameStore.getState();
+      expect(stateAfter.game.moves).toHaveLength(6);
+      expect(stateAfter.isThinking).toBe(false);
+
+      // Assert pgn() is intact and contains all previous plies plus the engine fallback ply
+      const pgnAfterFallback = rules.pgn();
+      expect(pgnAfterFallback).toContain('1. Nf3 Nf6 2. Ng1 Ng8 3. e4');
+      expect(pgnAfterFallback).toBe(stateAfter.game.pgn);
+
+      // Assert rules FEN matches game FEN
+      expect(rules.fen()).toBe(stateAfter.game.fen);
+      expect(rules.isThreefoldRepetition()).toBe(false);
     });
   });
 

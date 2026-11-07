@@ -124,7 +124,7 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
     if (isGameOver(state.game.status) || state.ui.reviewPly !== null) return;
     const turn = getTurn(state.game.fen);
     if (state.game.mode === 'computer' && turn !== state.game.humanSide) return;
-    rules.reset(state.game.fen);
+    rules.syncTo(state.game.fen);
     const piece = rules.getPiece(square);
     if (state.ui.selected === square) return get().clearSelection();
     if (state.ui.selected && (!piece || piece.color !== turn)) return void get().attemptMove(state.ui.selected, square);

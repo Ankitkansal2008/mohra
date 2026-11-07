@@ -1,6 +1,6 @@
 // Bridge orchestrating the Web Worker engine lifecycle, tokens, UCI protocol, and timeouts.
+import { Chess } from 'chess.js';
 import { subscribeGameEvents } from '../game/events.ts';
-import { rules } from '../game/rules.ts';
 import { getTurn } from '../game/selectors.ts';
 import { useGameStore } from '../game/store.ts';
 import type { Level } from '../game/types.ts';
@@ -32,8 +32,8 @@ function clearAllTimers(): void {
 function playFallbackMove(token: number): void {
   clearAllTimers();
   useGameStore.getState().setThinking(false);
-  rules.reset(useGameStore.getState().game.fen);
-  const legal = rules.legalMovesAll();
+  const chess = new Chess(useGameStore.getState().game.fen);
+  const legal = chess.moves({ verbose: true });
   if (legal.length === 0) return;
   const pick = legal[Math.floor(Math.random() * legal.length)];
   if (!pick) return;

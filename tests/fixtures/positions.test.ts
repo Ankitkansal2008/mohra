@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   apply,
   fen,
+  findLegalMove,
   isAttacked,
   legalFrom,
   legalMovesAll,
@@ -134,5 +135,19 @@ describe('rules adapter API methods', () => {
     expect(isAttacked('e3', 'w')).toBe(true);
     expect(isAttacked('e4', 'w')).toBe(false);
     expect(isAttacked('invalid', 'w')).toBe(false);
+  });
+
+  it('a promotion move produces uci "e7e8q" and findLegalMove matches it', () => {
+    reset('8/4P3/8/8/8/8/8/k3K3 w - - 0 1');
+    const matched = findLegalMove('e7e8q');
+    expect(matched).toEqual({
+      from: 'e7',
+      to: 'e8',
+      promotion: 'q',
+      san: 'e8=Q',
+    });
+
+    const result = apply('e7', 'e8', 'q');
+    expect(result.uci).toBe('e7e8q');
   });
 });

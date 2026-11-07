@@ -265,6 +265,18 @@ describe('Game store and move pipeline', () => {
       expect(state.game.uciMoves).toEqual(['a7a8q']);
     });
 
+    it('a promotion move produces uci "e7e8q" and findLegalMove matches it through attemptMove', () => {
+      const PROMOTION_FEN = '8/4P3/8/8/8/8/8/k3K3 w - - 0 1';
+      useGameStore.getState().resetGame(PROMOTION_FEN);
+
+      const success = useGameStore.getState().attemptMove('e7e8q');
+      expect(success).toBe(true);
+
+      const state = useGameStore.getState();
+      expect(state.game.moves).toEqual(['e8=Q']);
+      expect(state.game.uciMoves).toEqual(['e7e8q']);
+    });
+
     it('cancels pending promotion when dismissed without playing', () => {
       const PROMOTION_FEN = '8/P7/8/8/8/8/8/k3K3 w - - 0 1';
       useGameStore.getState().resetGame(PROMOTION_FEN);

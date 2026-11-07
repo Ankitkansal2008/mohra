@@ -12,6 +12,7 @@ export function Footer(): React.JSX.Element {
     <footer className="gambit-footer" role="contentinfo">
       <div>{getVersionMarker()}</div>
       <div>{copyright}</div>
+      <div>{en.developerCredit}</div>
     </footer>
   );
 }

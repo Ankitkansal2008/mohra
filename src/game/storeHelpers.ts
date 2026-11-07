@@ -219,7 +219,8 @@ export function buildRestoredGameState(savedGame: GameState, now: number = Date.
 
 export function buildFreshGameState(fen?: string, overrides?: Partial<GameState>): GameState {
   const targetFen = (fen ?? STARTING_FEN).trim();
-  rules.reset(targetFen);
+  rules.reset();
+  if (targetFen !== STARTING_FEN) rules.reset(targetFen);
   const initial = { ...createInitialGameState(targetFen), ...overrides };
   syncPgnHeaders(initial);
   return initial;
@@ -240,8 +241,7 @@ export function toggleClockEnabled(game: GameState, ui: UiState, enabled: boolea
   const turn = getTurn(game.fen);
   const clock = enabled ? createClockState(turn) : null;
   saveSettings({
-    theme: ui.theme, soundOn: ui.soundOn, animationOn: ui.animationOn,
-    showCoords: ui.showCoords, clockEnabled: enabled,
+    theme: ui.theme, soundOn: ui.soundOn, animationOn: ui.animationOn, showCoords: ui.showCoords, clockEnabled: enabled,
   });
   return { ...game, clock };
 }
