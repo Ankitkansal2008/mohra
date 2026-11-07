@@ -9,6 +9,7 @@ export function createClockState(running: Side | null = null, initialMs: number 
     blackMs: initialMs,
     running,
     lastTickAt: running ? Date.now() : null,
+    initialMs,
   };
 }
 

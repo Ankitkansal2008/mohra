@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { en } from '../../copy/en.ts';
 import type { Level, NewGameOptions, Side } from '../../game/types.ts';
+import { loadSavedSettings, saveSettings } from '../../lib/persist.ts';
 import { useFocusTrap } from '../useFocusTrap.ts';
 import './HomeScreen.css';
 
@@ -27,6 +28,13 @@ const COLORS: Array<{ value: ColorChoice; label: string }> = [
   { value: 'random', label: en.random },
 ];
 
+const TIME_CONTROLS: Array<{ value: number | null; label: string }> = [
+  { value: null, label: en.noClock },
+  { value: 180_000, label: en.threeMinutes },
+  { value: 300_000, label: en.fiveMinutes },
+  { value: 600_000, label: en.tenMinutes },
+];
+
 export function HomeScreen({
   isOpen,
   onClose,
@@ -37,22 +45,59 @@ export function HomeScreen({
   useFocusTrap(dialogRef, canClose ? onClose : undefined, isOpen);
 
   const [opponent, setOpponent] = useState<OpponentChoice>('computer');
-  const [level, setLevel] = useState<Level>(2);
+  const [level, setLevel] = useState<Level>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = loadSavedSettings();
+      if (saved?.level) return saved.level;
+    }
+    return 2;
+  });
   const [color, setColor] = useState<ColorChoice>('w');
-  const [clockEnabled, setClockEnabled] = useState<boolean>(false);
+  const [timeControl, setTimeControl] = useState<number | null>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = loadSavedSettings();
+      if (saved && 'timeControlMs' in saved) {
+        return saved.timeControlMs ?? null;
+      }
+      if (saved?.clockEnabled) {
+        return 600_000;
+      }
+    }
+    return null;
+  });
 
   if (!isOpen) return null;
+
+  const handleSelectLevel = (newLevel: Level): void => {
+    setLevel(newLevel);
+    saveSettings({ level: newLevel });
+  };
+
+  const handleSelectTimeControl = (value: number | null): void => {
+    setTimeControl(value);
+    saveSettings({
+      timeControlMs: value,
+      clockEnabled: value !== null,
+    });
+  };
 
   const handleStart = (): void => {
     let resolvedSide: Side = 'w';
     if (opponent === 'computer') {
       resolvedSide = color === 'random' ? (Math.random() < 0.5 ? 'w' : 'b') : color;
     }
+    const chosenLevel = opponent === 'computer' ? level : 2;
+    saveSettings({
+      level: chosenLevel,
+      timeControlMs: timeControl,
+      clockEnabled: timeControl !== null,
+    });
     onStart({
       mode: opponent,
       humanSide: resolvedSide,
-      level: opponent === 'computer' ? level : 2,
-      clockEnabled,
+      level: chosenLevel,
+      clockEnabled: timeControl !== null,
+      timeControlMs: timeControl,
     });
   };
 
@@ -124,7 +169,7 @@ export function HomeScreen({
                     role="radio"
                     aria-checked={level === item.level}
                     className={`gambit-home-btn ${level === item.level ? 'gambit-home-btn-active' : ''}`}
-                    onClick={() => setLevel(item.level)}
+                    onClick={() => handleSelectLevel(item.level)}
                   >
                     {item.label}
                   </button>
@@ -159,24 +204,18 @@ export function HomeScreen({
           <div className="gambit-home-section">
             <span className="gambit-home-label" id="gambit-clock-label">{en.clock}</span>
             <div className="gambit-home-group" role="radiogroup" aria-labelledby="gambit-clock-label">
-              <button
-                type="button"
-                role="radio"
-                aria-checked={!clockEnabled}
-                className={`gambit-home-btn ${!clockEnabled ? 'gambit-home-btn-active' : ''}`}
-                onClick={() => setClockEnabled(false)}
-              >
-                {en.off}
-              </button>
-              <button
-                type="button"
-                role="radio"
-                aria-checked={clockEnabled}
-                className={`gambit-home-btn ${clockEnabled ? 'gambit-home-btn-active' : ''}`}
-                onClick={() => setClockEnabled(true)}
-              >
-                {en.tenMinutes}
-              </button>
+              {TIME_CONTROLS.map((item) => (
+                <button
+                  key={item.label}
+                  type="button"
+                  role="radio"
+                  aria-checked={timeControl === item.value}
+                  className={`gambit-home-btn ${timeControl === item.value ? 'gambit-home-btn-active' : ''}`}
+                  onClick={() => handleSelectTimeControl(item.value)}
+                >
+                  {item.label}
+                </button>
+              ))}
             </div>
           </div>
 

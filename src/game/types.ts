@@ -6,6 +6,7 @@ export interface ClockState {
   blackMs: number;
   running: Side | null;
   lastTickAt: number | null;
+  initialMs?: number;
 }
 
 export type GameTerminalStatus =
@@ -66,6 +67,7 @@ export interface NewGameOptions {
   humanSide?: Side;
   level?: Level;
   clockEnabled?: boolean;
+  timeControlMs?: number | null;
 }
 
 export interface GameStoreState {

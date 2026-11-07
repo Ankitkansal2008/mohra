@@ -20,6 +20,7 @@ export interface PersistedSettings {
   showCoords: boolean;
   level?: Level;
   clockEnabled?: boolean;
+  timeControlMs?: number | null;
 }
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -129,18 +130,28 @@ export function clearSavedGame(): void {
   } catch {}
 }
 
-export function saveSettings(settings: Omit<PersistedSettings, 'schemaVersion'>): void {
+export function saveSettings(settings: Partial<Omit<PersistedSettings, 'schemaVersion'>>): void {
   if (typeof window === 'undefined' || !window.localStorage) return;
   try {
+    const existing = loadSavedSettings() ?? {};
     const envelope: PersistedSettings = {
       schemaVersion: CURRENT_SCHEMA_VERSION,
+      theme: 'default',
+      soundOn: false,
+      animationOn: true,
+      showCoords: true,
+      ...existing,
       ...settings,
     };
     window.localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(envelope));
   } catch {}
 }
 
-export function loadSavedSettings(): Partial<UiState> & { level?: Level; clockEnabled?: boolean } | null {
+export function loadSavedSettings(): (Partial<UiState> & {
+  level?: Level;
+  clockEnabled?: boolean;
+  timeControlMs?: number | null;
+}) | null {
   if (typeof window === 'undefined' || !window.localStorage) return null;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY_SETTINGS);
@@ -156,6 +167,9 @@ export function loadSavedSettings(): Partial<UiState> & { level?: Level; clockEn
       showCoords: typeof parsed.showCoords === 'boolean' ? parsed.showCoords : true,
       ...(typeof parsed.level === 'number' ? { level: parsed.level as Level } : {}),
       ...(typeof parsed.clockEnabled === 'boolean' ? { clockEnabled: parsed.clockEnabled } : {}),
+      ...(parsed.timeControlMs === null || typeof parsed.timeControlMs === 'number'
+        ? { timeControlMs: parsed.timeControlMs as number | null }
+        : {}),
     };
   } catch {
     return null;

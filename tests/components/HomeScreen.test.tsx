@@ -23,7 +23,7 @@ describe('HomeScreen and new-game flow', () => {
   });
 
   describe('1. Default selection and rendering', () => {
-    it('renders with Play the computer, Level 2 (Casual), White, and Clock off', () => {
+    it('renders with Play the computer, Level 2 (Casual), White, and No clock', () => {
       const html = renderToStaticMarkup(React.createElement(HomeScreen, { isOpen: true, onStart: () => {} }));
       expect(html).toContain('role="dialog"');
       expect(html).toContain('aria-modal="true"');
@@ -31,7 +31,10 @@ describe('HomeScreen and new-game flow', () => {
       expect(html).toContain(en.homeTwoPlayers);
       expect(html).toContain(en.levelCasual);
       expect(html).toContain(en.white);
-      expect(html).toContain(en.off);
+      expect(html).toContain(en.noClock);
+      expect(html).toContain(en.threeMinutes);
+      expect(html).toContain(en.fiveMinutes);
+      expect(html).toContain(en.tenMinutes);
       expect(html).toContain(en.start);
     });
 
@@ -148,6 +151,45 @@ describe('HomeScreen and new-game flow', () => {
         if (hadWindow) (globalThis as unknown as { window: unknown }).window = prevWindow;
         else delete (globalThis as unknown as { window?: unknown }).window;
       }
+    });
+  });
+
+  describe('5. Time control selection and persistence', () => {
+    it('choosing 3 min starts both clocks at 180000 ms', () => {
+      useGameStore.getState().startNewGame({ timeControlMs: 180_000 });
+      const state = useGameStore.getState();
+      expect(state.game.clock).not.toBeNull();
+      expect(state.game.clock?.whiteMs).toBe(180_000);
+      expect(state.game.clock?.blackMs).toBe(180_000);
+      expect(state.game.clock?.running).toBe('w');
+    });
+
+    it('choosing No clock leaves clock null', () => {
+      useGameStore.getState().startNewGame({ timeControlMs: null });
+      const state = useGameStore.getState();
+      expect(state.game.clock).toBeNull();
+    });
+
+    it('choosing 5 min starts both clocks at 300000 ms', () => {
+      useGameStore.getState().startNewGame({ timeControlMs: 300_000 });
+      const state = useGameStore.getState();
+      expect(state.game.clock?.whiteMs).toBe(300_000);
+      expect(state.game.clock?.blackMs).toBe(300_000);
+    });
+
+    it('choosing 10 min starts both clocks at 600000 ms', () => {
+      useGameStore.getState().startNewGame({ timeControlMs: 600_000 });
+      const state = useGameStore.getState();
+      expect(state.game.clock?.whiteMs).toBe(600_000);
+      expect(state.game.clock?.blackMs).toBe(600_000);
+    });
+
+    it('rematch preserves chosen 3 min time control', () => {
+      useGameStore.getState().startNewGame({ timeControlMs: 180_000 });
+      useGameStore.getState().rematch();
+      const state = useGameStore.getState();
+      expect(state.game.clock?.whiteMs).toBe(180_000);
+      expect(state.game.clock?.blackMs).toBe(180_000);
     });
   });
 });

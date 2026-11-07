@@ -3,7 +3,7 @@ import { en } from '../copy/en.ts';
 import { track } from '../lib/analytics.ts';
 import { clearSavedGame, saveGame, saveGameDebounced } from '../lib/persist.ts';
 import { playMoveSound, playSound } from '../lib/sound.ts';
-import { createClockState } from './clock.ts';
+import { createClockState, DEFAULT_CLOCK_MS } from './clock.ts';
 import { emitGameEvent } from './events.ts';
 import { rules } from './rules.ts';
 import { canUndo, createInitialGameState, getRejectionMessage, getTurn, isGameOver, STARTING_FEN } from './selectors.ts';
@@ -159,14 +159,16 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
 
   rematch: (): void => {
     const cur = get().game;
-    get().startNewGame({ mode: cur.mode, humanSide: cur.humanSide, level: cur.level, clockEnabled: cur.clock !== null });
+    const ms = cur.clock ? (cur.clock.initialMs ?? DEFAULT_CLOCK_MS) : null;
+    get().startNewGame({ mode: cur.mode, humanSide: cur.humanSide, level: cur.level, clockEnabled: cur.clock !== null, timeControlMs: ms });
   },
 
   startNewGame: (options?: NewGameOptions): void => {
     const mode = options?.mode ?? 'computer';
     const humanSide = options?.humanSide ?? 'w';
     const level = options?.level ?? 2;
-    const clock = options?.clockEnabled ? createClockState('w') : null;
+    const ms = options?.timeControlMs !== undefined ? options.timeControlMs : (options?.clockEnabled ? DEFAULT_CLOCK_MS : null);
+    const clock = ms !== null ? createClockState('w', ms) : null;
     const initial = buildFreshGameState(STARTING_FEN, { mode, humanSide, level, clock });
     clearSavedGame();
     set((s) => ({
