@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { apply, legalMovesAll, reset, undo } from './rules.ts';
+import { apply, fen, legalMovesAll, reset } from './rules.ts';
 
 function perft(depth: number): number {
   const moves = legalMovesAll();
@@ -7,10 +7,11 @@ function perft(depth: number): number {
     return moves.length;
   }
   let nodes = 0;
+  const currentFen = fen();
   for (const move of moves) {
     apply(move.from, move.to, move.promotion);
     nodes += perft(depth - 1);
-    undo();
+    reset(currentFen);
   }
   return nodes;
 }

@@ -47,7 +47,7 @@ export function buildSquareStyles(params: BuildSquareStylesParams): Record<strin
   if (isFocused && cursorSquare) {
     styles[cursorSquare] = {
       ...styles[cursorSquare],
-      outline: '2px solid var(--color-focus, #1A73E8)',
+      outline: '2px solid var(--color-focus)',
       outlineOffset: '-2px',
       zIndex: 10,
     };

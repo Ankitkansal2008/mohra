@@ -23,6 +23,7 @@ export type GameStatus = 'playing' | 'check' | GameTerminalStatus;
 export interface GameState {
   id: string;
   fen: string;
+  startFen: string;
   pgn: string;
   moves: string[];
   uciMoves: string[];

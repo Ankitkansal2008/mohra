@@ -1,5 +1,5 @@
 import { en } from '../copy/en.ts';
-import { getTurn, isGameOver } from '../game/selectors.ts';
+import { getTurn, isGameOver, STARTING_FEN } from '../game/selectors.ts';
 import type { GameState, Level, UiState } from '../game/types.ts';
 
 export const STORAGE_KEY_GAME = 'mohra:game:v1';
@@ -108,6 +108,10 @@ export function loadSavedGame(): GameState | null {
     if (!isValidGameState(game)) {
       clearSavedGame();
       return null;
+    }
+
+    if (!game.startFen) {
+      game.startFen = STARTING_FEN;
     }
 
     // Only in-progress games may be resumed; terminal games must be cleared silently.

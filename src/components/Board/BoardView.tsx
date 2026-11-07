@@ -69,7 +69,7 @@ export function BoardView({
   }, []);
 
   const isReviewing = storeUi.reviewPly !== null;
-  const reviewPos = isReviewing ? getFenAtPly(storeGame.moves, storeUi.reviewPly!) : null;
+  const reviewPos = isReviewing ? getFenAtPly(storeGame.moves, storeUi.reviewPly!, storeGame.startFen) : null;
   const fen = propFen ?? (reviewPos ? reviewPos.fen : storeGame.fen);
   const status = propStatus ?? storeGame.status;
   const theme = propTheme ?? storeUi.theme;

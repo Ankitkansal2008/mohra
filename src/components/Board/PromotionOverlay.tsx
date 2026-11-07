@@ -77,10 +77,10 @@ export function PromotionOverlay({
           display: 'flex',
           flexDirection: 'column',
           gap: '4px',
-          backgroundColor: 'var(--color-surface, #FFFFFF)',
+          backgroundColor: 'var(--color-surface)',
           borderRadius: 'var(--radius-6, 6px)',
           boxShadow: '0 2px 8px rgba(20, 26, 20, 0.10)',
-          border: '1px solid var(--color-border, #E2E6DE)',
+          border: '1px solid var(--color-border)',
           padding: '4px',
           zIndex: 51,
         }}

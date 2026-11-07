@@ -6,11 +6,9 @@ import {
   isAttacked,
   legalFrom,
   legalMovesAll,
-  loadPgn,
   pgn,
   reset,
   status,
-  undo,
 } from '../../src/game/rules.ts';
 import fixtures from './positions.json' with { type: 'json' };
 
@@ -105,29 +103,12 @@ describe('rules adapter API methods', () => {
     expect(fen()).toBe('rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1');
   });
 
-  it('handles undo correctly and returns previous move info', () => {
-    reset();
-    expect(undo()).toBeNull();
-    apply('e2', 'e4');
-    const undone = undo();
-    expect(undone).not.toBeNull();
-    expect(undone?.san).toBe('e4');
-    expect(undone?.uci).toBe('e2e4');
-    expect(undone?.status).toBe('playing');
-    expect(fen()).toBe('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
-  });
-
-  it('exports and loads PGN', () => {
+  it('exports PGN format', () => {
     reset();
     apply('e2', 'e4');
     apply('e7', 'e5');
     const pgnOutput = pgn();
     expect(pgnOutput).toContain('1. e4 e5');
-
-    reset();
-    expect(fen()).toBe('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
-    loadPgn(pgnOutput);
-    expect(fen()).toBe('rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2');
   });
 
   it('checks attacked squares correctly', () => {

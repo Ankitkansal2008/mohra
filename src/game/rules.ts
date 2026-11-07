@@ -123,26 +123,6 @@ export function apply(fromOrSan: string, to?: string, promotion?: string): MoveR
   };
 }
 
-export function undo(): MoveResult | null {
-  const currentKey = getRepetitionKey(instance.fen());
-  const undone = instance.undo();
-  if (!undone) return null;
-
-  const count = positionCounts.get(currentKey) ?? 1;
-  if (count <= 1) positionCounts.delete(currentKey);
-  else positionCounts.set(currentKey, count - 1);
-
-  instance.header('Result', '*');
-  const currentStatus = status();
-  return {
-    san: undone.san,
-    fen: instance.fen(),
-    uci: `${undone.from}${undone.to}${undone.promotion ?? ''}`,
-    status: currentStatus.status,
-    winner: currentStatus.winner,
-  };
-}
-
 export function fen(): string {
   return instance.fen();
 }
@@ -159,18 +139,6 @@ export function pgn(): string {
     instance.header('Result', '1/2-1/2');
   }
   return instance.pgn();
-}
-
-export function loadPgn(pgnString: string): void {
-  instance.loadPgn(pgnString);
-  positionCounts = new Map<string, number>();
-  const replay = new Chess();
-  positionCounts.set(getRepetitionKey(replay.fen()), 1);
-  for (const histMove of instance.history()) {
-    replay.move(histMove);
-    const key = getRepetitionKey(replay.fen());
-    positionCounts.set(key, (positionCounts.get(key) ?? 0) + 1);
-  }
 }
 
 export function isAttacked(square: string, by: Side): boolean {
@@ -228,11 +196,9 @@ export const rules = {
   legalMovesAll,
   findLegalMove,
   apply,
-  undo,
   fen,
   pgn,
   setHeader,
-  loadPgn,
   status,
   isAttacked,
   getPiece,

@@ -1,3 +1,4 @@
+import React, { useSyncExternalStore } from 'react';
 import { create } from 'zustand';
 import { en } from '../copy/en.ts';
 import { track } from '../lib/analytics.ts';
@@ -7,10 +8,8 @@ import { createClockState, DEFAULT_CLOCK_MS } from './clock.ts';
 import { emitGameEvent } from './events.ts';
 import { rules } from './rules.ts';
 import { canUndo, createInitialGameState, getRejectionMessage, getTurn, isGameOver, STARTING_FEN } from './selectors.ts';
-import {
-  buildAppliedMoveState, buildFreshGameState, buildResignedGameState, buildRestoredGameState,
-  executeClockTick, executeUndoPlies, getInitialBootUiState, persistUiSettings, toggleClockEnabled, validateMoveIntent,
-} from './storeHelpers.ts';
+import { buildAppliedMoveState, buildFreshGameState, buildResignedGameState, buildRestoredGameState,
+  executeClockTick, executeUndoPlies, getInitialBootUiState, persistUiSettings, toggleClockEnabled, validateMoveIntent } from './storeHelpers.ts';
 import type { GameState, GameStoreState, Level, NewGameOptions, RejectionReason } from './types.ts';
 
 export { STARTING_FEN, canUndo, getPliesToUndo, getRejectionMessage, getTurn, isCheck, isGameOver } from './selectors.ts';
@@ -102,9 +101,8 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
     return get().attemptMove(from, to, promotion, true);
   },
 
-  setThinking: (isThinking: boolean) => set({ isThinking }),
+  setThinking: (isThinking: boolean) => set({ isThinking }), setEngineToken: (engineToken: number) => set({ engineToken }),
   setEngineFailed: (failed: boolean) => set((s) => ({ engineFailed: failed, isThinking: false, game: failed ? { ...s.game, mode: 'local' } : s.game })),
-  setEngineToken: (engineToken: number) => set({ engineToken }),
   requestEngineToken: (): number => { const next = get().engineToken + 1; set({ engineToken: next }); return next; },
   setLevel: (level: Level): void => {
     saveSettings({ ...loadSavedSettings(), level });
@@ -233,11 +231,18 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
 
 setReviewingProvider(() => isGameOver(useGameStoreBase.getState().game.status) && useGameStoreBase.getState().ui.reviewPly !== null);
 
+const isInsideReact = (): boolean => {
+  try {
+    return !!(React as unknown as { __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE?: { H?: unknown } })
+      .__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE?.H;
+  } catch { return false; }
+};
+
 export const useGameStore = Object.assign(
-  <U = GameStoreState>(selector?: (state: GameStoreState) => U): U =>
-    typeof window === 'undefined'
-      ? (selector ? selector(useGameStoreBase.getState()) : (useGameStoreBase.getState() as unknown as U))
-      : useGameStoreBase(selector as (state: GameStoreState) => U),
+  <U = GameStoreState>(selector?: (state: GameStoreState) => U): U => {
+    const getSnapshot = () => (selector ? selector(useGameStoreBase.getState()) : (useGameStoreBase.getState() as unknown as U));
+    return isInsideReact() ? useSyncExternalStore(useGameStoreBase.subscribe, getSnapshot, getSnapshot) : getSnapshot();
+  },
   useGameStoreBase,
 );
 

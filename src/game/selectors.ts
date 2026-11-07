@@ -158,6 +158,7 @@ export function createInitialGameState(fen: string = STARTING_FEN): GameState {
   return {
     id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'game-1',
     fen,
+    startFen: fen,
     pgn: '',
     moves: [],
     uciMoves: [],

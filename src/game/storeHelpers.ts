@@ -156,7 +156,7 @@ export function executeUndoPlies(game: GameState): {
   const moves = game.moves.slice(0, game.moves.length - plies);
   const uciMoves = game.uciMoves.slice(0, game.uciMoves.length - plies);
 
-  rules.reset();
+  rules.reset(game.startFen ?? STARTING_FEN);
   for (const move of moves) {
     rules.apply(move);
   }
@@ -196,8 +196,9 @@ export function buildResignedGameState(game: GameState): GameState {
 }
 
 export function buildRestoredGameState(savedGame: GameState, now: number = Date.now()): { game: GameState; lastMove: [string, string] | null } {
+  const startFen = savedGame.startFen ?? STARTING_FEN;
   if (savedGame.moves.length > 0) {
-    rules.reset();
+    rules.reset(startFen);
     for (const move of savedGame.moves) rules.apply(move);
   } else {
     rules.reset(savedGame.fen);
@@ -206,7 +207,7 @@ export function buildRestoredGameState(savedGame: GameState, now: number = Date.
   const clock = savedGame.clock ? { ...savedGame.clock, lastTickAt: savedGame.clock.running ? now : null } : null;
   const lastUci = savedGame.uciMoves[savedGame.uciMoves.length - 1];
   return {
-    game: { ...savedGame, clock, pgn: rules.pgn() },
+    game: { ...savedGame, startFen, clock, pgn: rules.pgn() },
     lastMove: lastUci ? [lastUci.slice(0, 2), lastUci.slice(2, 4)] : null,
   };
 }
