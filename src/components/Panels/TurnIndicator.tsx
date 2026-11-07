@@ -17,6 +17,7 @@ export function TurnIndicator({
   className = '',
 }: TurnIndicatorProps): React.JSX.Element {
   const game = useGameStore((s) => s.game);
+  const storeClock = useGameStore((s) => s.clock);
   const flipped = useGameStore((s) => s.ui.flipped);
 
   // Position on screen maps to side based on current board flip orientation
@@ -33,7 +34,7 @@ export function TurnIndicator({
     ? `${en.levelLabel.replace('{level}', String(game.level))} • ${sideLabel}`
     : sideLabel;
 
-  const clock = game.clock;
+  const clock = storeClock ?? game.clock;
   const clockMs = clock ? (side === 'w' ? clock.whiteMs : clock.blackMs) : null;
   const isClockActive = clock?.running === side && !isGameOver(game.status);
   const isClockUrgent = clockMs !== null && clockMs < 60_000 && clockMs > 0;

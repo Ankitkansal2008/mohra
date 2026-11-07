@@ -17,7 +17,7 @@ export function SettingsDialog({
   useFocusTrap(dialogRef, onClose, isOpen);
 
   const ui = useGameStore((s) => s.ui);
-  const isClockEnabled = useGameStore((s) => s.game.clock !== null);
+  const isClockEnabled = useGameStore((s) => (s.clock ?? s.game.clock) !== null);
 
   const setTheme = useGameStore((s) => s.setTheme);
   const setSoundOn = useGameStore((s) => s.setSoundOn);

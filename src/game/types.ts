@@ -72,6 +72,7 @@ export interface NewGameOptions {
 
 export interface GameStoreState {
   game: GameState;
+  clock: ClockState | null;
   ui: UiState;
   toast: ToastNotification | null;
   lastMove: [string, string] | null;

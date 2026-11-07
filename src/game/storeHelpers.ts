@@ -4,7 +4,7 @@ import { createClockState, stopClock, switchClockTurn, tickClock } from './clock
 import { syncPgnHeaders } from './pgn.ts';
 import { rules } from './rules.ts';
 import { createInitialGameState, createInitialUiState, getPliesToUndo, getResignWinner, getTurn, isGameOver, STARTING_FEN } from './selectors.ts';
-import type { GameState, RejectionReason, Side, UiState } from './types.ts';
+import type { ClockState, GameState, RejectionReason, Side, UiState } from './types.ts';
 
 export interface MoveValidation {
   valid: boolean;
@@ -27,10 +27,8 @@ export function getInitialBootUiState(): UiState {
 export function persistUiSettings(ui: UiState, delta: Partial<UiState>): UiState {
   const next = { ...ui, ...delta };
   saveSettings({
-    theme: next.theme,
-    soundOn: next.soundOn,
-    animationOn: next.animationOn,
-    showCoords: next.showCoords,
+    ...loadSavedSettings(),
+    ...delta,
   });
   return next;
 }
@@ -81,6 +79,7 @@ export function buildAppliedMoveState(
   from: string,
   to: string,
   promotion?: string,
+  activeClock: ClockState | null = game.clock,
 ): {
   nextGame: GameState;
   san: string;
@@ -103,20 +102,15 @@ export function buildAppliedMoveState(
   });
 
   const nextTurn = getTurn(result.fen);
+  const currentClock = activeClock ?? game.clock;
   const nextClock = isGameOver(result.status)
-    ? stopClock(game.clock)
-    : switchClockTurn(game.clock, nextTurn);
+    ? stopClock(currentClock)
+    : switchClockTurn(currentClock, nextTurn);
 
   const nextGame: GameState = {
-    ...game,
-    fen: result.fen,
-    status: result.status,
-    winner: result.winner,
-    moves: [...game.moves, result.san],
-    uciMoves: [...game.uciMoves, result.uci],
-    pgn: rules.pgn(),
-    clock: nextClock,
-    savedAt: Date.now(),
+    ...game, fen: result.fen, status: result.status, winner: result.winner,
+    moves: [...game.moves, result.san], uciMoves: [...game.uciMoves, result.uci],
+    pgn: rules.pgn(), clock: nextClock, savedAt: Date.now(),
   };
 
   // Assert FEN consistency: rules instance FEN must exactly match nextGame.fen
@@ -226,22 +220,26 @@ export function buildFreshGameState(fen?: string, overrides?: Partial<GameState>
   return initial;
 }
 
-export function executeClockTick(game: GameState, now: number = Date.now()): { updatedGame: GameState | null; flagged: boolean } {
-  if (!game.clock || !game.clock.running || isGameOver(game.status)) return { updatedGame: null, flagged: false };
-  const { clock, flagged } = tickClock(game.clock, now);
+export function executeClockTick(
+  game: GameState,
+  currentClockOrNow?: ClockState | null | number,
+  now: number = Date.now(),
+): { updatedGame: GameState | null; updatedClock: ClockState | null; flagged: boolean } {
+  const activeClock = typeof currentClockOrNow === 'number' ? game.clock : (currentClockOrNow ?? game.clock);
+  const tickTime = typeof currentClockOrNow === 'number' ? currentClockOrNow : now;
+  if (!activeClock || !activeClock.running || isGameOver(game.status)) return { updatedGame: null, updatedClock: null, flagged: false };
+  const { clock, flagged } = tickClock(activeClock, tickTime);
   if (flagged) {
     const flaggedGame = handleClockFlag({ ...game, clock }, flagged);
     saveGame(flaggedGame);
-    return { updatedGame: flaggedGame, flagged: true };
+    return { updatedGame: flaggedGame, updatedClock: clock, flagged: true };
   }
-  return { updatedGame: clock ? { ...game, clock } : null, flagged: false };
+  return { updatedGame: null, updatedClock: clock, flagged: false };
 }
 
-export function toggleClockEnabled(game: GameState, ui: UiState, enabled: boolean): GameState {
-  const turn = getTurn(game.fen);
-  const clock = enabled ? createClockState(turn) : null;
-  saveSettings({
-    theme: ui.theme, soundOn: ui.soundOn, animationOn: ui.animationOn, showCoords: ui.showCoords, clockEnabled: enabled,
-  });
+export function toggleClockEnabled(game: GameState, _ui?: UiState, enabled?: boolean): GameState {
+  const isEnabled = enabled ?? false;
+  const clock = isEnabled ? createClockState(getTurn(game.fen)) : null;
+  saveSettings({ ...loadSavedSettings(), clockEnabled: isEnabled });
   return { ...game, clock };
 }

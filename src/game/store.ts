@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { en } from '../copy/en.ts';
 import { track } from '../lib/analytics.ts';
-import { clearSavedGame, saveGame, saveGameDebounced } from '../lib/persist.ts';
+import { clearSavedGame, loadSavedSettings, saveGame, saveGameDebounced, saveSettings } from '../lib/persist.ts';
 import { playMoveSound, playSound, resolveGameEndOutcome, setReviewingProvider } from '../lib/sound.ts';
 import { createClockState, DEFAULT_CLOCK_MS } from './clock.ts';
 import { emitGameEvent } from './events.ts';
@@ -24,7 +24,7 @@ function trackGameEnded(game: GameState): void {
 }
 
 export const useGameStoreBase = create<GameStoreState>((set, get) => ({
-  game: createInitialGameState(), ui: getInitialBootUiState(), toast: null,
+  game: createInitialGameState(), clock: null, ui: getInitialBootUiState(), toast: null,
   lastMove: null, announcedMove: null, engineToken: 0, isThinking: false, engineFailed: false,
 
   attemptMove: (from: string, to?: string, promotion?: string, isEngine?: boolean): boolean => {
@@ -58,7 +58,8 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
     }
 
     try {
-      const { nextGame, san, sideLabel } = buildAppliedMoveState(state.game, resolvedFrom, resolvedTo, resolvedPromotion);
+      const currentClock = state.clock ?? state.game.clock;
+      const { nextGame, san, sideLabel } = buildAppliedMoveState(state.game, resolvedFrom, resolvedTo, resolvedPromotion, currentClock);
 
       if (nextGame.fen !== rules.fen()) {
         console.error(`[FATAL] FEN divergence detected! nextGame="${nextGame.fen}", rules="${rules.fen()}"`);
@@ -66,17 +67,13 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
 
       playMoveSound(san, nextGame.status, state.ui.soundOn, nextGame);
       saveGameDebounced(nextGame);
-      if (isGameOver(nextGame.status) && !isGameOver(state.game.status)) {
-        trackGameEnded(nextGame);
-      }
+      if (isGameOver(nextGame.status) && !isGameOver(state.game.status)) trackGameEnded(nextGame);
 
       set((s) => ({
-        game: nextGame,
+        game: nextGame, clock: nextGame.clock,
         ui: { ...s.ui, selected: null, targets: [], pendingPromotion: null },
-        lastMove: [resolvedFrom, resolvedTo!],
-        announcedMove: `${sideLabel} plays ${san}`,
-        engineToken: isEngine ? s.engineToken : s.engineToken + 1,
-        isThinking: false,
+        lastMove: [resolvedFrom, resolvedTo!], announcedMove: `${sideLabel} plays ${san}`,
+        engineToken: isEngine ? s.engineToken : s.engineToken + 1, isThinking: false,
       }));
 
       if (!isEngine) {
@@ -106,15 +103,11 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
   },
 
   setThinking: (isThinking: boolean) => set({ isThinking }),
-  setEngineFailed: (failed: boolean) =>
-    set((s) => ({ engineFailed: failed, isThinking: false, game: failed ? { ...s.game, mode: 'local' } : s.game })),
+  setEngineFailed: (failed: boolean) => set((s) => ({ engineFailed: failed, isThinking: false, game: failed ? { ...s.game, mode: 'local' } : s.game })),
   setEngineToken: (engineToken: number) => set({ engineToken }),
-  requestEngineToken: (): number => {
-    const next = get().engineToken + 1;
-    set({ engineToken: next });
-    return next;
-  },
+  requestEngineToken: (): number => { const next = get().engineToken + 1; set({ engineToken: next }); return next; },
   setLevel: (level: Level): void => {
+    saveSettings({ ...loadSavedSettings(), level });
     set((s) => ({ game: { ...s.game, level } }));
     emitGameEvent({ type: 'level-change', level });
   },
@@ -152,7 +145,7 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
     const initial = buildFreshGameState(customFen);
     clearSavedGame();
     set((s) => ({
-      game: initial, ui: { ...s.ui, reviewPly: null, selected: null, targets: [] },
+      game: initial, clock: null, ui: { ...s.ui, reviewPly: null, selected: null, targets: [] },
       toast: null, lastMove: null, announcedMove: null, engineToken: s.engineToken + 1, isThinking: false, engineFailed: false,
     }));
     emitGameEvent({ type: 'new-game', fen: initial.fen, level: initial.level, uciMoves: initial.uciMoves });
@@ -160,8 +153,9 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
 
   rematch: (): void => {
     const cur = get().game;
-    const ms = cur.clock ? (cur.clock.initialMs ?? DEFAULT_CLOCK_MS) : null;
-    get().startNewGame({ mode: cur.mode, humanSide: cur.humanSide, level: cur.level, clockEnabled: cur.clock !== null, timeControlMs: ms });
+    const curClock = get().clock ?? cur.clock;
+    const ms = curClock ? (curClock.initialMs ?? DEFAULT_CLOCK_MS) : null;
+    get().startNewGame({ mode: cur.mode, humanSide: cur.humanSide, level: cur.level, clockEnabled: curClock !== null, timeControlMs: ms });
   },
 
   startNewGame: (options?: NewGameOptions): void => {
@@ -173,7 +167,7 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
     const initial = buildFreshGameState(STARTING_FEN, { mode, humanSide, level, clock });
     clearSavedGame();
     set((s) => ({
-      game: initial, ui: { ...s.ui, reviewPly: null, selected: null, targets: [], flipped: humanSide === 'b' },
+      game: initial, clock, ui: { ...s.ui, reviewPly: null, selected: null, targets: [], flipped: humanSide === 'b' },
       toast: null, lastMove: null, announcedMove: null, engineToken: s.engineToken + 1, isThinking: false, engineFailed: false,
     }));
     emitGameEvent({ type: 'new-game', fen: initial.fen, level: initial.level, uciMoves: initial.uciMoves });
@@ -186,7 +180,7 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
     const { mode, humanSide, level } = get().game;
     const newGame = buildFreshGameState(trimmed, { mode, humanSide, level });
     clearSavedGame();
-    set((s) => ({ game: newGame, ui: { ...s.ui, reviewPly: null, selected: null, targets: [] }, toast: null, lastMove: null, announcedMove: null, engineToken: s.engineToken + 1, isThinking: false }));
+    set((s) => ({ game: newGame, clock: null, ui: { ...s.ui, reviewPly: null, selected: null, targets: [] }, toast: null, lastMove: null, announcedMove: null, engineToken: s.engineToken + 1, isThinking: false }));
     emitGameEvent({ type: 'new-game', fen: newGame.fen, level: newGame.level, uciMoves: newGame.uciMoves });
     return true;
   },
@@ -209,29 +203,30 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
     playSound('gameEnd', state.ui.soundOn, state.game.mode === 'computer' ? 'loss' : 'win');
     saveGame(resignedGame);
     trackGameEnded(resignedGame);
-    set((s) => ({ game: resignedGame, ui: { ...s.ui, selected: null, targets: [], pendingPromotion: null }, announcedMove: null, engineToken: s.engineToken + 1, isThinking: false }));
+    set((s) => ({ game: resignedGame, clock: resignedGame.clock, ui: { ...s.ui, selected: null, targets: [], pendingPromotion: null }, announcedMove: null, engineToken: s.engineToken + 1, isThinking: false }));
   },
 
   toggleFlip: () => set((s) => ({ ui: { ...s.ui, flipped: !s.ui.flipped } })),
   setReviewPly: (ply: number | null) => set((s) => ({ ui: { ...s.ui, reviewPly: ply, selected: null, targets: [] } })),
 
   tickClock: (now: number = Date.now()): void => {
-    const { updatedGame, flagged } = executeClockTick(get().game, now);
-    if (!updatedGame) return;
-    if (flagged) {
-      playSound('gameEnd', get().ui.soundOn, resolveGameEndOutcome(updatedGame));
+    const state = get();
+    const { updatedGame, updatedClock, flagged } = executeClockTick(state.game, state.clock, now);
+    if (!updatedClock) return;
+    if (flagged && updatedGame) {
+      playSound('gameEnd', state.ui.soundOn, resolveGameEndOutcome(updatedGame));
       trackGameEnded(updatedGame);
-    }
-    set({ game: updatedGame });
+      set({ game: updatedGame, clock: updatedClock });
+    } else set({ clock: updatedClock });
   },
 
   setTheme: (theme) => set((s) => ({ ui: persistUiSettings(s.ui, { theme }) })), setSoundOn: (soundOn) => set((s) => ({ ui: persistUiSettings(s.ui, { soundOn }) })),
   setAnimationOn: (animationOn) => set((s) => ({ ui: persistUiSettings(s.ui, { animationOn }) })), setShowCoords: (showCoords) => set((s) => ({ ui: persistUiSettings(s.ui, { showCoords }) })),
-  setClockEnabled: (enabled) => set((s) => ({ game: toggleClockEnabled(s.game, s.ui, enabled) })),
+  setClockEnabled: (enabled) => set((s) => { const nextGame = toggleClockEnabled(s.game, s.ui, enabled); return { game: nextGame, clock: nextGame.clock }; }),
 
   restoreGame: (savedGame: GameState) => {
     const { game, lastMove } = buildRestoredGameState(savedGame);
-    set((s) => ({ game, ui: { ...s.ui, reviewPly: null, selected: null, targets: [] }, lastMove, engineToken: s.engineToken + 1, isThinking: false }));
+    set((s) => ({ game, clock: game.clock, ui: { ...s.ui, reviewPly: null, selected: null, targets: [] }, lastMove, engineToken: s.engineToken + 1, isThinking: false }));
     emitGameEvent({ type: 'restored', fen: game.fen, level: game.level, uciMoves: game.uciMoves });
   },
 }));
