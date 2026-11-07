@@ -137,16 +137,18 @@ describe('Sound module (src/lib/sound.ts)', () => {
       expect(mockCtx.createBiquadFilter).toHaveBeenCalledTimes(1);
     });
 
-    it('plays refuse sound as soft low tone with fast decay', () => {
+    it('plays refuse sound as soft low tone with fast decay and 0.30 peak gain', () => {
       playSound('refuse', true);
       expect(mockCtx.createOscillator).toHaveBeenCalledTimes(1);
-      expect(mockCtx.createGain).toHaveBeenCalledTimes(1);
+      const gainNode = mockCtx.createGain.mock.results[0]?.value;
+      expect(gainNode.gain.setValueAtTime).toHaveBeenCalledWith(0.30, expect.any(Number));
     });
 
-    it('plays notify sound as light high blip', () => {
+    it('plays notify sound as light high blip with 0.25 peak gain', () => {
       playSound('notify', true);
       expect(mockCtx.createOscillator).toHaveBeenCalledTimes(1);
-      expect(mockCtx.createGain).toHaveBeenCalledTimes(1);
+      const gainNode = mockCtx.createGain.mock.results[0]?.value;
+      expect(gainNode.gain.setValueAtTime).toHaveBeenCalledWith(0.25, expect.any(Number));
     });
 
     it('plays capture, castle, check, promote, and game end chords', () => {

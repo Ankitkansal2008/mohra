@@ -146,14 +146,14 @@ export function playEndGame(ctx: AudioContext, now: number, outcome: GameEndOutc
   return playChord(ctx, now, freqs[outcome] ?? freqs.draw);
 }
 
-// Soft low tone: 180 Hz sine, 90 ms, fast decay, volume around 0.12 (gentle thud, never a buzzer)
+// Soft low tone: 180 Hz sine, 90 ms, fast decay, volume around 0.30 (gentle thud, never a buzzer)
 export function playRefuse(ctx: AudioContext, now: number): ActiveSoundInstance {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.type = 'sine';
   osc.frequency.setValueAtTime(180, now);
   osc.frequency.exponentialRampToValueAtTime(80, now + 0.09);
-  gain.gain.setValueAtTime(0.12, now);
+  gain.gain.setValueAtTime(0.30, now);
   gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
   osc.connect(gain);
   gain.connect(ctx.destination);
@@ -162,13 +162,13 @@ export function playRefuse(ctx: AudioContext, now: number): ActiveSoundInstance 
   return { endsAt: now + 0.09, stop: () => { try { osc.stop(); } catch {} } };
 }
 
-// Light high blip: 880 Hz, 60 ms, volume around 0.10 for confirmations
+// Light high blip: 880 Hz, 60 ms, volume around 0.25 for confirmations
 export function playNotify(ctx: AudioContext, now: number): ActiveSoundInstance {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.type = 'sine';
   osc.frequency.setValueAtTime(880, now);
-  gain.gain.setValueAtTime(0.10, now);
+  gain.gain.setValueAtTime(0.25, now);
   gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
   osc.connect(gain);
   gain.connect(ctx.destination);
