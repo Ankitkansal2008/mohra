@@ -4,6 +4,7 @@ import { getResultExplanation } from '../../game/selectors.ts';
 import { useGameStore } from '../../game/store.ts';
 import type { GameStatus, Side } from '../../game/types.ts';
 import { track } from '../../lib/analytics.ts';
+import { useFocusTrap } from '../useFocusTrap.ts';
 import './ResultDialog.css';
 
 export interface ResultDialogProps {
@@ -27,6 +28,8 @@ export function ResultDialog({
   onCopyPgn,
   onShare,
 }: ResultDialogProps): React.JSX.Element | null {
+  const dialogRef = useFocusTrap<HTMLDivElement>();
+
   const movesCount = useGameStore((s) => s.game.moves.length);
   // Pure explanation helper handles copy formatting for all terminal outcomes.
   const explanation = getResultExplanation(status, winner, fen);
@@ -99,6 +102,7 @@ export function ResultDialog({
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-labelledby="result-dialog-headline"

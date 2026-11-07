@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { en } from '../../copy/en.ts';
 import type { Level, NewGameOptions, Side } from '../../game/types.ts';
+import { useFocusTrap } from '../useFocusTrap.ts';
 import './HomeScreen.css';
 
 export interface HomeScreenProps {
@@ -32,19 +33,13 @@ export function HomeScreen({
   onStart,
   canClose = false,
 }: HomeScreenProps): React.JSX.Element | null {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, canClose ? onClose : undefined, isOpen);
+
   const [opponent, setOpponent] = useState<OpponentChoice>('computer');
   const [level, setLevel] = useState<Level>(2);
   const [color, setColor] = useState<ColorChoice>('w');
   const [clockEnabled, setClockEnabled] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (!isOpen || !canClose || !onClose) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, canClose, onClose]);
 
   if (!isOpen) return null;
 
@@ -68,6 +63,7 @@ export function HomeScreen({
       onClick={canClose ? onClose : undefined}
     >
       <div
+        ref={dialogRef}
         className="gambit-home-dialog"
         role="dialog"
         aria-modal="true"

@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { defaultPieces } from 'react-chessboard';
 import { en } from '../../copy/en.ts';
 import type { Side } from '../../game/types.ts';
+import { useFocusTrap } from '../useFocusTrap.ts';
 
 export interface PromotionOverlayProps {
   readonly toSquare: string;
@@ -30,23 +31,9 @@ export function PromotionOverlay({
   onSelect,
   onCancel,
 }: PromotionOverlayProps): React.JSX.Element {
+  const dialogRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const firstButtonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    // Focus first choice immediately so keyboard interaction requires zero pointer inputs
-    firstButtonRef.current?.focus();
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onCancel();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onCancel]);
+  useFocusTrap(dialogRef, onCancel);
 
   const fileChar = toSquare[0];
   const rawFileIndex = fileChar.charCodeAt(0) - 'a'.charCodeAt(0);
@@ -66,6 +53,7 @@ export function PromotionOverlay({
 
   return (
     <div
+      ref={dialogRef}
       className="gambit-promotion-backdrop"
       style={{
         position: 'absolute',
@@ -98,10 +86,9 @@ export function PromotionOverlay({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {CHOICES.map((choice, index) => (
+        {CHOICES.map((choice) => (
           <button
             key={choice.piece}
-            ref={index === 0 ? firstButtonRef : undefined}
             type="button"
             style={{
               width: '64px',

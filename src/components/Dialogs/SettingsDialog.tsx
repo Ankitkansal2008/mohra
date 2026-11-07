@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useRef } from 'react';
 import { en } from '../../copy/en.ts';
 import { useGameStore } from '../../game/store.ts';
+import { useFocusTrap } from '../useFocusTrap.ts';
 import './SettingsDialog.css';
 
 export interface SettingsDialogProps {
@@ -12,6 +13,9 @@ export function SettingsDialog({
   isOpen,
   onClose,
 }: SettingsDialogProps): React.JSX.Element | null {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, onClose, isOpen);
+
   const ui = useGameStore((s) => s.ui);
   const isClockEnabled = useGameStore((s) => s.game.clock !== null);
 
@@ -20,15 +24,6 @@ export function SettingsDialog({
   const setAnimationOn = useGameStore((s) => s.setAnimationOn);
   const setShowCoords = useGameStore((s) => s.setShowCoords);
   const setClockEnabled = useGameStore((s) => s.setClockEnabled);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -39,6 +34,7 @@ export function SettingsDialog({
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
         className="gambit-settings-dialog"
         role="dialog"
         aria-modal="true"

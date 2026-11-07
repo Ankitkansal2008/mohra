@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { en } from '../../copy/en.ts';
 import { useGameStore } from '../../game/store.ts';
 import { track } from '../../lib/analytics.ts';
+import { useFocusTrap } from '../useFocusTrap.ts';
 import './Header.css';
 
 export interface HeaderProps {
@@ -20,6 +21,11 @@ export function Header({
   movesCount,
 }: HeaderProps): React.JSX.Element {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuDialogRef = useRef<HTMLDivElement>(null);
+
+  const handleCloseMenu = (): void => setIsMenuOpen(false);
+  useFocusTrap(menuDialogRef, handleCloseMenu, isMenuOpen);
+
   const resetGame = useGameStore((s) => s.resetGame);
 
   const handleNewGame = (): void => {
@@ -105,14 +111,17 @@ export function Header({
           onClick={() => setIsMenuOpen(false)}
         >
           <div
+            ref={menuDialogRef}
             className="gambit-mobile-menu"
             role="dialog"
             aria-modal="true"
-            aria-label={en.menu}
+            aria-labelledby="mobile-menu-title"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="gambit-mobile-menu-header">
-              <span className="gambit-mobile-menu-title">{en.menu}</span>
+              <h2 id="mobile-menu-title" className="gambit-mobile-menu-title">
+                {en.menu}
+              </h2>
               <button
                 type="button"
                 className="gambit-mobile-menu-close"

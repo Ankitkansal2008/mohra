@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { en } from '../../copy/en.ts';
 import { canUndo, isGameOver } from '../../game/selectors.ts';
 import { useGameStore } from '../../game/store.ts';
+import { useFocusTrap } from '../useFocusTrap.ts';
 import './Controls.css';
 
 export interface ControlsProps {
@@ -27,21 +28,16 @@ export function Controls({
   const resignGame = useGameStore((s) => s.resignGame);
 
   const [isConfirmingResign, setIsConfirmingResign] = useState(false);
+  const resignDialogRef = useRef<HTMLDivElement>(null);
+
+  const handleCancelResign = (): void => {
+    setIsConfirmingResign(false);
+  };
+
+  useFocusTrap(resignDialogRef, handleCancelResign, isConfirmingResign);
 
   const isUndoDisabled = !canUndo(game);
   const isGameOverState = isGameOver(game.status);
-
-  // Close resign dialog on Escape
-  useEffect(() => {
-    if (!isConfirmingResign) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsConfirmingResign(false);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isConfirmingResign]);
 
   // Support pressing 'f' or 'F' to flip the board (UI/UX Section 9)
   useEffect(() => {
@@ -81,10 +77,6 @@ export function Controls({
   const handleOpenResign = (): void => {
     if (isGameOverState) return;
     setIsConfirmingResign(true);
-  };
-
-  const handleCancelResign = (): void => {
-    setIsConfirmingResign(false);
   };
 
   const handleConfirmResign = (): void => {
@@ -158,6 +150,7 @@ export function Controls({
           onClick={handleCancelResign}
         >
           <div
+            ref={resignDialogRef}
             className="gambit-resign-dialog"
             role="dialog"
             aria-modal="true"

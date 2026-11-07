@@ -1,7 +1,7 @@
 # Gambit - project rules
 
 ## What we are building
-A browser chess game: play the computer at 3 levels, or a friend on one device.
+A browser chess game: play the computer at 4 levels, or a friend on one device.
 React 19 + TypeScript + Vite. chess.js for rules. react-chessboard for the board.
 Stockfish WASM (single-threaded lite) in a Web Worker. Zustand for state.
 Tailwind with tokens as CSS variables. Vitest + Playwright.
