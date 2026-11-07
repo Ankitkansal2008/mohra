@@ -1,4 +1,5 @@
 // Lightweight, cookieless telemetry via Umami Cloud.
+// Injected only in production when VITE_UMAMI_ID is provided.
 // No-op in development and when the external tracker is absent.
 
 declare global {
@@ -7,6 +8,30 @@ declare global {
       track: (event: string, data?: Record<string, string | number>) => void;
     };
   }
+}
+
+let isInitialized = false;
+
+export function initAnalytics(): void {
+  const umamiId = import.meta.env.VITE_UMAMI_ID;
+  if (!import.meta.env.PROD || !umamiId || typeof document === 'undefined') {
+    return;
+  }
+
+  if (isInitialized && document.querySelector('script[src="https://cloud.umami.is/script.js"]')) {
+    return;
+  }
+  if (document.querySelector('script[src="https://cloud.umami.is/script.js"]')) {
+    isInitialized = true;
+    return;
+  }
+
+  const script = document.createElement('script');
+  script.defer = true;
+  script.src = 'https://cloud.umami.is/script.js';
+  script.setAttribute('data-website-id', umamiId);
+  document.head.appendChild(script);
+  isInitialized = true;
 }
 
 export function track(event: string, data?: Record<string, string | number>): void {
@@ -24,4 +49,3 @@ export function track(event: string, data?: Record<string, string | number>): vo
     // Suppress tracker exceptions so failures cannot disrupt the game.
   }
 }
-
