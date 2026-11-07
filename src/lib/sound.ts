@@ -1,92 +1,168 @@
 // Synthesized Web Audio sound effects ensure no external network assets are required in v1.
-import type { GameStatus } from '../game/types.ts';
+import type { GameStatus, Side } from '../game/types.ts';
+import {
+  type ActiveSoundInstance,
+  type GameEndOutcome,
+  playCapture,
+  playCastle,
+  playCheck,
+  playEndGame,
+  playMove,
+  playPromote,
+} from './soundEffects.ts';
 
-export type SoundEffect = 'move' | 'capture' | 'check' | 'gameEnd';
+export type { GameEndOutcome };
+
+export type SoundEffect =
+  | 'move'
+  | 'capture'
+  | 'castle'
+  | 'check'
+  | 'promote'
+  | 'gameEnd';
 
 let audioCtx: AudioContext | null = null;
+let unlockListenersAttached = false;
+let isReviewingProvider: (() => boolean) | null = null;
+const activeInstances = new Map<SoundEffect, ActiveSoundInstance[]>();
 
-function getAudioContext(): AudioContext | null {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-  const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-  if (!AudioContextClass) {
-    return null;
-  }
-  if (!audioCtx) {
-    audioCtx = new AudioContextClass();
-  }
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume().catch(() => {});
-  }
+export function setReviewingProvider(fn: (() => boolean) | null): void {
+  isReviewingProvider = fn;
+}
+
+function getAudioContextClass(): typeof AudioContext | null {
+  if (typeof window === 'undefined') return null;
+  return (
+    window.AudioContext ||
+    (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext ||
+    null
+  );
+}
+
+export function getAudioContext(): AudioContext | null {
   return audioCtx;
 }
 
-export function playSound(effect: SoundEffect, enabled: boolean): void {
-  if (!enabled) return;
-  const ctx = getAudioContext();
-  if (!ctx) return;
+// User gesture unlock: required by mobile Safari and modern browser autoplay policies.
+export function unlockAudio(): void {
+  const AudioContextClass = getAudioContextClass();
+  if (!AudioContextClass) return;
 
   try {
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    switch (effect) {
-      case 'move': {
-        // Soft wooden tap: gentle downward frequency sweep with quick decay
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(320, now);
-        osc.frequency.exponentialRampToValueAtTime(140, now + 0.05);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-        osc.start(now);
-        osc.stop(now + 0.06);
-        break;
-      }
-      case 'capture': {
-        // Crisp dual-tone impact
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(480, now);
-        osc.frequency.exponentialRampToValueAtTime(180, now + 0.07);
-        gain.gain.setValueAtTime(0.3, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
-        osc.start(now);
-        osc.stop(now + 0.08);
-        break;
-      }
-      case 'check': {
-        // Alert chime: high double tone
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(580, now);
-        osc.frequency.setValueAtTime(740, now + 0.07);
-        gain.gain.setValueAtTime(0.25, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-        osc.start(now);
-        osc.stop(now + 0.19);
-        break;
-      }
-      case 'gameEnd': {
-        // Concluding harmonic resolution
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(440, now);
-        osc.frequency.exponentialRampToValueAtTime(330, now + 0.3);
-        gain.gain.setValueAtTime(0.3, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-        osc.start(now);
-        osc.stop(now + 0.36);
-        break;
-      }
+    if (!audioCtx) {
+      audioCtx = new AudioContextClass();
     }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(() => {});
+    }
+
+    // Play a 1-sample silent buffer on user gesture for iOS Safari compatibility
+    const buffer = audioCtx.createBuffer(1, 1, 22050);
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(audioCtx.destination);
+    source.start(0);
   } catch {
-    // Browsers with strict auto-play policies silently fail without throwing
+    // Strictly constrained browser autoplay policies fail silently
   }
 }
 
-export function playMoveSound(san: string, status: GameStatus, enabled: boolean): void {
+function handleUnlock(): void {
+  removeUnlockListeners();
+  unlockAudio();
+}
+
+export function removeUnlockListeners(): void {
+  if (typeof window === 'undefined') return;
+  window.removeEventListener('pointerdown', handleUnlock, true);
+  window.removeEventListener('keydown', handleUnlock, true);
+  unlockListenersAttached = false;
+}
+
+export function initAudioUnlock(): void {
+  if (typeof window === 'undefined' || unlockListenersAttached) return;
+  window.addEventListener('pointerdown', handleUnlock, { capture: true });
+  window.addEventListener('keydown', handleUnlock, { capture: true });
+  unlockListenersAttached = true;
+}
+
+if (typeof window !== 'undefined') {
+  initAudioUnlock();
+}
+
+function registerInstance(effect: SoundEffect, instance: ActiveSoundInstance, now: number): void {
+  const current = (activeInstances.get(effect) || []).filter((item) => item.endsAt > now);
+  // Never overlap the same sound more than twice
+  while (current.length >= 2) {
+    const oldest = current.shift();
+    if (oldest) {
+      try {
+        oldest.stop();
+      } catch {}
+    }
+  }
+  current.push(instance);
+  activeInstances.set(effect, current);
+}
+
+export function playSound(effect: SoundEffect, enabled: boolean, outcome: GameEndOutcome = 'draw'): void {
   if (!enabled) return;
+  if (!audioCtx || audioCtx.state !== 'running') return;
+  if (isReviewingProvider && isReviewingProvider()) return;
+
+  try {
+    const now = audioCtx.currentTime;
+    let instance: ActiveSoundInstance;
+
+    switch (effect) {
+      case 'move':
+        instance = playMove(audioCtx, now);
+        break;
+      case 'capture':
+        instance = playCapture(audioCtx, now);
+        break;
+      case 'castle':
+        instance = playCastle(audioCtx, now);
+        break;
+      case 'check':
+        instance = playCheck(audioCtx, now);
+        break;
+      case 'promote':
+        instance = playPromote(audioCtx, now);
+        break;
+      case 'gameEnd':
+        instance = playEndGame(audioCtx, now, outcome);
+        break;
+    }
+
+    registerInstance(effect, instance, now);
+  } catch {
+    // Autoplay restrictions or audio failures fail silently without throwing
+  }
+}
+
+export function resolveGameEndOutcome(
+  game?: { winner: Side | null; mode: string; humanSide: Side } | null,
+): GameEndOutcome {
+  if (!game || !game.winner) return 'draw';
+  if (game.mode === 'computer') {
+    return game.winner === game.humanSide ? 'win' : 'loss';
+  }
+  return 'win';
+}
+
+export function playMoveSound(
+  san: string,
+  status: GameStatus,
+  enabled: boolean,
+  context?: { winner: Side | null; mode: string; humanSide: Side } | GameEndOutcome,
+): void {
+  if (!enabled) return;
+  const outcome: GameEndOutcome =
+    typeof context === 'string'
+      ? context
+      : resolveGameEndOutcome(context);
+
   if (
     status === 'checkmate' ||
     status === 'stalemate' ||
@@ -96,12 +172,32 @@ export function playMoveSound(san: string, status: GameStatus, enabled: boolean)
     status === 'resigned' ||
     status === 'timeout'
   ) {
-    playSound('gameEnd', enabled);
+    playSound('gameEnd', enabled, outcome);
   } else if (status === 'check') {
     playSound('check', enabled);
+  } else if (san.includes('=')) {
+    playSound('promote', enabled);
+  } else if (san.startsWith('O-O') || san.startsWith('0-0')) {
+    playSound('castle', enabled);
   } else if (san.includes('x')) {
     playSound('capture', enabled);
   } else {
     playSound('move', enabled);
   }
+}
+
+export function resetAudioForTesting(): void {
+  removeUnlockListeners();
+  if (audioCtx) {
+    try {
+      audioCtx.close().catch(() => {});
+    } catch {}
+    audioCtx = null;
+  }
+  activeInstances.clear();
+  isReviewingProvider = null;
+}
+
+export function setAudioContextForTesting(ctx: AudioContext | null): void {
+  audioCtx = ctx;
 }

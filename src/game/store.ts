@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { en } from '../copy/en.ts';
 import { track } from '../lib/analytics.ts';
 import { clearSavedGame, saveGame, saveGameDebounced } from '../lib/persist.ts';
-import { playMoveSound, playSound } from '../lib/sound.ts';
+import { playMoveSound, playSound, resolveGameEndOutcome, setReviewingProvider } from '../lib/sound.ts';
 import { createClockState, DEFAULT_CLOCK_MS } from './clock.ts';
 import { emitGameEvent } from './events.ts';
 import { rules } from './rules.ts';
@@ -64,7 +64,7 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
         console.error(`[FATAL] FEN divergence detected! nextGame="${nextGame.fen}", rules="${rules.fen()}"`);
       }
 
-      playMoveSound(san, nextGame.status, state.ui.soundOn);
+      playMoveSound(san, nextGame.status, state.ui.soundOn, nextGame);
       saveGameDebounced(nextGame);
       if (isGameOver(nextGame.status) && !isGameOver(state.game.status)) {
         trackGameEnded(nextGame);
@@ -205,7 +205,7 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
     const state = get();
     if (isGameOver(state.game.status)) return;
     const resignedGame = buildResignedGameState(state.game);
-    playSound('gameEnd', state.ui.soundOn);
+    playSound('gameEnd', state.ui.soundOn, state.game.mode === 'computer' ? 'loss' : 'win');
     saveGame(resignedGame);
     trackGameEnded(resignedGame);
     set((s) => ({ game: resignedGame, ui: { ...s.ui, selected: null, targets: [], pendingPromotion: null }, announcedMove: null, engineToken: s.engineToken + 1, isThinking: false }));
@@ -218,7 +218,7 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
     const { updatedGame, flagged } = executeClockTick(get().game, now);
     if (!updatedGame) return;
     if (flagged) {
-      playSound('gameEnd', get().ui.soundOn);
+      playSound('gameEnd', get().ui.soundOn, resolveGameEndOutcome(updatedGame));
       trackGameEnded(updatedGame);
     }
     set({ game: updatedGame });
@@ -234,6 +234,8 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
     emitGameEvent({ type: 'restored', fen: game.fen, level: game.level, uciMoves: game.uciMoves });
   },
 }));
+
+setReviewingProvider(() => isGameOver(useGameStoreBase.getState().game.status) && useGameStoreBase.getState().ui.reviewPly !== null);
 
 export const useGameStore = Object.assign(
   <U = GameStoreState>(selector?: (state: GameStoreState) => U): U =>

@@ -137,7 +137,7 @@ export function saveSettings(settings: Partial<Omit<PersistedSettings, 'schemaVe
     const envelope: PersistedSettings = {
       schemaVersion: CURRENT_SCHEMA_VERSION,
       theme: 'default',
-      soundOn: false,
+      soundOn: true,
       animationOn: true,
       showCoords: true,
       ...existing,
@@ -162,7 +162,7 @@ export function loadSavedSettings(): (Partial<UiState> & {
     }
     return {
       theme: parsed.theme === 'slate' ? 'slate' : 'default',
-      soundOn: typeof parsed.soundOn === 'boolean' ? parsed.soundOn : false,
+      soundOn: typeof parsed.soundOn === 'boolean' ? parsed.soundOn : true,
       animationOn: typeof parsed.animationOn === 'boolean' ? parsed.animationOn : true,
       showCoords: typeof parsed.showCoords === 'boolean' ? parsed.showCoords : true,
       ...(typeof parsed.level === 'number' ? { level: parsed.level as Level } : {}),

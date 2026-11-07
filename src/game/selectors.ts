@@ -180,7 +180,7 @@ export function createInitialUiState(): UiState {
     reviewPly: null,
     flipped: false,
     theme: 'default',
-    soundOn: false,
+    soundOn: true,
     animationOn: true,
     showCoords: true,
   };
