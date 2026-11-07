@@ -14,6 +14,7 @@ export interface ResultDialogProps {
   readonly onRematch?: () => void;
   readonly onReviewMoves?: () => void;
   readonly onCopyPgn?: () => void;
+  readonly onShare?: () => void;
 }
 
 export function ResultDialog({
@@ -24,6 +25,7 @@ export function ResultDialog({
   onRematch,
   onReviewMoves,
   onCopyPgn,
+  onShare,
 }: ResultDialogProps): React.JSX.Element | null {
   const movesCount = useGameStore((s) => s.game.moves.length);
   // Pure explanation helper handles copy formatting for all terminal outcomes.
@@ -63,6 +65,33 @@ export function ResultDialog({
       navigator.clipboard.writeText(pgnText).catch(() => {});
     }
     state.showToast(en.pgnCopied);
+  };
+
+  const handleShare = (): void => {
+    track('share', { from: 'result_panel' });
+    if (onShare) {
+      onShare();
+      return;
+    }
+    const shareUrl = en.shareUrl;
+    const shareText = `${en.shareText} ${shareUrl}`;
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      try {
+        navigator
+          .share({
+            text: shareText,
+            url: shareUrl,
+          })
+          .catch(() => {});
+      } catch {
+        // Suppress any synchronous exceptions from Web Share API.
+      }
+    } else {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(shareUrl).catch(() => {});
+      }
+      useGameStore.getState().showToast(en.linkCopied);
+    }
   };
 
   const isReviewDisabled = movesCount === 0;
@@ -107,6 +136,13 @@ export function ResultDialog({
           onClick={handleCopyPgn}
         >
           {en.copyPgn}
+        </button>
+        <button
+          type="button"
+          className="gambit-result-dialog-btn"
+          onClick={handleShare}
+        >
+          {en.share}
         </button>
       </div>
     </div>

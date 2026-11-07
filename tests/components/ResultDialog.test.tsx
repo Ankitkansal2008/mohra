@@ -166,7 +166,7 @@ describe('Result dialog in game view', () => {
   });
 
   // Actions and keyboard reachability
-  it('renders keyboard-reachable action buttons: Rematch, Review moves, Copy PGN', () => {
+  it('renders keyboard-reachable action buttons: Rematch, Review moves, Copy PGN, Share', () => {
     const html = renderToStaticMarkup(
       React.createElement(ResultDialog, {
         status: 'checkmate',
@@ -179,6 +179,7 @@ describe('Result dialog in game view', () => {
     expect(html).toContain(`>${en.rematch}</button>`);
     expect(html).toContain(`>${en.reviewMoves}</button>`);
     expect(html).toContain(`>${en.copyPgn}</button>`);
+    expect(html).toContain(`>${en.share}</button>`);
     // Review moves is disabled until Stage 6 with explanatory title & aria-label
     expect(html).toContain('disabled=""');
     expect(html).toContain(`title="${en.reviewMovesDisabled}"`);
@@ -188,19 +189,21 @@ describe('Result dialog in game view', () => {
   it('invokes action handlers when provided via props', () => {
     const onRematch = vi.fn();
     const onCopyPgn = vi.fn();
+    const onShare = vi.fn();
 
     const element = ResultDialog({
       status: 'checkmate',
       winner: 'w',
       onRematch,
       onCopyPgn,
+      onShare,
     });
 
     expect(element).not.toBeNull();
     const actionsDiv = element?.props.children[2];
     expect(actionsDiv.props.className).toBe('gambit-result-dialog-actions');
 
-    const [rematchBtn, reviewBtn, copyBtn] = actionsDiv.props.children;
+    const [rematchBtn, reviewBtn, copyBtn, shareBtn] = actionsDiv.props.children;
     expect(reviewBtn.props.disabled).toBe(true);
     expect(reviewBtn.props.title).toBe('Available once the move list is built');
 
@@ -209,6 +212,77 @@ describe('Result dialog in game view', () => {
 
     copyBtn.props.onClick();
     expect(onCopyPgn).toHaveBeenCalledTimes(1);
+
+    shareBtn.props.onClick();
+    expect(onShare).toHaveBeenCalledTimes(1);
+  });
+
+  it('invokes navigator.share when available and does not show copy toast', () => {
+    const originalNavigator = globalThis.navigator;
+    const shareMock = vi.fn().mockResolvedValue(undefined);
+    const showToastSpy = vi.spyOn(useGameStore.getState(), 'showToast');
+
+    Object.defineProperty(globalThis, 'navigator', {
+      value: {
+        share: shareMock,
+        clipboard: { writeText: vi.fn() },
+      },
+      configurable: true,
+      writable: true,
+    });
+
+    const element = ResultDialog({
+      status: 'checkmate',
+      winner: 'w',
+    });
+    const actionsDiv = element?.props.children[2];
+    const shareBtn = actionsDiv.props.children[3];
+
+    shareBtn.props.onClick();
+
+    expect(shareMock).toHaveBeenCalledTimes(1);
+    expect(shareMock).toHaveBeenCalledWith({
+      text: `${en.shareText} ${en.shareUrl}`,
+      url: en.shareUrl,
+    });
+    expect(showToastSpy).not.toHaveBeenCalledWith(en.linkCopied);
+
+    Object.defineProperty(globalThis, 'navigator', {
+      value: originalNavigator,
+      configurable: true,
+      writable: true,
+    });
+  });
+
+  it('copies URL to clipboard and shows toast when navigator.share is unavailable', () => {
+    const originalNavigator = globalThis.navigator;
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+
+    Object.defineProperty(globalThis, 'navigator', {
+      value: {
+        clipboard: { writeText: writeTextMock },
+      },
+      configurable: true,
+      writable: true,
+    });
+
+    const element = ResultDialog({
+      status: 'checkmate',
+      winner: 'w',
+    });
+    const actionsDiv = element?.props.children[2];
+    const shareBtn = actionsDiv.props.children[3];
+
+    shareBtn.props.onClick();
+
+    expect(writeTextMock).toHaveBeenCalledWith(en.shareUrl);
+    expect(useGameStore.getState().toast?.message).toBe(en.linkCopied);
+
+    Object.defineProperty(globalThis, 'navigator', {
+      value: originalNavigator,
+      configurable: true,
+      writable: true,
+    });
   });
 
   it('enables Review moves when moves exist and enters review mode on click', () => {

@@ -31,6 +31,7 @@ describe('Result dialog placement and mobile responsive checks', () => {
     expect(html).toContain(en.rematch);
     expect(html).toContain(en.reviewMoves);
     expect(html).toContain(en.copyPgn);
+    expect(html).toContain(en.share);
 
     // Controls row must be replaced by ResultDialog
     expect(html).not.toContain('class="gambit-controls"');

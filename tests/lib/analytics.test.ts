@@ -206,6 +206,23 @@ describe('Analytics module (src/lib/analytics.ts)', () => {
       expect(onRematch).toHaveBeenCalledTimes(1);
     });
 
+    it('tracks share with from: result_panel when share is clicked in ResultDialog', () => {
+      const mockTrack = vi.fn();
+      delete (globalThis as unknown as { window?: unknown }).window;
+
+      const onShare = vi.fn();
+      const dialog = ResultDialog({ status: 'checkmate', winner: 'w', onShare });
+      const actionsDiv = dialog!.props.children[2];
+      const shareBtn = actionsDiv.props.children[3];
+
+      (globalThis as unknown as { window: unknown }).window = { umami: { track: mockTrack } };
+      vi.stubEnv('DEV', false);
+      shareBtn.props.onClick();
+
+      expect(mockTrack).toHaveBeenCalledWith('share', { from: 'result_panel' });
+      expect(onShare).toHaveBeenCalledTimes(1);
+    });
+
     it('tracks new_game with from: header', () => {
       const mockTrack = vi.fn();
       (globalThis as unknown as { window: unknown }).window = { umami: { track: mockTrack } };
