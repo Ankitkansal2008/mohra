@@ -1,12 +1,25 @@
 // Level difficulty mappings for the Stockfish engine opponent.
 import type { Level } from '../game/types.ts';
 
+// Visible thinking time delays to prevent instant engine replies and allow players to observe moves.
+export const MIN_THINKING_TIME_LEVEL_1_MS = 1200;
+export const MIN_THINKING_TIME_LEVEL_2_3_MS = 800;
+export const MAX_ARTIFICIAL_DELAY_MS = 1200;
+
+export const MIN_THINKING_TIMES: Record<Level, number> = {
+  1: MIN_THINKING_TIME_LEVEL_1_MS,
+  2: MIN_THINKING_TIME_LEVEL_2_3_MS,
+  3: MIN_THINKING_TIME_LEVEL_2_3_MS,
+  4: MIN_THINKING_TIME_LEVEL_2_3_MS,
+};
+
 export interface LevelConfig {
   skill: { min: number; max: number };
   depth: { min: number; max: number };
   movetime: { min: number; max: number };
   multiPv: number;
   pickRandomRootMove: boolean;
+  minThinkingMs?: number;
 }
 
 export interface SampledLevelParams {
@@ -24,6 +37,7 @@ export const LEVEL_CONFIGS: Record<Level, LevelConfig> = {
     movetime: { min: 200, max: 500 },
     multiPv: 5,
     pickRandomRootMove: true,
+    minThinkingMs: MIN_THINKING_TIME_LEVEL_1_MS,
   },
   2: {
     skill: { min: 5, max: 8 },
@@ -31,6 +45,7 @@ export const LEVEL_CONFIGS: Record<Level, LevelConfig> = {
     movetime: { min: 400, max: 800 },
     multiPv: 1,
     pickRandomRootMove: false,
+    minThinkingMs: MIN_THINKING_TIME_LEVEL_2_3_MS,
   },
   3: {
     skill: { min: 12, max: 15 },
@@ -38,6 +53,7 @@ export const LEVEL_CONFIGS: Record<Level, LevelConfig> = {
     movetime: { min: 700, max: 1200 },
     multiPv: 1,
     pickRandomRootMove: false,
+    minThinkingMs: MIN_THINKING_TIME_LEVEL_2_3_MS,
   },
   4: {
     skill: { min: 20, max: 20 },
@@ -45,8 +61,14 @@ export const LEVEL_CONFIGS: Record<Level, LevelConfig> = {
     movetime: { min: 1200, max: 1500 },
     multiPv: 1,
     pickRandomRootMove: false,
+    minThinkingMs: MIN_THINKING_TIME_LEVEL_2_3_MS,
   },
 };
+
+// Returns the minimum visible thinking delay in milliseconds for a given level.
+export function getMinThinkingTime(level: Level): number {
+  return MIN_THINKING_TIMES[level] ?? MIN_THINKING_TIME_LEVEL_2_3_MS;
+}
 
 // Returns the configuration object for a specific difficulty level.
 export function getLevelConfig(level: Level): LevelConfig {

@@ -104,5 +104,14 @@ describe('BoardView component', () => {
     // Legal destinations receive legal target styling
     expect(html).toContain('var(--board-legal-dot');
   });
+
+  it('does not use a blanket touch-action: none on the board container and permits pinch-zoom', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(BoardView, { fen: STARTING_FEN }),
+    );
+
+    expect(html).toContain('touch-action:pinch-zoom');
+    expect(html).not.toMatch(/class="[^"]*gambit-board-wrapper[^"]*"[^>]*style="[^"]*touch-action:\s*none/);
+  });
 });
 

@@ -240,6 +240,7 @@ describe('Stockfish Engine Opponent', () => {
     });
 
     it('processes engine move through complete bridge dispatch flow', () => {
+      vi.useFakeTimers();
       let mockWorker: MockWorker | null = null;
       initEngine(() => {
         mockWorker = new MockWorker();
@@ -257,6 +258,12 @@ describe('Stockfish Engine Opponent', () => {
         uci: 'e7e5',
         depth: 4,
       });
+
+      // Move is not applied before level's minimum delay (800ms on level 2)
+      expect(useGameStore.getState().game.moves).toEqual(['e4']);
+
+      // Advance by remaining thinking delay
+      vi.advanceTimersByTime(800);
 
       const state = useGameStore.getState();
       expect(state.game.moves).toEqual(['e4', 'e5']);
@@ -281,6 +288,77 @@ describe('Stockfish Engine Opponent', () => {
 
       vi.advanceTimersByTime(2);
       expect(useGameStore.getState().isThinking).toBe(true);
+    });
+
+    it('with a mocked engine that replies in 10 ms, the move is still not applied before the level\'s minimum delay', () => {
+      vi.useFakeTimers();
+      let mockWorker: MockWorker | null = null;
+      initEngine(() => {
+        mockWorker = new MockWorker();
+        return mockWorker as unknown as Worker;
+      });
+
+      useGameStore.getState().attemptMove('e2', 'e4');
+      // Level 1: 1200ms minimum delay
+      const token = requestEngineMove(useGameStore.getState().game.fen, 1);
+
+      // Mocked engine replies in 10 ms
+      vi.advanceTimersByTime(10);
+      mockWorker!.simulateMessage({
+        type: 'bestmove',
+        token,
+        uci: 'e7e5',
+        depth: 2,
+      });
+
+      // Move is not applied yet at 10ms
+      expect(useGameStore.getState().game.moves).toEqual(['e4']);
+
+      // Thinking indicator is visible during the delay
+      expect(useGameStore.getState().isThinking).toBe(true);
+
+      // Advance to 1199ms (10ms + 1189ms) - still not applied
+      vi.advanceTimersByTime(1189);
+      expect(useGameStore.getState().game.moves).toEqual(['e4']);
+      expect(useGameStore.getState().isThinking).toBe(true);
+
+      // Advance final 1ms to 1200ms - move is applied
+      vi.advanceTimersByTime(1);
+      const state = useGameStore.getState();
+      expect(state.game.moves).toEqual(['e4', 'e5']);
+      // Highlighted using the existing lastMove square style
+      expect(state.lastMove).toEqual(['e7', 'e5']);
+      expect(state.isThinking).toBe(false);
+    });
+
+    it('enforces 800ms minimum delay on level 2 and uses real time if search exceeds delay', () => {
+      vi.useFakeTimers();
+      let mockWorker: MockWorker | null = null;
+      initEngine(() => {
+        mockWorker = new MockWorker();
+        return mockWorker as unknown as Worker;
+      });
+
+      useGameStore.getState().attemptMove('e2', 'e4');
+      // Level 2: 800ms minimum delay
+      const token = requestEngineMove(useGameStore.getState().game.fen, 2);
+
+      // Search takes 1500ms (longer than 800ms)
+      vi.advanceTimersByTime(1500);
+      expect(useGameStore.getState().isThinking).toBe(true);
+
+      mockWorker!.simulateMessage({
+        type: 'bestmove',
+        token,
+        uci: 'e7e5',
+        depth: 4,
+      });
+
+      // Applied immediately since search took longer than minimum delay (real time used, no extra artificial delay)
+      const state = useGameStore.getState();
+      expect(state.game.moves).toEqual(['e4', 'e5']);
+      expect(state.lastMove).toEqual(['e7', 'e5']);
+      expect(state.isThinking).toBe(false);
     });
 
     it('enforces 5s ceiling by sending stop and falling back to random legal move after 500ms', () => {

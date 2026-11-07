@@ -13,7 +13,12 @@ export {
 
 export {
   LEVEL_CONFIGS,
+  MAX_ARTIFICIAL_DELAY_MS,
+  MIN_THINKING_TIME_LEVEL_1_MS,
+  MIN_THINKING_TIME_LEVEL_2_3_MS,
+  MIN_THINKING_TIMES,
   getLevelConfig,
+  getMinThinkingTime,
   sampleLevelParams,
 } from './levels.ts';
 export type { LevelConfig, SampledLevelParams } from './levels.ts';

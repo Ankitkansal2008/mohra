@@ -106,6 +106,7 @@ export function BoardView({
         maxWidth: '100%',
         aspectRatio: '1 / 1',
         pointerEvents: interactive ? 'auto' : 'none',
+        touchAction: 'pinch-zoom',
         ...style,
       }}
       tabIndex={0}
@@ -155,7 +156,7 @@ export function BoardView({
             animationDurationInMs: animationDuration,
             showAnimations: animationDuration > 0,
             showNotation: false,
-            boardStyle: { touchAction: 'none', ...(isInteractive ? {} : { pointerEvents: 'none' }) },
+            boardStyle: { touchAction: 'pinch-zoom', ...(isInteractive ? {} : { pointerEvents: 'none' }) },
             allowDragging: isInteractive,
             canDragPiece: ({ piece }) => (isInteractive ? piece.pieceType[0] === turn : false),
             onPieceDrop: ({ sourceSquare, targetSquare }) => {

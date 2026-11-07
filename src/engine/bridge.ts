@@ -4,7 +4,7 @@ import { subscribeGameEvents } from '../game/events.ts';
 import { getTurn } from '../game/selectors.ts';
 import { useGameStore } from '../game/store.ts';
 import type { Level } from '../game/types.ts';
-import { getLevelConfig, sampleLevelParams } from './levels.ts';
+import { getLevelConfig, getMinThinkingTime, MAX_ARTIFICIAL_DELAY_MS, sampleLevelParams } from './levels.ts';
 import {
   formatGoCommand, formatMultiPvCommand, formatPositionCommand,
   formatSkillCommand, parseBestMove, parseInfoLine,
@@ -13,31 +13,52 @@ import {
 let worker: Worker | null = null;
 let activeToken = 0;
 let isInitialized = false, isReady = false, isUciOk = false;
+let searchStartTime = 0;
+let searchLevel: Level = 2;
 
-let uciTimeout: ReturnType<typeof setTimeout> | null = null;
-let thinkingTimeout: ReturnType<typeof setTimeout> | null = null;
-let ceilingTimeout: ReturnType<typeof setTimeout> | null = null;
-let fallbackTimeout: ReturnType<typeof setTimeout> | null = null;
-let pendingGo: (() => void) | null = null;
-let pickRandomRoot = false;
-let candidateMoves: string[] = [];
+let uciTimeout: ReturnType<typeof setTimeout> | null = null, thinkingTimeout: ReturnType<typeof setTimeout> | null = null;
+let ceilingTimeout: ReturnType<typeof setTimeout> | null = null, fallbackTimeout: ReturnType<typeof setTimeout> | null = null, moveApplyTimeout: ReturnType<typeof setTimeout> | null = null;
+let pendingGo: (() => void) | null = null, pickRandomRoot = false, candidateMoves: string[] = [];
 
 function clearAllTimers(): void {
   if (uciTimeout) { clearTimeout(uciTimeout); uciTimeout = null; }
   if (thinkingTimeout) { clearTimeout(thinkingTimeout); thinkingTimeout = null; }
   if (ceilingTimeout) { clearTimeout(ceilingTimeout); ceilingTimeout = null; }
   if (fallbackTimeout) { clearTimeout(fallbackTimeout); fallbackTimeout = null; }
+  if (moveApplyTimeout) { clearTimeout(moveApplyTimeout); moveApplyTimeout = null; }
+}
+
+// Delays engine move to guarantee minimum visible thinking time without exceeding 1200ms extra delay.
+function scheduleEngineMove(token: number, uci: string): void {
+  if (ceilingTimeout) { clearTimeout(ceilingTimeout); ceilingTimeout = null; }
+  if (fallbackTimeout) { clearTimeout(fallbackTimeout); fallbackTimeout = null; }
+  const elapsed = Date.now() - searchStartTime;
+  const remaining = Math.min(MAX_ARTIFICIAL_DELAY_MS, Math.max(0, getMinThinkingTime(searchLevel) - elapsed));
+
+  if (remaining <= 0) {
+    clearAllTimers();
+    useGameStore.getState().setThinking(false);
+    useGameStore.getState().applyEngineMove(token, uci);
+    return;
+  }
+
+  useGameStore.getState().setThinking(true);
+  moveApplyTimeout = setTimeout(() => {
+    moveApplyTimeout = null;
+    if (token !== activeToken || token !== useGameStore.getState().engineToken || token === 0) return;
+    clearAllTimers();
+    useGameStore.getState().setThinking(false);
+    useGameStore.getState().applyEngineMove(token, uci);
+  }, remaining);
 }
 
 function playFallbackMove(token: number): void {
   clearAllTimers();
   useGameStore.getState().setThinking(false);
-  const chess = new Chess(useGameStore.getState().game.fen);
-  const legal = chess.moves({ verbose: true });
+  const legal = new Chess(useGameStore.getState().game.fen).moves({ verbose: true });
   if (legal.length === 0) return;
   const pick = legal[Math.floor(Math.random() * legal.length)];
-  if (!pick) return;
-  useGameStore.getState().applyEngineMove(token, `${pick.from}${pick.to}${pick.promotion ?? ''}`);
+  if (pick) useGameStore.getState().applyEngineMove(token, `${pick.from}${pick.to}${pick.promotion ?? ''}`);
 }
 
 export function handleEngineFailure(): void {
@@ -59,9 +80,7 @@ export function handleWorkerMessage(e: MessageEvent<unknown>): void {
     if (line === 'uciok') {
       isUciOk = true;
       if (uciTimeout) { clearTimeout(uciTimeout); uciTimeout = null; }
-      worker?.postMessage('setoption name Threads value 1');
-      worker?.postMessage('setoption name Hash value 16');
-      worker?.postMessage('isready');
+      for (const cmd of ['setoption name Threads value 1', 'setoption name Hash value 16', 'isready']) worker?.postMessage(cmd);
       return;
     }
 
@@ -89,9 +108,7 @@ export function handleWorkerMessage(e: MessageEvent<unknown>): void {
         if (chosen) chosenMove = chosen;
       }
 
-      clearAllTimers();
-      useGameStore.getState().setThinking(false);
-      useGameStore.getState().applyEngineMove(activeToken, chosenMove);
+      scheduleEngineMove(activeToken, chosenMove);
       return;
     }
   }
@@ -103,31 +120,26 @@ export function handleWorkerMessage(e: MessageEvent<unknown>): void {
     if (msg.type === 'bestmove' && typeof msg.token === 'number' && typeof msg.uci === 'string') {
       const currentToken = useGameStore.getState().engineToken;
       if (msg.token !== activeToken || msg.token !== currentToken || msg.token === 0) return;
-      clearAllTimers();
-      useGameStore.getState().setThinking(false);
-      useGameStore.getState().applyEngineMove(msg.token, msg.uci);
+      scheduleEngineMove(msg.token, msg.uci);
     }
   }
 }
 
 export function requestEngineMove(fen: string, level: Level): number {
   clearAllTimers();
+  searchStartTime = Date.now();
+  searchLevel = level;
   const currentToken = useGameStore.getState().engineToken;
   activeToken = Math.max(activeToken, currentToken) + 1;
   const token = activeToken;
   useGameStore.getState().setEngineToken(token);
 
-  thinkingTimeout = setTimeout(() => {
-    if (token === activeToken) useGameStore.getState().setThinking(true);
-  }, 150);
+  thinkingTimeout = setTimeout(() => { if (token === activeToken) useGameStore.getState().setThinking(true); }, 150);
 
   ceilingTimeout = setTimeout(() => {
     if (token !== activeToken) return;
     worker?.postMessage('stop');
-    fallbackTimeout = setTimeout(() => {
-      if (token !== activeToken) return;
-      playFallbackMove(token);
-    }, 500);
+    fallbackTimeout = setTimeout(() => { if (token === activeToken) playFallbackMove(token); }, 500);
   }, 5000);
 
   const execute = (): void => {
@@ -136,10 +148,12 @@ export function requestEngineMove(fen: string, level: Level): number {
     pickRandomRoot = config.pickRandomRootMove;
     candidateMoves = [];
 
-    worker?.postMessage(formatSkillCommand(params.skill));
-    worker?.postMessage(formatMultiPvCommand(params.multiPv));
-    worker?.postMessage(formatPositionCommand(fen));
-    worker?.postMessage(formatGoCommand({ depth: params.depth, movetime: params.movetime }));
+    for (const cmd of [
+      formatSkillCommand(params.skill),
+      formatMultiPvCommand(params.multiPv),
+      formatPositionCommand(fen),
+      formatGoCommand({ depth: params.depth, movetime: params.movetime }),
+    ]) worker?.postMessage(cmd);
   };
 
   if (!isReady) pendingGo = execute;
@@ -151,11 +165,9 @@ export function requestEngineMove(fen: string, level: Level): number {
 export function cancelEngineSearch(): void {
   clearAllTimers();
   pendingGo = null;
-  const currentToken = useGameStore.getState().engineToken;
-  activeToken = Math.max(activeToken + 1, currentToken);
-  if (worker) {
-    worker.postMessage('stop');
-  }
+  activeToken = Math.max(activeToken + 1, useGameStore.getState().engineToken);
+  useGameStore.getState().setThinking(false);
+  if (worker) worker.postMessage('stop');
 }
 
 export function getEngineUrl(baseUri?: string): string {
@@ -176,30 +188,20 @@ export function initEngine(workerFactory?: () => Worker): void {
         handleEngineFailure();
       };
 
-      if (workerFactory) {
-        isReady = true;
-        isUciOk = true;
-      } else {
-        isReady = false;
-        isUciOk = false;
+      isReady = Boolean(workerFactory);
+      isUciOk = Boolean(workerFactory);
+      if (!workerFactory) {
         worker.postMessage('uci');
         uciTimeout = setTimeout(() => { if (!isUciOk) handleEngineFailure(); }, 5000);
       }
-
       isInitialized = true;
     } catch {
       handleEngineFailure();
     }
   };
 
-  if (workerFactory || typeof window === 'undefined') {
-    start();
-  } else {
-    window.requestAnimationFrame(() => {
-      const scheduleIdle = window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, 1));
-      scheduleIdle(start);
-    });
-  }
+  if (workerFactory || typeof window === 'undefined') start();
+  else window.requestAnimationFrame(() => (window.requestIdleCallback || ((cb: () => void) => setTimeout(cb, 1)))(start));
 }
 
 function shouldEnginePlay(fen: string): boolean {
@@ -211,23 +213,17 @@ function shouldEnginePlay(fen: string): boolean {
 
 export function connectBridgeToStore(): () => void {
   return subscribeGameEvents((event) => {
-    switch (event.type) {
-      case 'human-move':
-        if (shouldEnginePlay(event.fen)) requestEngineMove(event.fen, event.level);
-        else cancelEngineSearch();
-        break;
-      case 'undo':
-        cancelEngineSearch();
-        break;
-      case 'new-game':
-      case 'restored':
-        cancelEngineSearch();
-        if (shouldEnginePlay(event.fen)) requestEngineMove(event.fen, event.level);
-        break;
-      case 'level-change':
-        cancelEngineSearch();
-        if (shouldEnginePlay(useGameStore.getState().game.fen)) requestEngineMove(useGameStore.getState().game.fen, event.level);
-        break;
+    if (event.type === 'human-move') {
+      if (shouldEnginePlay(event.fen)) requestEngineMove(event.fen, event.level);
+      else cancelEngineSearch();
+    } else if (event.type === 'undo') {
+      cancelEngineSearch();
+    } else if (event.type === 'new-game' || event.type === 'restored') {
+      cancelEngineSearch();
+      if (shouldEnginePlay(event.fen)) requestEngineMove(event.fen, event.level);
+    } else if (event.type === 'level-change') {
+      cancelEngineSearch();
+      if (shouldEnginePlay(useGameStore.getState().game.fen)) requestEngineMove(useGameStore.getState().game.fen, event.level);
     }
   });
 }

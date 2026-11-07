@@ -51,6 +51,13 @@ describe('Social preview and metadata in index.html', () => {
     expect(indexHtml).toContain('<link rel="apple-touch-icon" href="/icon-512.png" />');
   });
 
+  it('the viewport meta does not contain user-scalable=no', () => {
+    expect(indexHtml).not.toContain('user-scalable=no');
+    expect(indexHtml).not.toContain('maximum-scale');
+    expect(indexHtml).toMatch(/<meta\s+name=["']viewport["']\s+content=["'][^"']*width=device-width[^"']*["']\s*\/?>/);
+    expect(indexHtml).toMatch(/<meta\s+name=["']viewport["']\s+content=["'][^"']*initial-scale=1/);
+  });
+
   it('replaces %VITE_SITE_URL% with absolute origin in built dist/index.html', () => {
     const distHtmlPath = path.resolve(__dirname, '../dist/index.html');
     if (fs.existsSync(distHtmlPath)) {
