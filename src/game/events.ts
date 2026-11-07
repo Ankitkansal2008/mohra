@@ -5,6 +5,7 @@ export type GameEvent =
   | { type: 'human-move'; fen: string; level: Level; uciMoves: string[] }
   | { type: 'undo' }
   | { type: 'new-game'; fen: string; level: Level; uciMoves: string[] }
+  | { type: 'restored'; fen: string; level: Level; uciMoves: string[] }
   | { type: 'level-change'; level: Level };
 
 export type GameEventListener = (event: GameEvent) => void;

@@ -229,6 +229,7 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
   restoreGame: (savedGame: GameState) => {
     const { game, lastMove } = buildRestoredGameState(savedGame);
     set((s) => ({ game, ui: { ...s.ui, reviewPly: null, selected: null, targets: [] }, lastMove, engineToken: s.engineToken + 1, isThinking: false }));
+    emitGameEvent({ type: 'restored', fen: game.fen, level: game.level, uciMoves: game.uciMoves });
   },
 }));
 

@@ -201,12 +201,18 @@ export function buildResignedGameState(game: GameState): GameState {
   };
 }
 
-export function buildRestoredGameState(savedGame: GameState): { game: GameState; lastMove: [string, string] | null } {
-  rules.reset(savedGame.fen);
+export function buildRestoredGameState(savedGame: GameState, now: number = Date.now()): { game: GameState; lastMove: [string, string] | null } {
+  if (savedGame.moves.length > 0) {
+    rules.reset();
+    for (const move of savedGame.moves) rules.apply(move);
+  } else {
+    rules.reset(savedGame.fen);
+  }
   syncPgnHeaders(savedGame);
+  const clock = savedGame.clock ? { ...savedGame.clock, lastTickAt: savedGame.clock.running ? now : null } : null;
   const lastUci = savedGame.uciMoves[savedGame.uciMoves.length - 1];
   return {
-    game: savedGame,
+    game: { ...savedGame, clock, pgn: rules.pgn() },
     lastMove: lastUci ? [lastUci.slice(0, 2), lastUci.slice(2, 4)] : null,
   };
 }

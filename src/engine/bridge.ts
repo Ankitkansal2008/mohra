@@ -220,14 +220,13 @@ export function connectBridgeToStore(): () => void {
         cancelEngineSearch();
         break;
       case 'new-game':
+      case 'restored':
         cancelEngineSearch();
         if (shouldEnginePlay(event.fen)) requestEngineMove(event.fen, event.level);
         break;
       case 'level-change':
         cancelEngineSearch();
-        if (shouldEnginePlay(useGameStore.getState().game.fen)) {
-          requestEngineMove(useGameStore.getState().game.fen, event.level);
-        }
+        if (shouldEnginePlay(useGameStore.getState().game.fen)) requestEngineMove(useGameStore.getState().game.fen, event.level);
         break;
     }
   });
