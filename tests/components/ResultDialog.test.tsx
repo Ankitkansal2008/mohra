@@ -287,6 +287,42 @@ describe('Result dialog in game view', () => {
     });
   });
 
+  it('asserts en.shareText does not include http and clipboard payload contains the URL exactly once', () => {
+    expect(en.shareText).not.toContain('http');
+
+    const originalNavigator = globalThis.navigator;
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+
+    Object.defineProperty(globalThis, 'navigator', {
+      value: {
+        clipboard: { writeText: writeTextMock },
+      },
+      configurable: true,
+      writable: true,
+    });
+
+    const element = ResultDialog({
+      status: 'checkmate',
+      winner: 'w',
+    });
+    const actionsDiv = element?.props.children[2];
+    const shareBtn = actionsDiv.props.children[3];
+
+    shareBtn.props.onClick();
+
+    expect(writeTextMock).toHaveBeenCalledTimes(1);
+    const payload = writeTextMock.mock.calls[0][0] as string;
+    const occurrences = payload.split(en.shareUrl).length - 1;
+    expect(occurrences).toBe(1);
+    expect(payload).toBe(`${en.shareText}\n${en.shareUrl}`);
+
+    Object.defineProperty(globalThis, 'navigator', {
+      value: originalNavigator,
+      configurable: true,
+      writable: true,
+    });
+  });
+
   it('enables Review moves when moves exist and enters review mode on click', () => {
     useGameStore.setState((s) => ({
       game: { ...s.game, moves: ['e4', 'e5'], status: 'checkmate', winner: 'w' },
