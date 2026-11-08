@@ -3,7 +3,7 @@ import { en } from '../copy/en.ts';
 
 // Defined at build time by Vite, with safe fallbacks for test environments
 export const APP_VERSION: string =
-  typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.1.0';
+  typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.2.0';
 
 export const BUILD_DATE: string =
   typeof __BUILD_DATE__ !== 'undefined'

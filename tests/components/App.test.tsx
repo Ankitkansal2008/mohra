@@ -41,10 +41,10 @@ describe('App component', () => {
     expect(html).toContain('No moves yet. White to play.');
   });
 
-  it('renders version marker footer below board with v1.1.0 and build date', () => {
+  it('renders version marker footer below board with v1.2.0 and build date', () => {
     const html = renderToStaticMarkup(React.createElement(App));
     expect(html).toContain('class="gambit-footer"');
-    expect(html).toContain('v1.1.0');
+    expect(html).toContain('v1.2.0');
   });
 });
 
