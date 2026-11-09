@@ -54,3 +54,4 @@ describe('Theme tokens and color palette', () => {
     expect(tokensCss).toContain('--shadow-lg: 0 10px 30px rgba(22, 33, 27, 0.07);');
   });
 });
+

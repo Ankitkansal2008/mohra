@@ -35,9 +35,9 @@ describe('Analytics module (src/lib/analytics.ts)', () => {
       (globalThis as unknown as { document: unknown }).document = {
         head: { appendChild: (el: MockElement) => { headChildren.push(el); return el; } },
         createElement: (tag: string) => (tag === 'script' ? {
-          attributes: {},
-          setAttribute(k: string, v: string) { this.attributes[k] = v; },
-          getAttribute(k: string) { return this.attributes[k]; },
+          attributes: {} as Record<string, string>,
+          setAttribute(k: string, v: string) { (this.attributes as Record<string, string>)[k] = v; },
+          getAttribute(k: string) { return (this.attributes as Record<string, string>)[k]; },
         } : {}),
         querySelector: (sel: string) => (sel.includes('cloud.umami.is/script.js')
           ? headChildren.find((el) => el.src === 'https://cloud.umami.is/script.js') || null

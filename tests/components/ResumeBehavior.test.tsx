@@ -7,7 +7,6 @@ import type { GameState, GameStatus } from '../../src/game/types.ts';
 import {
   CURRENT_SCHEMA_VERSION,
   STORAGE_KEY_GAME,
-  clearSavedGame,
   formatResumeLabel,
   loadSavedGame,
   saveGame,
@@ -45,6 +44,7 @@ function createMockGame(overrides: Partial<GameState> = {}): GameState {
   return {
     id: 'test-game',
     fen: STARTING_FEN,
+    startFen: STARTING_FEN,
     pgn: '',
     moves: [],
     uciMoves: [],
@@ -57,6 +57,7 @@ function createMockGame(overrides: Partial<GameState> = {}): GameState {
     startedAt: Date.now(),
     savedAt: Date.now(),
     ...overrides,
+    ...(overrides.startFen !== undefined ? { startFen: overrides.startFen } : {}),
   };
 }
 

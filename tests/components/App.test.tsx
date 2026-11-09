@@ -1,13 +1,21 @@
-import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 import { App } from '../../src/App.tsx';
 import { en } from '../../src/copy/en.ts';
 import { useGameStore } from '../../src/game/store.ts';
 
+function renderApp(initialPath = '/'): string {
+  return renderToStaticMarkup(
+    <MemoryRouter initialEntries={[initialPath]}>
+      <App />
+    </MemoryRouter>,
+  );
+}
+
 describe('App component and routing', () => {
   it('renders Home page on root "/" with hero CTA and static board card', () => {
-    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/' }));
+    const html = renderApp('/');
 
     expect(html).toContain('class="home-hero"');
     expect(html).toContain(en.homeHeading);
@@ -18,7 +26,7 @@ describe('App component and routing', () => {
 
   it('/play shows the setup panel with no board until Start', () => {
     useGameStore.getState().resetGame();
-    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
+    const html = renderApp('/play');
 
     expect(html).toContain('class="board-container setup-mode"');
     expect(html).toContain('gambit-setup-inline-card');
@@ -29,7 +37,7 @@ describe('App component and routing', () => {
 
   it('mounts BoardView inside centered board-container with starting position once game started', () => {
     useGameStore.getState().startNewGame();
-    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
+    const html = renderApp('/play');
 
     // Centered container
     expect(html).toContain('class="board-container"');
@@ -53,7 +61,7 @@ describe('App component and routing', () => {
   it('renders turn indicators above and below board with correct player names when playing', () => {
     useGameStore.getState().startNewGame();
     // Computer mode: Top is Mohra (Black), Bottom is You (White)
-    const htmlComputer = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
+    const htmlComputer = renderApp('/play');
     expect(htmlComputer).toContain('data-testid="turn-indicator-top"');
     expect(htmlComputer).toContain('data-testid="turn-indicator-bottom"');
     expect(htmlComputer).toContain('Mohra');
@@ -62,15 +70,14 @@ describe('App component and routing', () => {
 
   it('renders move list panel with initial empty state when playing', () => {
     useGameStore.getState().startNewGame();
-    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
+    const html = renderApp('/play');
     expect(html).toContain('class="gambit-move-panel"');
     expect(html).toContain('No moves yet. White to play.');
   });
 
   it('renders version marker footer below board with v1.2.0 and build date', () => {
-    const html = renderToStaticMarkup(React.createElement(App));
+    const html = renderApp('/');
     expect(html).toContain('class="gambit-footer"');
     expect(html).toContain('v1.2.0');
   });
 });
-

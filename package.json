@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:e2e": "playwright test",
+    "typecheck:test": "tsc --noEmit -p tsconfig.test.json",
     "check:budget": "node scripts/check-bundle-budget.js",
     "lint": "oxlint"
   },

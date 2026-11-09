@@ -51,6 +51,7 @@ function createMockGame(overrides: Partial<GameState> = {}): GameState {
   return {
     id: 'test-resume-bug',
     fen: STARTING_FEN,
+    startFen: STARTING_FEN,
     pgn: '',
     moves: [],
     uciMoves: [],
@@ -63,6 +64,7 @@ function createMockGame(overrides: Partial<GameState> = {}): GameState {
     startedAt: Date.now(),
     savedAt: Date.now(),
     ...overrides,
+    ...(overrides.startFen !== undefined ? { startFen: overrides.startFen } : {}),
   };
 }
 

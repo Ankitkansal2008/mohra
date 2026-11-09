@@ -151,6 +151,8 @@ export interface AppProps {
   readonly initialRoute?: string;
 }
 
+export function App(props: AppProps): React.JSX.Element;
+export function App(): React.JSX.Element;
 export function App({ initialRoute }: AppProps = {}): React.JSX.Element {
   const inRouter = useInRouterContext();
 
