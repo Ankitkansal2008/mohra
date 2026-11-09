@@ -79,6 +79,7 @@
   .board-layout { display: contents; }
   .left-column-spacer { display: none; }
 
+  .gambit-first-visit-banner,
   .gambit-resume-banner,
   .gambit-engine-banner,
   [data-testid="turn-indicator-top"],
@@ -91,6 +92,7 @@
     max-width: 600px;
   }
 
+  .gambit-first-visit-banner { order: 0; }
   .gambit-resume-banner { order: 1; }
   .gambit-engine-banner { order: 2; }
   [data-testid="turn-indicator-top"] { order: 3; }

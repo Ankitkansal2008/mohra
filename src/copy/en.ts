@@ -147,6 +147,69 @@ export const en: Record<string, string> = {
   copyright: '© {year} Mohra. All rights reserved.',
   developerCredit: 'Developed by Ankit Kansal',
   credit: 'Developed by Ankit Kansal',
+
+  // Navigation (Part 2 & 3)
+  navPlay: 'Play',
+  navHowToPlay: 'How to play',
+  navAbout: 'About',
+  navPrivacy: 'Privacy',
+
+  // First-visit line (Part 4)
+  firstVisitText: 'Beginner-friendly chess - legal moves are shown, and a refused move tells you why. No signup.',
+  firstVisitHowToPlay: 'How to play',
+  firstVisitDismiss: 'Dismiss notice',
+
+  // Route metadata (Part 6)
+  homeTitle: 'Mohra - play chess in your browser',
+  homeMetaDescription: 'Play chess in your browser against the computer at three levels, or a friend on the same device. Free, no signup, no install.',
+  howToPlayTitle: 'How to play',
+  howToPlayDocTitle: 'How to Play - Mohra',
+  howToPlayMetaDescription: 'Learn how chess pieces move, castling, en passant, and pawn promotion with clear rules and examples.',
+  aboutTitle: 'About Mohra',
+  aboutDocTitle: 'About - Mohra',
+  aboutMetaDescription: 'What Mohra is, who it is for, and how browser WebAssembly Stockfish powers offline play.',
+  privacyTitle: 'Privacy',
+  privacyDocTitle: 'Privacy - Mohra',
+  privacyMetaDescription: 'Plain language privacy: no accounts, no personal data, cookieless analytics, and transparent local storage.',
+
+  // How to play cards (Part 5)
+  howToPlayIntro: 'Chess is played on an 8×8 grid by two players. Here is everything you need to know about piece movement and special rules.',
+  cardPiecesTitle: 'How the pieces move',
+  cardPiecesKing: 'King: Moves one square in any direction.',
+  cardPiecesQueen: 'Queen: Moves any number of squares diagonally, horizontally, or vertically.',
+  cardPiecesRook: 'Rook: Moves any number of squares horizontally or vertically.',
+  cardPiecesBishop: 'Bishop: Moves any number of squares diagonally.',
+  cardPiecesKnight: 'Knight: Moves in an L-shape (two squares then one perpendicular) and jumps over pieces.',
+  cardPiecesPawn: 'Pawn: Moves one square forward (or two on its initial move) and captures diagonally forward.',
+  cardPiecesExample: 'Example: A white pawn on e2 can advance to e3 or jump to e4 on its opening move.',
+  cardCastlingTitle: 'Castling',
+  cardCastlingDesc: 'Castling safeguards your king and brings a corner rook into the center in a single turn.',
+  cardCastlingRules: 'Allowed if neither piece has moved, intervening squares are empty, and the king is not in check nor crosses an attacked square.',
+  cardCastlingExample: 'Example: Kingside castling (O-O) slides the white king from e1 to g1 and places the rook on f1.',
+  cardEnPassantTitle: 'En passant',
+  cardEnPassantDesc: 'A special capture rule preventing a pawn from evading attack by taking a double step.',
+  cardEnPassantRules: 'If an opponent pawn advances two squares past yours, you may capture it as though it moved only one square, on the very next turn.',
+  cardEnPassantExample: 'Example: If White has a pawn on e5 and Black plays d7-d5, White can capture en passant with exd6.',
+  cardPromotionTitle: 'Promotion',
+  cardPromotionDesc: 'When a pawn reaches the eighth rank, it transforms immediately into a more powerful piece.',
+  cardPromotionRules: 'You can choose a Queen, Rook, Bishop, or Knight. A Queen is usually selected.',
+  cardPromotionExample: 'Example: Advancing a white pawn from e7 to e8 converts it into a queen for the endgame attack.',
+
+  // About page (Part 5)
+  aboutP1: 'Mohra is a clean, minimal browser chess game designed for focused play without distractions, accounts, or clutter. Legal moves are shown directly on the board, and refused moves explain why with clear reasons.',
+  aboutP2: 'It is built for anyone who enjoys chess, from beginners learning movement and tactical rules to experienced players wanting a swift match against four calibrated difficulty levels or a friend on one device.',
+  aboutP3: 'The engine runs Stockfish inside your browser via WebAssembly in a Web Worker, ensuring fast responses and complete offline functionality without server latency. Developed by Ankit Kansal.',
+
+  // Privacy page (Part 5)
+  privacyP1: 'Mohra is built with complete respect for your privacy. There are no accounts, no signups, and no personal data collection of any kind.',
+  privacyAnalyticsTitle: 'Cookieless analytics',
+  privacyAnalyticsDesc: 'We use Umami for cookieless analytics to count aggregate page visits without tracking your personal identity or browsing across other sites.',
+  privacyStorageTitle: 'What is stored locally',
+  privacyStorageDesc: 'We store only your in-progress game state (so you can resume within 24 hours), your preferences (sound, board theme, clock), and the welcome banner dismissal in browser localStorage.',
+  privacyClearTitle: 'How to clear your data',
+  privacyClearDesc: 'You can clear stored games by tapping Discard on the resume banner, or reset all local data anytime via your browser\'s site storage settings.',
+  privacyContactTitle: 'Contact',
+  privacyContactDesc: 'If you have questions or feedback, reach out to the developer at ankikansal@gmail.com.',
 };
 
 export const copy: Record<string, string> = en;

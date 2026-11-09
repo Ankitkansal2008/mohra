@@ -1,0 +1,56 @@
+.gambit-first-visit-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12, 12px);
+  background-color: var(--color-panel, #ffffff);
+  border: 1px solid var(--color-border, #e8e4da);
+  border-radius: var(--radius-button, 10px);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-8, 8px) var(--space-12, 12px);
+  font-size: var(--font-size-13, 13px);
+  line-height: var(--line-height-ui, 1.5);
+  color: var(--color-ink, #1a1a1a);
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: var(--space-8, 8px);
+}
+
+.gambit-first-visit-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8, 8px);
+  flex: 1;
+}
+
+.gambit-first-visit-link {
+  color: var(--color-primary, #2f4f3e);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+
+.gambit-first-visit-link:hover {
+  color: var(--color-primary-hover, #253f31);
+}
+
+.gambit-first-visit-close {
+  background: transparent;
+  border: none;
+  color: var(--color-muted, #6b6b6b);
+  cursor: pointer;
+  font-size: var(--font-size-17, 17px);
+  line-height: 1;
+  padding: var(--space-4, 4px) var(--space-8, 8px);
+  border-radius: var(--radius-6, 6px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--duration-120, 120ms) ease-out;
+}
+
+.gambit-first-visit-close:hover {
+  color: var(--color-ink, #1a1a1a);
+}

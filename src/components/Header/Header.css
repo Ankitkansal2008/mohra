@@ -22,11 +22,39 @@
   white-space: nowrap;
 }
 
+.gambit-brand-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8, 8px);
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
 .gambit-brand-mark {
   width: 24px;
   height: 24px;
   display: block;
   flex-shrink: 0;
+}
+
+.gambit-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-16, 16px);
+}
+
+.gambit-nav-link {
+  font-size: var(--font-size-15, 15px);
+  font-weight: 500;
+  color: var(--color-ink, #1a1a1a);
+  text-decoration: none;
+  padding: var(--space-4, 4px) var(--space-8, 8px);
+  border-radius: var(--radius-button, 10px);
+  transition: color var(--duration-120, 120ms) ease-out;
+}
+
+.gambit-nav-link:hover {
+  color: var(--color-primary, #2f4f3e);
 }
 
 .gambit-header-actions {
@@ -46,13 +74,13 @@
 .gambit-header-btn {
   background: var(--color-panel, #ffffff);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-6);
+  border-radius: var(--radius-button, 10px);
   padding: 5px 12px;
-  font-size: 13px;
+  font-size: var(--font-size-13, 13px);
   font-weight: 600;
   color: var(--color-ink);
   cursor: pointer;
-  transition: all var(--duration-120);
+  transition: all var(--duration-120, 120ms) ease-out;
   min-height: 36px;
   display: inline-flex;
   align-items: center;
@@ -69,6 +97,19 @@
   border-color: var(--color-primary);
 }
 
+.gambit-header-settings-btn {
+  gap: var(--space-4, 4px);
+  padding: 5px 10px;
+}
+
+.gambit-settings-icon {
+  flex-shrink: 0;
+}
+
+.gambit-settings-text {
+  font-size: var(--font-size-13, 13px);
+}
+
 .gambit-header-moves-btn {
   display: none;
 }
@@ -79,8 +120,12 @@
   }
 }
 
-/* UI/UX Section 3: On mobile (<768px), header collapses to logo + menu button */
+/* UI/UX Section 3: On mobile (<768px), nav collapses to menu button */
 @media (max-width: 767.98px) {
+  .gambit-nav {
+    display: none !important;
+  }
+
   .gambit-header-desktop-actions {
     display: none !important;
   }
@@ -105,10 +150,10 @@
 .gambit-mobile-menu {
   background-color: var(--color-panel, #ffffff);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-10, 10px);
+  border-radius: var(--radius-card, 14px);
   width: 100%;
   max-width: 360px;
-  box-shadow: var(--elevation-1, 0 2px 8px rgba(20, 26, 20, 0.10));
+  box-shadow: var(--shadow-soft);
   box-sizing: border-box;
   overflow: hidden;
   margin-top: var(--space-24, 24px);
@@ -160,21 +205,17 @@
 .gambit-mobile-menu-body {
   display: flex;
   flex-direction: column;
-  gap: var(--space-12, 12px);
+  gap: var(--space-8, 8px);
   padding: var(--space-16, 16px);
-}
-
-.gambit-mobile-menu-item {
-  width: 100%;
 }
 
 .gambit-mobile-menu-action {
   width: 100%;
   min-height: 44px;
   padding: var(--space-8, 8px) var(--space-16, 16px);
-  background-color: var(--color-surface, #fafaf7);
+  background-color: var(--color-surface, #faf8f3);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-6);
+  border-radius: var(--radius-button, 10px);
   font-size: 14px;
   font-weight: 600;
   color: var(--color-ink);
@@ -182,7 +223,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--duration-120);
+  text-decoration: none;
+  box-sizing: border-box;
+  transition: all var(--duration-120, 120ms) ease-out;
 }
 
 .gambit-mobile-menu-action:hover {

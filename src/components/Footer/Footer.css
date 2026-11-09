@@ -1,4 +1,4 @@
-/* Centred 11px muted version footer (compact padding keeps it out of the board path on mobile) */
+/* Centred muted footer with navigation links and version details */
 .gambit-footer {
   width: 100%;
   display: flex;
@@ -7,16 +7,40 @@
   align-items: center;
   gap: var(--space-4, 4px);
   font-size: var(--coord-font-size, 11px);
-  color: var(--color-muted, #5A5A5A);
-  padding: var(--space-4, 4px) var(--space-16, 16px) var(--space-8, 8px);
+  color: var(--color-muted, #6b6b6b);
+  padding: var(--space-12, 12px) var(--space-16, 16px) var(--space-16, 16px);
   margin-top: auto;
   user-select: none;
   box-sizing: border-box;
 }
 
-@media (max-width: 767.98px) {
-  .gambit-footer {
-    padding: var(--space-4, 4px) var(--space-8, 8px);
-  }
+.gambit-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-16, 16px);
+  margin-bottom: var(--space-8, 8px);
 }
 
+.gambit-footer-link {
+  color: var(--color-muted, #6b6b6b);
+  text-decoration: none;
+  font-size: var(--font-size-13, 13px);
+  transition: color var(--duration-120, 120ms) ease-out;
+}
+
+.gambit-footer-link:hover {
+  color: var(--color-ink, #1a1a1a);
+  text-decoration: underline;
+}
+
+@media (max-width: 767.98px) {
+  .gambit-footer {
+    padding: var(--space-8, 8px) var(--space-8, 8px);
+  }
+
+  .gambit-footer-nav {
+    gap: var(--space-12, 12px);
+  }
+}
