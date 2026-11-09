@@ -9,6 +9,29 @@ export interface SettingsDialogProps {
   readonly onClose: () => void;
 }
 
+interface SwitchControlProps {
+  readonly id: string;
+  readonly checked: boolean;
+  readonly onChange: (checked: boolean) => void;
+  readonly label: string;
+}
+
+function SwitchControl({ id, checked, onChange, label }: SwitchControlProps): React.JSX.Element {
+  return (
+    <button
+      id={id}
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      className={`gambit-switch ${checked ? 'gambit-switch-on' : 'gambit-switch-off'}`}
+      onClick={() => onChange(!checked)}
+    >
+      <span className="gambit-switch-knob" aria-hidden="true" />
+    </button>
+  );
+}
+
 export function SettingsDialog({
   isOpen,
   onClose,
@@ -17,13 +40,10 @@ export function SettingsDialog({
   useFocusTrap(dialogRef, onClose, isOpen);
 
   const ui = useGameStore((s) => s.ui);
-  const isClockEnabled = useGameStore((s) => (s.clock ?? s.game.clock) !== null);
-
   const setTheme = useGameStore((s) => s.setTheme);
   const setSoundOn = useGameStore((s) => s.setSoundOn);
   const setAnimationOn = useGameStore((s) => s.setAnimationOn);
   const setShowCoords = useGameStore((s) => s.setShowCoords);
-  const setClockEnabled = useGameStore((s) => s.setClockEnabled);
 
   if (!isOpen) return null;
 
@@ -56,41 +76,47 @@ export function SettingsDialog({
         </div>
 
         <div className="gambit-settings-body">
-          {/* Sound toggle: Muted by default, persisted */}
-          <div className="gambit-setting-row">
-            <span className="gambit-setting-label">{en.soundSetting}</span>
-            <div className="gambit-setting-group">
-              <button
-                type="button"
-                className={`gambit-setting-btn ${ui.soundOn ? 'gambit-setting-btn-active' : ''}`}
-                onClick={() => setSoundOn(true)}
-              >
-                {en.on}
-              </button>
-              <button
-                type="button"
-                className={`gambit-setting-btn ${!ui.soundOn ? 'gambit-setting-btn-active' : ''}`}
-                onClick={() => setSoundOn(false)}
-              >
-                {en.off}
-              </button>
+          {/* Sound toggle: 44x24 switch */}
+          <div className="gambit-settings-row">
+            <div className="gambit-setting-meta">
+              <label htmlFor="setting-sound" className="gambit-setting-label">
+                {en.soundSetting}
+              </label>
+              <span className="gambit-setting-help">{en.soundSettingHelp}</span>
             </div>
+            <SwitchControl
+              id="setting-sound"
+              checked={ui.soundOn}
+              onChange={setSoundOn}
+              label={en.soundSetting}
+            />
           </div>
 
-          {/* Board theme toggle: Green / Slate */}
-          <div className="gambit-setting-row">
-            <span className="gambit-setting-label">{en.themeSetting}</span>
-            <div className="gambit-setting-group">
+          {/* Board theme: Segmented control (Green / Slate) */}
+          <div className="gambit-settings-row">
+            <div className="gambit-setting-meta">
+              <span className="gambit-setting-label">{en.themeSetting}</span>
+              <span className="gambit-setting-help">{en.themeSettingHelp}</span>
+            </div>
+            <div
+              className="gambit-setting-segmented"
+              role="radiogroup"
+              aria-label={en.themeSetting}
+            >
               <button
                 type="button"
-                className={`gambit-setting-btn ${ui.theme === 'default' ? 'gambit-setting-btn-active' : ''}`}
+                role="radio"
+                aria-checked={ui.theme === 'default'}
+                className={`gambit-setting-segment-btn ${ui.theme === 'default' ? 'gambit-setting-segment-btn-active' : ''}`}
                 onClick={() => setTheme('default')}
               >
                 {en.themeDefault}
               </button>
               <button
                 type="button"
-                className={`gambit-setting-btn ${ui.theme === 'slate' ? 'gambit-setting-btn-active' : ''}`}
+                role="radio"
+                aria-checked={ui.theme === 'slate'}
+                className={`gambit-setting-segment-btn ${ui.theme === 'slate' ? 'gambit-setting-segment-btn-active' : ''}`}
                 onClick={() => setTheme('slate')}
               >
                 {en.themeSlate}
@@ -98,66 +124,43 @@ export function SettingsDialog({
             </div>
           </div>
 
-          {/* Piece animation toggle */}
-          <div className="gambit-setting-row">
-            <span className="gambit-setting-label">{en.animationSetting}</span>
-            <div className="gambit-setting-group">
-              <button
-                type="button"
-                className={`gambit-setting-btn ${ui.animationOn ? 'gambit-setting-btn-active' : ''}`}
-                onClick={() => setAnimationOn(true)}
-              >
-                {en.on}
-              </button>
-              <button
-                type="button"
-                className={`gambit-setting-btn ${!ui.animationOn ? 'gambit-setting-btn-active' : ''}`}
-                onClick={() => setAnimationOn(false)}
-              >
-                {en.off}
-              </button>
+          {/* Piece animation toggle: 44x24 switch */}
+          <div className="gambit-settings-row">
+            <div className="gambit-setting-meta">
+              <label htmlFor="setting-animation" className="gambit-setting-label">
+                {en.animationSetting}
+              </label>
+              <span className="gambit-setting-help">{en.animationSettingHelp}</span>
             </div>
+            <SwitchControl
+              id="setting-animation"
+              checked={ui.animationOn}
+              onChange={setAnimationOn}
+              label={en.animationSetting}
+            />
           </div>
 
-          {/* Coordinates toggle */}
-          <div className="gambit-setting-row">
-            <span className="gambit-setting-label">{en.coordsSetting}</span>
-            <div className="gambit-setting-group">
-              <button
-                type="button"
-                className={`gambit-setting-btn ${ui.showCoords ? 'gambit-setting-btn-active' : ''}`}
-                onClick={() => setShowCoords(true)}
-              >
-                {en.on}
-              </button>
-              <button
-                type="button"
-                className={`gambit-setting-btn ${!ui.showCoords ? 'gambit-setting-btn-active' : ''}`}
-                onClick={() => setShowCoords(false)}
-              >
-                {en.off}
-              </button>
+          {/* Coordinates toggle: 44x24 switch */}
+          <div className="gambit-settings-row">
+            <div className="gambit-setting-meta">
+              <label htmlFor="setting-coords" className="gambit-setting-label">
+                {en.coordsSetting}
+              </label>
+              <span className="gambit-setting-help">{en.coordsSettingHelp}</span>
             </div>
+            <SwitchControl
+              id="setting-coords"
+              checked={ui.showCoords}
+              onChange={setShowCoords}
+              label={en.coordsSetting}
+            />
           </div>
 
-          {/* Clocks toggle */}
-          <div className="gambit-setting-row">
-            <span className="gambit-setting-label">{en.clockSetting}</span>
-            <div className="gambit-setting-group">
-              <button
-                type="button"
-                className={`gambit-setting-btn ${isClockEnabled ? 'gambit-setting-btn-active' : ''}`}
-                onClick={() => setClockEnabled(true)}
-              >
-                {en.on}
-              </button>
-              <button
-                type="button"
-                className={`gambit-setting-btn ${!isClockEnabled ? 'gambit-setting-btn-active' : ''}`}
-                onClick={() => setClockEnabled(false)}
-              >
-                {en.off}
-              </button>
+          {/* Clock reference: read-only text set when starting a game */}
+          <div className="gambit-settings-row gambit-settings-row-readonly">
+            <div className="gambit-setting-meta">
+              <span className="gambit-setting-label">{en.clock}</span>
+              <span className="gambit-setting-help">{en.clockReference}</span>
             </div>
           </div>
         </div>
@@ -167,4 +170,3 @@ export function SettingsDialog({
 }
 
 export default SettingsDialog;
-
