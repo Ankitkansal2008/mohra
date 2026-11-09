@@ -17,3 +17,4 @@ export function AboutPage(): React.JSX.Element {
 }
 
 export default AboutPage;
+

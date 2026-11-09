@@ -26,3 +26,4 @@ export function AppLink({ to, children, className, ...props }: AppLinkProps): Re
 }
 
 export default AppLink;
+

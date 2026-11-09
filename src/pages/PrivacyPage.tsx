@@ -35,3 +35,4 @@ export function PrivacyPage(): React.JSX.Element {
 }
 
 export default PrivacyPage;
+

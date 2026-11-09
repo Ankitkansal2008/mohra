@@ -16,3 +16,4 @@ export function usePageMetadata(title: string, description: string): void {
     metaDesc.setAttribute('content', description);
   }, [title, description]);
 }
+

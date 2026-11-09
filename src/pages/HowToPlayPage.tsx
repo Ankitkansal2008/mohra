@@ -55,3 +55,4 @@ export function HowToPlayPage(): React.JSX.Element {
 }
 
 export default HowToPlayPage;
+
