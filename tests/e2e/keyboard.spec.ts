@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Keyboard-only complete game', () => {
   test('plays a complete 4-ply game to checkmate using only keyboard inputs', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/play');
 
     // Select Two Players mode so both sides are played locally
     const localModeBtn = page.getByRole('radio', { name: 'Two players, one device' });

@@ -5,10 +5,27 @@ test.describe('Responsive layout at 360px viewport', () => {
     viewport: { width: 360, height: 740 },
   });
 
-  test('picks a mode on new-game screen, starts, and board fits without overflow', async ({ page }) => {
+  test('home page renders hero and CTA at 360px without overflow', async ({ page }) => {
     await page.goto('/');
 
-    // Home screen dialog is open on boot
+    const hero = page.locator('.home-hero');
+    await expect(hero).toBeVisible();
+
+    const heroCta = page.locator('[data-testid="hero-play-cta"]');
+    await expect(heroCta).toBeVisible();
+
+    const heroBoard = page.locator('[data-testid="hero-board-card"]');
+    await expect(heroBoard).toBeVisible();
+
+    // Verify document does not horizontally overflow on home page
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    expect(scrollWidth).toBeLessThanOrEqual(360);
+  });
+
+  test('picks a mode on new-game screen, starts, and board fits without overflow', async ({ page }) => {
+    await page.goto('/play');
+
+    // New-game setup panel is open
     const homeDialog = page.locator('.gambit-home-dialog');
     await expect(homeDialog).toBeVisible();
 
@@ -26,7 +43,7 @@ test.describe('Responsive layout at 360px viewport', () => {
     await expect(startBtn).toBeVisible();
     await startBtn.click();
 
-    // Home screen modal closes
+    // New-game setup panel closes (replaced by game board)
     await expect(homeDialog).not.toBeVisible();
 
     // Board is rendered and fits inside 360px viewport without horizontal page overflow

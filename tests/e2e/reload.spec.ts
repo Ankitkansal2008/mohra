@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Mid-game reload persistence', () => {
   test('reload mid-game restores the position via resume banner', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/play');
 
     // Select Two Players mode so no background engine moves interfere
     const localModeBtn = page.getByRole('radio', { name: 'Two players, one device' });
@@ -31,16 +31,16 @@ test.describe('Mid-game reload persistence', () => {
     // Reload page mid-game
     await page.reload();
 
-    // Resume banner should offer resume
-    const resumeBanner = page.locator('.gambit-resume-banner');
+    // Resume option in setup panel should offer resume
+    const resumeBanner = page.locator('.gambit-setup-resume-section, .gambit-resume-banner');
     await expect(resumeBanner).toBeVisible();
-    await expect(resumeBanner.locator('.gambit-resume-label')).toContainText('Resume game - Black to move, move 1');
+    await expect(resumeBanner).toContainText('Resume game - Black to move, move 1');
 
     // Click Resume button
     const resumeBtn = resumeBanner.locator('.gambit-btn-resume');
     await resumeBtn.click();
 
-    // Resume banner dismisses
+    // Resume option dismisses
     await expect(resumeBanner).not.toBeVisible();
 
     // Board position is restored with e4 pawn in place

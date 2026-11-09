@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Resign workflow', () => {
   test('confirms resignation in dialog, then displays the result panel', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/play');
 
     // Start a game from the home modal
     const startBtn = page.locator('.gambit-home-start-btn');

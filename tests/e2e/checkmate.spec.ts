@@ -4,7 +4,7 @@ test.describe('Checkmate using ?fen= dev parameter', () => {
   test('loads position and plays to checkmate displaying result panel', async ({ page }) => {
     // Back rank mate in 1: 1. Ra8#
     const fen = '6k1/5ppp/8/8/8/8/8/R3K3 w - - 0 1';
-    await page.goto(`/?fen=${encodeURIComponent(fen)}`);
+    await page.goto(`/play?fen=${encodeURIComponent(fen)}`);
 
     // Board should be visible and home screen modal should not block
     const board = page.locator('.gambit-board-wrapper');
