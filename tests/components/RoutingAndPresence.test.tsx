@@ -217,7 +217,7 @@ describe('Routing, web presence and content pages (v1.3)', () => {
   });
 
   describe('Navigation links change route and preserve shell', () => {
-    it('Header renders navigation links to Play, How to play, and About', () => {
+    it('Header renders navigation links to Home, Play, How to play, and About', () => {
       const html = renderToStaticMarkup(
         <MemoryRouter initialEntries={['/']}>
           <App />
@@ -225,9 +225,25 @@ describe('Routing, web presence and content pages (v1.3)', () => {
       );
 
       expect(html).toContain('class="gambit-nav-link"');
+      expect(html).toMatch(/<a[^>]*class="gambit-nav-link"[^>]*href="\/"[^>]*>Home<\/a>/);
       expect(html).toMatch(/<a[^>]*class="gambit-nav-link"[^>]*href="\/play"[^>]*>Play<\/a>/);
       expect(html).toMatch(/<a[^>]*class="gambit-nav-link"[^>]*href="\/how-to-play"[^>]*>How to play<\/a>/);
       expect(html).toMatch(/<a[^>]*class="gambit-nav-link"[^>]*href="\/about"[^>]*>About<\/a>/);
+    });
+
+    it('the logo links to "/" and a Home item exists in header on every route', () => {
+      const routes = ['/', '/play', '/how-to-play', '/about', '/privacy'];
+      for (const route of routes) {
+        const html = renderToStaticMarkup(
+          <MemoryRouter initialEntries={[route]}>
+            <App />
+          </MemoryRouter>,
+        );
+        // Logo links to "/"
+        expect(html).toMatch(/<a[^>]*class="gambit-brand-link"[^>]*href="\/"[^>]*>/);
+        // Visible Home nav link exists
+        expect(html).toMatch(/<a[^>]*class="gambit-nav-link"[^>]*href="\/"[^>]*>Home<\/a>/);
+      }
     });
 
     it('Footer renders page links to Play, How to play, About, and Privacy', () => {

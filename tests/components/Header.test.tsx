@@ -26,13 +26,19 @@ describe('Header component', () => {
     expect(html).toContain(en.settings);
   });
 
-  it('renders mark and wordmark "Mohra" in header', () => {
+  it('renders mark and wordmark "Mohra" linking to "/"', () => {
     const html = renderToStaticMarkup(React.createElement(Header));
     expect(html).toContain('class="gambit-brand-mark"');
     expect(html).toContain('src="/favicon.svg"');
     expect(html).toContain('width="24"');
     expect(html).toContain('height="24"');
     expect(html).toContain('Mohra');
+    expect(html).toMatch(/<a[^>]*(class="gambit-brand-link"[^>]*href="\/"|href="\/"[^>]*class="gambit-brand-link")[^>]*>/);
+  });
+
+  it('renders visible Home navigation item in header linking to "/"', () => {
+    const html = renderToStaticMarkup(React.createElement(Header));
+    expect(html).toMatch(/<a[^>]*(class="gambit-nav-link"[^>]*href="\/"|href="\/"[^>]*class="gambit-nav-link")[^>]*>Home<\/a>/);
   });
 
   it('asserts document title is "Mohra - play chess in your browser" in index.html', () => {

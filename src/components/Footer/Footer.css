@@ -7,7 +7,7 @@
   align-items: center;
   gap: var(--space-4, 4px);
   font-size: var(--coord-font-size, 11px);
-  color: var(--color-muted, #6b6b6b);
+  color: var(--color-muted);
   padding: var(--space-12, 12px) var(--space-16, 16px) var(--space-16, 16px);
   margin-top: auto;
   user-select: none;
@@ -24,14 +24,14 @@
 }
 
 .gambit-footer-link {
-  color: var(--color-muted, #6b6b6b);
+  color: var(--color-muted);
   text-decoration: none;
-  font-size: var(--font-size-13, 13px);
+  font-size: var(--font-size-14, 14px);
   transition: color var(--duration-120, 120ms) ease-out;
 }
 
 .gambit-footer-link:hover {
-  color: var(--color-ink, #1a1a1a);
+  color: var(--color-ink);
   text-decoration: underline;
 }
 

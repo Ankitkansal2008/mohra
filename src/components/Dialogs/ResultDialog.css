@@ -6,11 +6,11 @@
   align-items: center;
   width: 100%;
   max-width: 560px;
-  background-color: var(--color-panel, #FFFFFF);
-  border: 1px solid var(--color-border, #E2E6DE);
-  border-radius: var(--radius-10, 10px);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
   padding: var(--space-12, 12px) var(--space-16, 16px);
-  box-shadow: var(--elevation-1, 0 2px 8px rgba(20, 26, 20, 0.10));
+  box-shadow: var(--shadow-card);
   text-align: center;
   box-sizing: border-box;
   margin-top: var(--space-12, 12px);
@@ -30,17 +30,17 @@
 
 .gambit-result-dialog-headline {
   margin: 0 0 var(--space-4, 4px);
-  font-size: 15px;
+  font-size: var(--font-size-16);
   font-weight: 600;
-  color: var(--color-ink, #1A1A1A);
-  line-height: 1.25;
+  color: var(--color-ink);
+  line-height: var(--line-height-ui);
 }
 
 .gambit-result-dialog-detail {
   margin: 0 0 var(--space-8, 8px);
-  font-size: 13px;
-  color: var(--color-muted, #5A5A5A);
-  line-height: 1.25;
+  font-size: var(--font-size-14);
+  color: var(--color-muted);
+  line-height: var(--line-height-ui);
 }
 
 .gambit-result-dialog-actions {
@@ -52,14 +52,14 @@
 }
 
 .gambit-result-dialog-btn {
-  min-height: 38px;
+  min-height: var(--touch-min, 44px);
   padding: var(--space-4, 4px) var(--space-12, 12px);
-  font-size: 13px;
+  font-size: var(--font-size-14);
   font-weight: 500;
-  border-radius: var(--radius-6, 6px);
-  border: 1px solid var(--color-border, #E2E6DE);
-  background-color: var(--color-panel, #FFFFFF);
-  color: var(--color-ink, #1A1A1A);
+  border-radius: var(--radius-button);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-ink);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -73,22 +73,22 @@
 }
 
 .gambit-result-dialog-btn:hover:not(:disabled) {
-  background-color: var(--color-surface, #FAFAF7);
+  background-color: var(--color-bg);
 }
 
 .gambit-result-dialog-btn:focus-visible {
-  outline: 2px solid var(--color-focus, #1A73E8);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 
 .gambit-result-dialog-btn-primary {
-  background-color: var(--color-primary, #2F4F3E);
-  color: var(--color-panel, #FFFFFF);
-  border-color: var(--color-primary, #2F4F3E);
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+  border-color: var(--color-primary);
 }
 
 .gambit-result-dialog-btn-primary:hover:not(:disabled) {
-  background-color: var(--color-primary-hover, #253F31);
+  background-color: var(--color-primary-hover);
 }
 
 /* UI/UX Section 10: prefers-reduced-motion removes animation */

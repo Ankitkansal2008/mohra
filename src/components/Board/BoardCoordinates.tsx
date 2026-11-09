@@ -13,7 +13,7 @@ const WHITE_FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] as const;
 const BLACK_FILES = ['h', 'g', 'f', 'e', 'd', 'c', 'b', 'a'] as const;
 
 // UI/UX Section 4 & Section 10: Ranks 1-8 outside to the left, files a-h under the board.
-// Rendered at 11px in --color-muted (#5A5A5A), hidden below 360px width.
+// Rendered at 11px in --color-muted, hidden below 360px width.
 export function BoardCoordinates({
   boardOrientation = 'white',
   showCoords = true,

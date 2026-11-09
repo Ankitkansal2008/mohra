@@ -5,11 +5,11 @@
   width: 100%;
   padding: var(--spacing-8, 8px) var(--spacing-12, 12px);
   margin-bottom: var(--spacing-12, 12px);
-  border-radius: var(--radius-6, 6px);
-  background-color: var(--color-surface, #FAFAF7);
-  border: 1px solid var(--color-border, #E2E6DE);
-  color: var(--color-ink, #1A1A1A);
-  font-size: 14px;
+  border-radius: var(--radius-button);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-ink);
+  font-size: var(--font-size-14, 14px);
   text-align: center;
   box-sizing: border-box;
 }

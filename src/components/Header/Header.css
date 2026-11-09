@@ -44,17 +44,17 @@
 }
 
 .gambit-nav-link {
-  font-size: var(--font-size-15, 15px);
+  font-size: var(--font-size-16, 16px);
   font-weight: 500;
-  color: var(--color-ink, #1a1a1a);
+  color: var(--color-ink);
   text-decoration: none;
   padding: var(--space-4, 4px) var(--space-8, 8px);
-  border-radius: var(--radius-button, 10px);
+  border-radius: var(--radius-button, 12px);
   transition: color var(--duration-120, 120ms) ease-out;
 }
 
 .gambit-nav-link:hover {
-  color: var(--color-primary, #2f4f3e);
+  color: var(--color-primary);
 }
 
 .gambit-header-actions {
@@ -72,11 +72,11 @@
 }
 
 .gambit-header-btn {
-  background: var(--color-panel, #ffffff);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-button, 10px);
+  border-radius: var(--radius-button, 12px);
   padding: 5px 12px;
-  font-size: var(--font-size-13, 13px);
+  font-size: var(--font-size-14, 14px);
   font-weight: 600;
   color: var(--color-ink);
   cursor: pointer;
@@ -93,7 +93,7 @@
 
 .gambit-header-btn-active {
   background-color: var(--color-primary);
-  color: var(--color-panel, #ffffff);
+  color: var(--color-surface);
   border-color: var(--color-primary);
 }
 
@@ -148,9 +148,9 @@
 }
 
 .gambit-mobile-menu {
-  background-color: var(--color-panel, #ffffff);
+  background-color: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-card, 14px);
+  border-radius: var(--radius-card, 16px);
   width: 100%;
   max-width: 360px;
   box-shadow: var(--shadow-soft);
@@ -213,9 +213,9 @@
   width: 100%;
   min-height: 44px;
   padding: var(--space-8, 8px) var(--space-16, 16px);
-  background-color: var(--color-surface, #faf8f3);
+  background-color: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-button, 10px);
+  border-radius: var(--radius-button, 12px);
   font-size: 14px;
   font-weight: 600;
   color: var(--color-ink);
@@ -229,6 +229,6 @@
 }
 
 .gambit-mobile-menu-action:hover {
-  background-color: var(--color-panel, #ffffff);
+  background-color: var(--color-bg);
   border-color: var(--color-primary);
 }

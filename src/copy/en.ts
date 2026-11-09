@@ -154,6 +154,7 @@ export const en: Record<string, string> = {
   credit: 'Developed by Ankit Kansal',
 
   // Navigation (Part 2 & 3)
+  navHome: 'Home',
   navPlay: 'Play',
   navHowToPlay: 'How to play',
   navAbout: 'About',

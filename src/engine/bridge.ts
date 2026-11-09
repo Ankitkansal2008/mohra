@@ -4,7 +4,7 @@ import { subscribeGameEvents } from '../game/events.ts';
 import { getTurn } from '../game/selectors.ts';
 import { useGameStore } from '../game/store.ts';
 import type { Level } from '../game/types.ts';
-import { getLevelConfig, getMinThinkingTime, MAX_ARTIFICIAL_DELAY_MS, sampleLevelParams } from './levels.ts';
+import { getLevelConfig, getMinThinkingTime, sampleLevelParams, sampleThinkingDelay } from './levels.ts';
 import {
   formatGoCommand, formatMultiPvCommand, formatPositionCommand,
   formatSkillCommand, parseBestMove, parseInfoLine,
@@ -13,7 +13,7 @@ import {
 let worker: Worker | null = null;
 let activeToken = 0;
 let isInitialized = false, isReady = false, isUciOk = false;
-let searchStartTime = 0;
+let searchStartTime = 0, targetThinkingDelay = 0;
 let searchLevel: Level = 2;
 
 let uciTimeout: ReturnType<typeof setTimeout> | null = null, thinkingTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -21,19 +21,17 @@ let ceilingTimeout: ReturnType<typeof setTimeout> | null = null, fallbackTimeout
 let pendingGo: (() => void) | null = null, pickRandomRoot = false, candidateMoves: string[] = [];
 
 function clearAllTimers(): void {
-  if (uciTimeout) { clearTimeout(uciTimeout); uciTimeout = null; }
-  if (thinkingTimeout) { clearTimeout(thinkingTimeout); thinkingTimeout = null; }
-  if (ceilingTimeout) { clearTimeout(ceilingTimeout); ceilingTimeout = null; }
-  if (fallbackTimeout) { clearTimeout(fallbackTimeout); fallbackTimeout = null; }
-  if (moveApplyTimeout) { clearTimeout(moveApplyTimeout); moveApplyTimeout = null; }
+  for (const t of [uciTimeout, thinkingTimeout, ceilingTimeout, fallbackTimeout, moveApplyTimeout]) if (t) clearTimeout(t);
+  uciTimeout = thinkingTimeout = ceilingTimeout = fallbackTimeout = moveApplyTimeout = null;
 }
 
-// Delays engine move to guarantee minimum visible thinking time without exceeding 1200ms extra delay.
+// Delays engine move to guarantee calibrated visible thinking time per level.
 function scheduleEngineMove(token: number, uci: string): void {
   if (ceilingTimeout) { clearTimeout(ceilingTimeout); ceilingTimeout = null; }
   if (fallbackTimeout) { clearTimeout(fallbackTimeout); fallbackTimeout = null; }
   const elapsed = Date.now() - searchStartTime;
-  const remaining = Math.min(MAX_ARTIFICIAL_DELAY_MS, Math.max(0, getMinThinkingTime(searchLevel) - elapsed));
+  const targetDelay = targetThinkingDelay > 0 ? targetThinkingDelay : getMinThinkingTime(searchLevel);
+  const remaining = Math.max(0, targetDelay - elapsed);
 
   if (remaining <= 0) {
     clearAllTimers();
@@ -129,6 +127,7 @@ export function requestEngineMove(fen: string, level: Level): number {
   clearAllTimers();
   searchStartTime = Date.now();
   searchLevel = level;
+  targetThinkingDelay = sampleThinkingDelay(level);
   const currentToken = useGameStore.getState().engineToken;
   activeToken = Math.max(activeToken, currentToken) + 1;
   const token = activeToken;

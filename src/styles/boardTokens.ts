@@ -10,12 +10,12 @@ export interface BoardThemeColors {
 // Tokenized palettes match the specification in Gambit_UIUX_Design.md section 4.
 export const BOARD_THEMES: Record<BoardTheme, BoardThemeColors> = {
   default: {
-    light: 'var(--color-board-light, #EBECD0)',
-    dark: 'var(--color-board-dark, #779556)',
+    light: 'var(--color-board-light)',
+    dark: 'var(--color-board-dark)',
   },
   slate: {
-    light: 'var(--color-board-slate-light, #DEE3E6)',
-    dark: 'var(--color-board-slate-dark, #8CA2AD)',
+    light: 'var(--color-board-slate-light)',
+    dark: 'var(--color-board-slate-dark)',
   },
 } as const;
 

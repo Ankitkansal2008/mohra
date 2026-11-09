@@ -1,16 +1,16 @@
 .gambit-move-panel {
   display: flex;
   flex-direction: column;
-  background-color: var(--color-panel, #ffffff);
-  border: 1px solid var(--color-border, #e2e6de);
-  border-radius: var(--radius-10, 10px);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
   width: 100%;
   max-width: 320px;
   height: 100%;
   max-height: 560px;
   box-sizing: border-box;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(20, 26, 20, 0.06);
+  box-shadow: var(--shadow-sm);
 }
 
 .gambit-move-panel-header {
@@ -33,10 +33,10 @@
   border: none;
   font-size: 20px;
   line-height: 1;
-  color: var(--color-muted, #5A5A5A);
+  color: var(--color-muted);
   cursor: pointer;
   padding: var(--space-4, 4px) var(--space-8, 8px);
-  border-radius: var(--radius-6, 6px);
+  border-radius: var(--radius-button);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -44,7 +44,7 @@
 }
 
 .gambit-move-panel-close:hover {
-  color: var(--color-ink, #1A1A1A);
+  color: var(--color-ink);
 }
 
 .gambit-review-banner {
@@ -65,9 +65,9 @@
 
 .gambit-btn-return {
   background-color: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-surface);
   border: none;
-  border-radius: var(--radius-6);
+  border-radius: var(--radius-button);
   padding: 4px 10px;
   font-size: 12px;
   font-weight: 600;
@@ -101,7 +101,7 @@
   grid-template-columns: 44px 1fr 1fr;
   align-items: center;
   padding: 2px 4px;
-  border-radius: var(--radius-6);
+  border-radius: var(--radius-button);
   font-size: 14px;
 }
 
@@ -125,7 +125,7 @@
 }
 
 .gambit-move-btn:hover {
-  background-color: var(--color-surface, #fafaf7);
+  background-color: var(--color-bg);
 }
 
 .gambit-move-active {
@@ -149,9 +149,9 @@
 
 .gambit-pgn-btn {
   flex: 1;
-  background-color: var(--color-panel, #ffffff);
+  background-color: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-6);
+  border-radius: var(--radius-button);
   padding: 8px 12px;
   font-size: 13px;
   font-weight: 600;
@@ -161,7 +161,7 @@
 }
 
 .gambit-pgn-btn:hover {
-  background-color: #f0f2ed;
+  background-color: var(--color-bg);
   border-color: var(--color-primary);
 }
 
@@ -169,4 +169,3 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
-

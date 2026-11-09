@@ -14,7 +14,7 @@
   align-items: center;
   gap: var(--spacing-8, 8px);
   font-size: 14px;
-  color: var(--color-muted, #5A5A5A);
+  color: var(--color-muted);
 }
 
 .gambit-thinking-dots {
@@ -27,7 +27,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: var(--color-muted, #5A5A5A);
+  background-color: var(--color-muted);
   animation: gambit-pulse 1.2s infinite ease-in-out;
 }
 

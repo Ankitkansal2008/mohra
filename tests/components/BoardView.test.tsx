@@ -41,15 +41,15 @@ describe('BoardView component', () => {
     // Chess board must have exactly 64 squares
     expect(squares.size).toBe(64);
 
-    // a1 is a dark square (#779556 in tokens)
+    // a1 is a dark square (--color-board-dark / #779556 in tokens)
     const a1Style = squares.get('a1');
     expect(a1Style).toBeDefined();
-    expect(a1Style).toContain('#779556');
+    expect(a1Style).toMatch(/--color-board-dark|#779556/);
 
-    // h1 is a light square (#EBECD0 in tokens)
+    // h1 is a light square (--color-board-light / #EBECD0 in tokens)
     const h1Style = squares.get('h1');
     expect(h1Style).toBeDefined();
-    expect(h1Style).toContain('#EBECD0');
+    expect(h1Style).toMatch(/--color-board-light|#EBECD0/);
   });
 
   it('renders alternative slate theme with correct colours at a1 and h1', () => {
@@ -63,14 +63,14 @@ describe('BoardView component', () => {
     const squares = parseSquares(html);
     expect(squares.size).toBe(64);
 
-    // Under slate theme: a1 dark is #8CA2AD, h1 light is #DEE3E6
+    // Under slate theme: a1 dark is --color-board-slate-dark, h1 light is --color-board-slate-light
     const a1Style = squares.get('a1');
     expect(a1Style).toBeDefined();
-    expect(a1Style).toContain('#8CA2AD');
+    expect(a1Style).toMatch(/--color-board-slate-dark|#8CA2AD/);
 
     const h1Style = squares.get('h1');
     expect(h1Style).toBeDefined();
-    expect(h1Style).toContain('#DEE3E6');
+    expect(h1Style).toMatch(/--color-board-slate-light|#DEE3E6/);
   });
 
   it('enforces pure CSS square aspect-ratio and clamp sizing with disabled pointer events', () => {

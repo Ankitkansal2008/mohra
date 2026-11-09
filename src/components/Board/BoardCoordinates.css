@@ -30,7 +30,7 @@
   align-items: center;
   justify-content: center;
   font-size: var(--coord-font-size, 11px);
-  color: var(--coord-color, var(--color-muted, #5A5A5A));
+  color: var(--coord-color, var(--color-muted));
   line-height: 1;
   font-weight: 500;
 }
@@ -72,7 +72,7 @@
   align-items: center;
   justify-content: center;
   font-size: var(--coord-font-size, 11px);
-  color: var(--coord-color, var(--color-muted, #5A5A5A));
+  color: var(--coord-color, var(--color-muted));
   line-height: 1;
   font-weight: 500;
 }

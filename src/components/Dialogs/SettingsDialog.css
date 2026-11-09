@@ -1,7 +1,7 @@
 .gambit-dialog-backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(26, 26, 26, 0.45);
+  background-color: rgba(22, 33, 27, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11,12 +11,12 @@
 }
 
 .gambit-settings-dialog {
-  background-color: var(--color-panel, #ffffff);
-  border: 1px solid var(--color-border, #e8e4da);
-  border-radius: var(--radius-card, 14px);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
   width: 100%;
   max-width: 480px;
-  box-shadow: var(--shadow-soft);
+  box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -28,14 +28,14 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-16, 16px) var(--space-24, 24px);
-  border-bottom: 1px solid var(--color-border, #e8e4da);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .gambit-settings-title {
   font-size: var(--font-size-22, 22px);
   letter-spacing: var(--letter-spacing-heading, -0.02em);
   font-weight: 700;
-  color: var(--color-ink, #1a1a1a);
+  color: var(--color-ink);
   margin: 0;
 }
 
@@ -52,18 +52,18 @@
   font-size: 22px;
   line-height: 1;
   cursor: pointer;
-  color: var(--color-muted, #6b6b6b);
-  border-radius: var(--radius-button, 10px);
+  color: var(--color-muted);
+  border-radius: var(--radius-button);
   transition: color var(--duration-120, 120ms) ease-out, background-color var(--duration-120, 120ms) ease-out;
 }
 
 .gambit-settings-close:hover {
-  color: var(--color-ink, #1a1a1a);
-  background-color: var(--color-surface, #faf8f3);
+  color: var(--color-ink);
+  background-color: var(--color-bg);
 }
 
 .gambit-settings-close:focus-visible {
-  outline: 2px solid var(--color-focus, #1a73e8);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 
@@ -78,7 +78,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-16, 16px) 0;
-  border-bottom: 1px solid var(--color-border, #e8e4da);
+  border-bottom: 1px solid var(--color-border);
   gap: var(--space-16, 16px);
 }
 
@@ -99,15 +99,15 @@
 }
 
 .gambit-setting-label {
-  font-size: var(--font-size-15, 15px);
+  font-size: var(--font-size-16, 16px);
   font-weight: 600;
-  color: var(--color-ink, #1a1a1a);
+  color: var(--color-ink);
 }
 
 .gambit-setting-help {
-  font-size: var(--font-size-13, 13px);
+  font-size: var(--font-size-14, 14px);
   line-height: var(--line-height-ui, 1.5);
-  color: var(--color-muted, #6b6b6b);
+  color: var(--color-muted);
 }
 
 /* Switch Component (44x24 track + knob) */
@@ -124,20 +124,20 @@
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
-  background-color: var(--color-border, #e8e4da);
+  background-color: var(--color-border);
   transition: background-color var(--duration-120, 120ms) ease-out;
 }
 
 .gambit-switch-on {
-  background-color: var(--color-primary, #2f4f3e);
+  background-color: var(--color-primary);
 }
 
 .gambit-switch-off {
-  background-color: var(--color-border, #e8e4da);
+  background-color: var(--color-border);
 }
 
 .gambit-switch:focus-visible {
-  outline: 2px solid var(--color-focus, #1a73e8);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
 
@@ -148,8 +148,8 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background-color: var(--color-panel, #ffffff);
-  box-shadow: 0 1px 2px rgba(26, 26, 26, 0.15);
+  background-color: var(--color-surface);
+  box-shadow: 0 1px 2px rgba(22, 33, 27, 0.15);
   transition: transform var(--duration-120, 120ms) ease-out;
 }
 
@@ -164,9 +164,9 @@
 /* Segmented Control (Green / Slate) */
 .gambit-setting-segmented {
   display: flex;
-  background-color: var(--color-surface, #faf8f3);
-  border: 1px solid var(--color-border, #e8e4da);
-  border-radius: var(--radius-button, 10px);
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-button);
   padding: 2px;
   gap: 2px;
   box-sizing: border-box;
@@ -176,11 +176,11 @@
 .gambit-setting-segment-btn {
   background: transparent;
   border: none;
-  border-radius: var(--radius-6, 6px);
+  border-radius: var(--radius-6, 8px);
   padding: var(--space-8, 8px) var(--space-12, 12px);
-  font-size: var(--font-size-13, 13px);
+  font-size: var(--font-size-14, 14px);
   font-weight: 500;
-  color: var(--color-muted, #6b6b6b);
+  color: var(--color-muted);
   cursor: pointer;
   transition: all var(--duration-120, 120ms) ease-out;
   display: flex;
@@ -191,20 +191,20 @@
 }
 
 .gambit-setting-segment-btn:hover {
-  color: var(--color-ink, #1a1a1a);
+  color: var(--color-ink);
 }
 
 .gambit-setting-segment-btn:focus-visible {
-  outline: 2px solid var(--color-focus, #1a73e8);
+  outline: 2px solid var(--color-focus);
   outline-offset: 1px;
 }
 
 .gambit-setting-segment-btn-active {
-  background-color: var(--color-primary, #2f4f3e);
-  color: var(--color-panel, #ffffff);
+  background-color: var(--color-primary);
+  color: var(--color-surface);
   font-weight: 600;
 }
 
 .gambit-setting-segment-btn-active:hover {
-  color: var(--color-panel, #ffffff);
+  color: var(--color-surface);
 }

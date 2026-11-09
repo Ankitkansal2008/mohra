@@ -61,6 +61,9 @@ export function Header({
 
       {/* Desktop / tablet primary navigation (>= 768px) */}
       <nav className="gambit-nav" aria-label="Main">
+        <AppLink to="/" className="gambit-nav-link">
+          {en.navHome}
+        </AppLink>
         <AppLink to="/play" className="gambit-nav-link">
           {en.navPlay}
         </AppLink>
@@ -168,6 +171,13 @@ export function Header({
               </button>
             </div>
             <div className="gambit-mobile-menu-body">
+              <AppLink
+                to="/"
+                className="gambit-mobile-menu-action"
+                onClick={handleCloseMenu}
+              >
+                {en.navHome}
+              </AppLink>
               <AppLink
                 to="/play"
                 className="gambit-mobile-menu-action"

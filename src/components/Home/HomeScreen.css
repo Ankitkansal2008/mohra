@@ -11,7 +11,7 @@
 }
 
 .gambit-home-dialog {
-  background-color: var(--color-panel);
+  background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
   width: 100%;

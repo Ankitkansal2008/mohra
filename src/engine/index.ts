@@ -17,11 +17,13 @@ export {
   MIN_THINKING_TIME_LEVEL_1_MS,
   MIN_THINKING_TIME_LEVEL_2_3_MS,
   MIN_THINKING_TIMES,
+  THINKING_DELAY_RANGES,
   getLevelConfig,
   getMinThinkingTime,
   sampleLevelParams,
+  sampleThinkingDelay,
 } from './levels.ts';
-export type { LevelConfig, SampledLevelParams } from './levels.ts';
+export type { LevelConfig, SampledLevelParams, ThinkingDelayRange } from './levels.ts';
 
 export {
   formatGoCommand,
