@@ -1,19 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { en } from '../../src/copy/en.ts';
 import { downloadPgnFile } from '../../src/game/pgn.ts';
 import { getResultExplanation } from '../../src/game/selectors.ts';
 import { useGameStore } from '../../src/game/store.ts';
 import { formatClock } from '../../src/lib/format.ts';
 import {
   STORAGE_KEY_GAME,
-  STORAGE_KEY_SETTINGS,
-  clearSavedGame,
   formatResumeLabel,
   isSaveUnder24Hours,
   loadSavedGame,
   loadSavedSettings,
-  saveGame,
-  saveGameDebounced,
 } from '../../src/lib/persist.ts';
 
 const storageMap = new Map<string, string>();
