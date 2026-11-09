@@ -109,15 +109,16 @@ export function BoardView({
         touchAction: 'pinch-zoom',
         ...style,
       }}
-      tabIndex={0}
-      role="grid"
-      aria-label={en.boardKeyboardInstructions}
-      aria-rowcount={8}
-      aria-colcount={8}
-      aria-activedescendant={isFocused ? `gambit-cell-${cursorSquare}` : undefined}
-      onFocus={handleFocus}
-      onBlur={handleBlur}
-      onKeyDown={handleKeyDown}
+      tabIndex={interactive ? 0 : -1}
+      role={interactive ? 'grid' : 'presentation'}
+      aria-hidden={!interactive ? true : undefined}
+      aria-label={interactive ? en.boardKeyboardInstructions : undefined}
+      aria-rowcount={interactive ? 8 : undefined}
+      aria-colcount={interactive ? 8 : undefined}
+      aria-activedescendant={interactive && isFocused ? `gambit-cell-${cursorSquare}` : undefined}
+      onFocus={interactive ? handleFocus : undefined}
+      onBlur={interactive ? handleBlur : undefined}
+      onKeyDown={interactive ? handleKeyDown : undefined}
     >
       {storeToast ? (
         <div style={{ position: 'absolute', top: '8px', left: '50%', transform: 'translateX(-50%)', zIndex: 60, maxWidth: '90%' }}>

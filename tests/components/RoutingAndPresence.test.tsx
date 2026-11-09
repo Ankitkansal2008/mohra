@@ -61,17 +61,68 @@ describe('Routing, web presence and content pages (v1.3)', () => {
       expect(html).toContain(en.privacyContactTitle);
     });
 
-    it('renders game route on root path "/" with board and indicators unchanged', () => {
+    it('renders home route on root path "/" with hero CTA, features, and closing CTA', () => {
       const html = renderToStaticMarkup(
         <MemoryRouter initialEntries={['/']}>
           <App />
         </MemoryRouter>,
       );
 
-      expect(html).toContain('class="board-container"');
-      expect(html).toContain('gambit-board-wrapper');
-      expect(html).toContain('data-testid="turn-indicator-top"');
-      expect(html).toContain('data-testid="turn-indicator-bottom"');
+      expect(html).toContain('class="home-hero"');
+      expect(html).toContain(en.homeHeading);
+      expect(html).toContain(en.homeSubheading);
+      expect(html).toContain(en.homeEyebrow);
+      expect(html).toContain('data-testid="hero-play-cta"');
+      expect(html).toContain(en.playNow);
+      expect(html).toContain('data-testid="hero-board-card"');
+      expect(html).toContain(en.homeFeatureLegalMoves);
+      expect(html).toContain(en.homeFeatureRefusedMoves);
+      expect(html).toContain(en.homeFeatureNoSignup);
+      expect(html).toContain('data-testid="closing-play-cta"');
+    });
+
+    it('renders play route on "/play" with setup panel and no board until Start', () => {
+      const html = renderToStaticMarkup(
+        <MemoryRouter initialEntries={['/play']}>
+          <App />
+        </MemoryRouter>,
+      );
+
+      expect(html).toContain('class="board-container setup-mode"');
+      expect(html).toContain('gambit-setup-inline-card');
+      expect(html).toContain(en.newGame);
+      expect(html).toContain(en.start);
+      expect(html).not.toContain('gambit-board-wrapper');
+    });
+
+    it('clicking Play navigates to /play, showing setup panel and no board until Start', () => {
+      useGameStore.getState().resetGame();
+      // Nav links point to /play
+      const homeHtml = renderToStaticMarkup(
+        <MemoryRouter initialEntries={['/']}>
+          <App />
+        </MemoryRouter>,
+      );
+      expect(homeHtml).toMatch(/<a[^>]*class="gambit-nav-link"[^>]*href="\/play"[^>]*>Play<\/a>/);
+
+      // Visiting /play displays setup panel with no board
+      const setupHtml = renderToStaticMarkup(
+        <MemoryRouter initialEntries={['/play']}>
+          <App />
+        </MemoryRouter>,
+      );
+      expect(setupHtml).toContain('gambit-setup-inline-card');
+      expect(setupHtml).not.toContain('gambit-board-wrapper');
+
+      // Starting a game displays the board
+      useGameStore.getState().startNewGame();
+      const playHtml = renderToStaticMarkup(
+        <MemoryRouter initialEntries={['/play']}>
+          <App />
+        </MemoryRouter>,
+      );
+      expect(playHtml).toContain('gambit-board-wrapper');
+      expect(playHtml).not.toContain('gambit-setup-inline-card');
     });
   });
 
@@ -174,7 +225,7 @@ describe('Routing, web presence and content pages (v1.3)', () => {
       );
 
       expect(html).toContain('class="gambit-nav-link"');
-      expect(html).toMatch(/<a[^>]*class="gambit-nav-link"[^>]*href="\/"[^>]*>Play<\/a>/);
+      expect(html).toMatch(/<a[^>]*class="gambit-nav-link"[^>]*href="\/play"[^>]*>Play<\/a>/);
       expect(html).toMatch(/<a[^>]*class="gambit-nav-link"[^>]*href="\/how-to-play"[^>]*>How to play<\/a>/);
       expect(html).toMatch(/<a[^>]*class="gambit-nav-link"[^>]*href="\/about"[^>]*>About<\/a>/);
     });
@@ -187,19 +238,27 @@ describe('Routing, web presence and content pages (v1.3)', () => {
       );
 
       expect(html).toContain('class="gambit-footer-link"');
-      expect(html).toMatch(/<a[^>]*class="gambit-footer-link"[^>]*href="\/"[^>]*>Play<\/a>/);
+      expect(html).toMatch(/<a[^>]*class="gambit-footer-link"[^>]*href="\/play"[^>]*>Play<\/a>/);
       expect(html).toMatch(/<a[^>]*class="gambit-footer-link"[^>]*href="\/how-to-play"[^>]*>How to play<\/a>/);
       expect(html).toMatch(/<a[^>]*class="gambit-footer-link"[^>]*href="\/about"[^>]*>About<\/a>/);
       expect(html).toMatch(/<a[^>]*class="gambit-footer-link"[^>]*href="\/privacy"[^>]*>Privacy<\/a>/);
     });
 
-    it('route navigation switches page content across all four routes', () => {
-      const playHtml = renderToStaticMarkup(
+    it('route navigation switches page content across all five routes', () => {
+      const homeHtml = renderToStaticMarkup(
         <MemoryRouter initialEntries={['/']}>
           <App />
         </MemoryRouter>,
       );
-      expect(playHtml).toContain('class="board-container"');
+      expect(homeHtml).toContain('class="home-hero"');
+
+      const playHtml = renderToStaticMarkup(
+        <MemoryRouter initialEntries={['/play']}>
+          <App />
+        </MemoryRouter>,
+      );
+      expect(playHtml).toContain('class="board-container setup-mode"');
+      expect(playHtml).toContain('gambit-setup-inline-card');
 
       const howToPlayHtml = renderToStaticMarkup(
         <MemoryRouter initialEntries={['/how-to-play']}>

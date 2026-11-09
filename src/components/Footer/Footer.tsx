@@ -12,7 +12,7 @@ export function Footer(): React.JSX.Element {
   return (
     <footer className="gambit-footer" role="contentinfo">
       <nav className="gambit-footer-nav" aria-label="Footer">
-        <AppLink to="/" className="gambit-footer-link">
+        <AppLink to="/play" className="gambit-footer-link">
           {en.navPlay}
         </AppLink>
         <AppLink to="/how-to-play" className="gambit-footer-link">

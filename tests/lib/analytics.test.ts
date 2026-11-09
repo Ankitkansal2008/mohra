@@ -235,5 +235,20 @@ describe('Analytics module (src/lib/analytics.ts)', () => {
       expect(payload).toEqual({ from: 'header' });
       expect(payload).not.toHaveProperty('fen');
     });
+
+    it('tracks play_clicked from home_hero and home_closing without PII', () => {
+      const mockTrack = vi.fn();
+      (globalThis as unknown as { window: unknown }).window = { umami: { track: mockTrack } };
+      vi.stubEnv('DEV', false);
+
+      track('play_clicked', { from: 'home_hero' });
+      expect(mockTrack).toHaveBeenCalledWith('play_clicked', { from: 'home_hero' });
+
+      track('play_clicked', { from: 'home_closing' });
+      expect(mockTrack).toHaveBeenCalledWith('play_clicked', { from: 'home_closing' });
+
+      expect(mockTrack.mock.calls[0][1]).toEqual({ from: 'home_hero' });
+      expect(mockTrack.mock.calls[1][1]).toEqual({ from: 'home_closing' });
+    });
   });
 });

@@ -2,10 +2,34 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { App } from '../../src/App.tsx';
+import { en } from '../../src/copy/en.ts';
+import { useGameStore } from '../../src/game/store.ts';
 
-describe('App component', () => {
-  it('mounts BoardView inside centered board-container with starting position', () => {
-    const html = renderToStaticMarkup(React.createElement(App));
+describe('App component and routing', () => {
+  it('renders Home page on root "/" with hero CTA and static board card', () => {
+    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/' }));
+
+    expect(html).toContain('class="home-hero"');
+    expect(html).toContain(en.homeHeading);
+    expect(html).toContain(en.playNow);
+    expect(html).toContain('data-testid="hero-play-cta"');
+    expect(html).toContain('data-testid="hero-board-card"');
+  });
+
+  it('/play shows the setup panel with no board until Start', () => {
+    useGameStore.getState().resetGame();
+    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
+
+    expect(html).toContain('class="board-container setup-mode"');
+    expect(html).toContain('gambit-setup-inline-card');
+    expect(html).toContain(en.newGame);
+    expect(html).toContain(en.start);
+    expect(html).not.toContain('class="gambit-board-wrapper"');
+  });
+
+  it('mounts BoardView inside centered board-container with starting position once game started', () => {
+    useGameStore.getState().startNewGame();
+    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
 
     // Centered container
     expect(html).toContain('class="board-container"');
@@ -26,17 +50,19 @@ describe('App component', () => {
     expect(html).toContain('chessboard-piece-bK-e8');
   });
 
-  it('renders turn indicators above and below board with correct player names', () => {
+  it('renders turn indicators above and below board with correct player names when playing', () => {
+    useGameStore.getState().startNewGame();
     // Computer mode: Top is Mohra (Black), Bottom is You (White)
-    const htmlComputer = renderToStaticMarkup(React.createElement(App));
+    const htmlComputer = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
     expect(htmlComputer).toContain('data-testid="turn-indicator-top"');
     expect(htmlComputer).toContain('data-testid="turn-indicator-bottom"');
     expect(htmlComputer).toContain('Mohra');
     expect(htmlComputer).toContain('You');
   });
 
-  it('renders move list panel with initial empty state', () => {
-    const html = renderToStaticMarkup(React.createElement(App));
+  it('renders move list panel with initial empty state when playing', () => {
+    useGameStore.getState().startNewGame();
+    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
     expect(html).toContain('class="gambit-move-panel"');
     expect(html).toContain('No moves yet. White to play.');
   });

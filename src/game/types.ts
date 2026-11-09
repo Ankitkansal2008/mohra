@@ -81,6 +81,7 @@ export interface GameStoreState {
   engineToken: number;
   isThinking: boolean;
   engineFailed: boolean;
+  isGameInProgress: boolean;
 
   attemptMove: (from: string, to?: string, promotion?: string, isEngine?: boolean) => boolean;
   applyEngineMove: (token: number, uci: string) => boolean;
@@ -97,6 +98,7 @@ export interface GameStoreState {
   showToast: (message: string, reason?: RejectionReason, type?: 'notify' | 'refuse') => void;
   dismissToast: () => void;
   resetGame: (customFen?: string) => void;
+  returnToSetup: () => void;
   rematch: () => void;
   startNewGame: (options?: NewGameOptions) => void;
   loadFen: (fen: string) => boolean;

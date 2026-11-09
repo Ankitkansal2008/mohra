@@ -17,7 +17,7 @@ describe('Social preview and metadata in index.html', () => {
   it('asserts title and meta description exist with required text', () => {
     expect(indexHtml).toContain('<title>Mohra - play chess in your browser</title>');
     expect(indexHtml).toContain(
-      'content="Play chess in your browser against the computer at three levels, or a friend on the same device. Free, no signup, no install."',
+      'content="Play chess in your browser against the computer at four levels, or a friend on one device. Free, no signup, beginner friendly."',
     );
   });
 
@@ -41,7 +41,7 @@ describe('Social preview and metadata in index.html', () => {
     expect(indexHtml).toMatch(/<meta\s+name=["']twitter:card["']\s+content=["']summary_large_image["']\s*\/?>/);
     expect(indexHtml).toMatch(/<meta\s+name=["']twitter:title["']\s+content=["']Mohra - play chess in your browser["']\s*\/?>/);
     expect(indexHtml).toContain(
-      'name="twitter:description"\n      content="Play chess in your browser against the computer at three levels, or a friend on the same device. Free, no signup, no install."',
+      'name="twitter:description"\n      content="Play chess in your browser against the computer at four levels, or a friend on one device. Free, no signup, beginner friendly."',
     );
     expect(indexHtml).toMatch(/<meta\s+name=["']twitter:image["']\s+content=["'][^"']*og-image\.png["']\s*\/?>/);
   });

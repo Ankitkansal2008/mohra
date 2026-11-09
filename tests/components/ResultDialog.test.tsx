@@ -21,7 +21,7 @@ describe('Result dialog in game view', () => {
       },
     });
 
-    const html = renderToStaticMarkup(React.createElement(App));
+    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
     expect(html).toContain('Checkmate. White wins.');
     expect(html).toContain('Black has no legal move and the king is attacked.');
     expect(html).toContain('role="dialog"');
@@ -40,7 +40,7 @@ describe('Result dialog in game view', () => {
       },
     });
 
-    const html = renderToStaticMarkup(React.createElement(App));
+    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
     expect(html).toContain('Checkmate. Black wins.');
     expect(html).toContain('White has no legal move and the king is attacked.');
   });
@@ -55,7 +55,7 @@ describe('Result dialog in game view', () => {
       },
     });
 
-    const html = renderToStaticMarkup(React.createElement(App));
+    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
     expect(html).toContain("Stalemate. It&#x27;s a draw.");
     expect(html).toContain('White has no legal move, but the king is not attacked.');
   });
@@ -70,7 +70,7 @@ describe('Result dialog in game view', () => {
       },
     });
 
-    const html = renderToStaticMarkup(React.createElement(App));
+    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
     expect(html).toContain('Draw by repetition.');
     expect(html).toContain('The same position occurred three times.');
   });
@@ -85,7 +85,7 @@ describe('Result dialog in game view', () => {
       },
     });
 
-    const html = renderToStaticMarkup(React.createElement(App));
+    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
     expect(html).toContain('Draw by the fifty-move rule.');
     expect(html).toContain('Fifty moves each with no capture and no pawn move.');
   });
@@ -100,7 +100,7 @@ describe('Result dialog in game view', () => {
       },
     });
 
-    const html = renderToStaticMarkup(React.createElement(App));
+    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
     expect(html).toContain('Draw. Not enough material to checkmate.');
   });
 
@@ -114,7 +114,7 @@ describe('Result dialog in game view', () => {
       },
     });
 
-    const html = renderToStaticMarkup(React.createElement(App));
+    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
     expect(html).toContain('Black resigned. White wins.');
   });
 
@@ -127,7 +127,7 @@ describe('Result dialog in game view', () => {
       },
     });
 
-    const html = renderToStaticMarkup(React.createElement(App));
+    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
     expect(html).toContain('White resigned. Black wins.');
   });
 
@@ -141,7 +141,7 @@ describe('Result dialog in game view', () => {
       },
     });
 
-    const html = renderToStaticMarkup(React.createElement(App));
+    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
     expect(html).toContain('Black ran out of time. White wins.');
   });
 
@@ -154,13 +154,13 @@ describe('Result dialog in game view', () => {
       },
     });
 
-    const html = renderToStaticMarkup(React.createElement(App));
+    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
     expect(html).toContain('White ran out of time. Black wins.');
   });
 
   // Active play guard
   it('does not render result panel during active play', () => {
-    const html = renderToStaticMarkup(React.createElement(App));
+    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
     expect(html).not.toContain('gambit-result-dialog');
     expect(html).not.toContain('Checkmate');
   });

@@ -3,19 +3,21 @@
   --color-board-dark: #779556;
   --color-board-slate-light: #DEE3E6;
   --color-board-slate-dark: #8CA2AD;
-  --color-ink: #1A1A1A;
-  --color-muted: #6B6B6B;
+  --color-ink: #16211B;
+  --color-muted: #6B7268;
   --color-primary: #2F4F3E;
   --color-primary-hover: #253F31;
-  --color-accent: #8A9A5B;
+  --color-accent: #C4694A;
+  --color-accent-hover: #AE5740;
   --color-success: #3F7D4E;
   --color-warning: #C8892E;
   --color-danger: #C0392B;
   --color-info: #2F6F9F;
   --color-focus: #1A73E8;
-  --color-surface: #FAF8F3;
+  --color-surface: #F8F5EE;
   --color-panel: #FFFFFF;
-  --color-border: #E8E4DA;
+  --color-card: #FFFFFF;
+  --color-border: #E6E0D4;
 
   --spacing-4: 4px;
   --spacing-8: 8px;
@@ -25,9 +27,10 @@
   --spacing-32: 32px;
   --spacing-48: 48px;
   --spacing-64: 64px;
+  --spacing-96: 96px;
 
-  --radius-button: 10px;
-  --radius-card: 14px;
+  --radius-button: 12px;
+  --radius-card: 16px;
   --radius-pill: 999px;
 
   --duration-120: 120ms;
@@ -35,24 +38,27 @@
 }
 
 :root {
-  /* Surfaces: page #FAF8F3, card #FFFFFF, border #E8E4DA */
-  --color-surface: #FAF8F3;
+  /* Surfaces: background #F8F5EE, card #FFFFFF, border #E6E0D4 */
+  --color-surface: #F8F5EE;
   --color-panel: #FFFFFF;
   --color-card: #FFFFFF;
-  --color-border: #E8E4DA;
-  --border: #E8E4DA;
+  --color-border: #E6E0D4;
+  --border: #E6E0D4;
 
-  /* Ink: #1A1A1A, muted #6B6B6B */
-  --ink: #1A1A1A;
-  --muted: #6B6B6B;
-  --color-ink: #1A1A1A;
-  --color-muted: #6B6B6B;
+  /* Ink #16211B, muted #6B7268 */
+  --ink: #16211B;
+  --muted: #6B7268;
+  --color-ink: #16211B;
+  --color-muted: #6B7268;
 
-  /* Brand: primary #2F4F3E, primary-hover #253F31, accent #8A9A5B */
+  /* Brand: primary #2F4F3E, primary-hover #253F31, accent #C4694A, accent-hover #AE5740 */
   --primary: #2F4F3E;
   --color-primary: #2F4F3E;
   --color-primary-hover: #253F31;
-  --color-accent: #8A9A5B;
+  --accent: #C4694A;
+  --color-accent: #C4694A;
+  --accent-hover: #AE5740;
+  --color-accent-hover: #AE5740;
 
   /* Functional state colors */
   --danger: #C0392B;
@@ -78,18 +84,25 @@
   --board-check: radial-gradient(circle, rgba(228, 87, 46, 0.6) 0%, rgba(228, 87, 46, 0) 70%);
   --board-legal-dot: rgba(20, 20, 20, 0.16);
 
-  /* Type scale: 13 / 15 / 17 / 22 / 28 / 36 */
-  --font-size-13: 13px;
-  --font-size-15: 15px;
-  --font-size-17: 17px;
+  /* Type scale 14 / 16 / 18 / 22 / 30 / 44; line-height 1.5 UI, 1.7 body text */
+  --font-size-13: 14px;
+  --font-size-14: 14px;
+  --font-size-15: 16px;
+  --font-size-16: 16px;
+  --font-size-17: 18px;
+  --font-size-18: 18px;
   --font-size-22: 22px;
-  --font-size-28: 28px;
-  --font-size-36: 36px;
+  --font-size-28: 30px;
+  --font-size-30: 30px;
+  --font-size-36: 44px;
+  --font-size-44: 44px;
   --line-height-ui: 1.5;
+  --line-height-body: 1.7;
   --line-height-content: 1.7;
   --letter-spacing-heading: -0.02em;
 
-  /* Spacing: 4/8/12/16/24/32/48/64 */
+  /* Spacing 4/8/12/16/24/32/48/64/96 */
+  --space-2: 4px;
   --space-4: 4px;
   --space-8: 8px;
   --space-12: 12px;
@@ -98,6 +111,7 @@
   --space-32: 32px;
   --space-48: 48px;
   --space-64: 64px;
+  --space-96: 96px;
   --spacing-4: 4px;
   --spacing-8: 8px;
   --spacing-12: 12px;
@@ -106,18 +120,24 @@
   --spacing-32: 32px;
   --spacing-48: 48px;
   --spacing-64: 64px;
+  --spacing-96: 96px;
 
-  /* Radius: 10px buttons, 14px cards, 999px pills */
-  --radius-6: 6px;
-  --radius-button: 10px;
-  --radius-10: 10px;
-  --radius-card: 14px;
-  --radius-14: 14px;
+  /* Radius 12 buttons, 16 cards, 999 pills */
+  --radius-6: 8px;
+  --radius-8: 12px;
+  --radius-10: 12px;
+  --radius-button: 12px;
+  --radius-12: 12px;
+  --radius-14: 16px;
+  --radius-card: 16px;
+  --radius-16: 16px;
   --radius-pill: 999px;
 
-  /* Elevation: one soft shadow only */
-  --elevation-1: 0 1px 2px rgba(26, 26, 26, 0.04), 0 8px 24px rgba(26, 26, 26, 0.06);
-  --shadow-soft: 0 1px 2px rgba(26, 26, 26, 0.04), 0 8px 24px rgba(26, 26, 26, 0.06);
+  /* Shadow: 0 1px 2px rgba(22,33,27,.05), 0 10px 30px rgba(22,33,27,.07) */
+  --shadow-sm: 0 1px 2px rgba(22, 33, 27, 0.05);
+  --shadow-lg: 0 10px 30px rgba(22, 33, 27, 0.07);
+  --elevation-1: 0 1px 2px rgba(22, 33, 27, 0.05), 0 10px 30px rgba(22, 33, 27, 0.07);
+  --shadow-soft: 0 1px 2px rgba(22, 33, 27, 0.05), 0 10px 30px rgba(22, 33, 27, 0.07);
 
   /* Touch minimums */
   --touch-min: 44px;
@@ -133,7 +153,7 @@
 
   /* Coordinates */
   --coord-font-size: 11px;
-  --coord-color: #6B6B6B;
+  --coord-color: var(--color-muted);
 }
 
 /* Board layout container: square aspect-ratio, minimum 40px square (320px board) */

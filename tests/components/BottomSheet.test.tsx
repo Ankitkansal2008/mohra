@@ -117,7 +117,8 @@ describe('Mobile move-list bottom sheet and backdrop', () => {
   });
 
   it('renders bottom sheet outside board with backdrop when open in App', () => {
-    const html = renderToStaticMarkup(React.createElement(App));
+    useGameStore.getState().startNewGame();
+    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
 
     // Sheet container exists with aria-label
     expect(html).toContain('class="sidebar-layout "');

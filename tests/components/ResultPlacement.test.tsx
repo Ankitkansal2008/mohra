@@ -23,7 +23,7 @@ describe('Result dialog placement and mobile responsive checks', () => {
     expect(gameState.status).toBe('checkmate');
     expect(gameState.winner).toBe('w');
 
-    const html = renderToStaticMarkup(React.createElement(App));
+    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
 
     // Result dialog must be rendered
     expect(html).toContain('gambit-result-dialog');
@@ -60,7 +60,7 @@ describe('Result dialog placement and mobile responsive checks', () => {
     useGameStore.getState().loadFen('6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1');
     useGameStore.getState().attemptMove('a1', 'a8');
 
-    const html = renderToStaticMarkup(React.createElement(App));
+    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
 
     // Extract content between gambit-board-wrapper and the next sibling
     const boardWrapperHtml = html.slice(
@@ -74,7 +74,8 @@ describe('Result dialog placement and mobile responsive checks', () => {
   });
 
   it('renders Moves button in controls and collapses header on mobile', () => {
-    const html = renderToStaticMarkup(React.createElement(App));
+    useGameStore.getState().startNewGame();
+    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
 
     // Header has mobile trigger button
     expect(html).toContain('gambit-header-mobile-trigger');

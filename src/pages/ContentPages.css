@@ -89,29 +89,31 @@
 }
 
 .content-card-example {
-  background-color: var(--color-surface, #faf8f3);
-  border-left: 3px solid var(--color-accent, #8a9a5b);
-  padding: var(--space-12, 12px);
-  border-radius: var(--radius-button, 10px);
-  margin-top: var(--space-12, 12px);
-  font-size: var(--font-size-15, 15px);
-  line-height: var(--line-height-ui, 1.5);
-  color: var(--color-ink, #1a1a1a);
+  background-color: var(--color-surface);
+  border-left: 3px solid var(--color-primary);
+  padding: var(--space-12);
+  border-radius: var(--radius-button);
+  margin-top: var(--space-12);
+  font-size: var(--font-size-16);
+  line-height: var(--line-height-ui);
+  color: var(--color-ink);
 }
 
 .content-section {
-  margin-bottom: var(--space-24, 24px);
+  margin-bottom: var(--space-24);
 }
 
-.content-link {
-  color: var(--color-primary, #2f4f3e);
+.content-link,
+.content-page a {
+  color: var(--color-accent);
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 2px;
   transition: color var(--duration-hover, 120ms) ease-out;
 }
 
-.content-link:hover {
-  color: var(--color-primary-hover, #253f31);
+.content-link:hover,
+.content-page a:hover {
+  color: var(--color-accent-hover);
 }
 

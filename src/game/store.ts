@@ -24,7 +24,7 @@ function trackGameEnded(game: GameState): void {
 
 export const useGameStoreBase = create<GameStoreState>((set, get) => ({
   game: createInitialGameState(), clock: null, ui: getInitialBootUiState(), toast: null,
-  lastMove: null, announcedMove: null, engineToken: 0, isThinking: false, engineFailed: false,
+  lastMove: null, announcedMove: null, engineToken: 0, isThinking: false, engineFailed: false, isGameInProgress: false,
 
   attemptMove: (from: string, to?: string, promotion?: string, isEngine?: boolean): boolean => {
     let resolvedFrom = from;
@@ -142,11 +142,13 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
   resetGame: (customFen?: string): void => {
     const initial = buildFreshGameState(customFen);
     clearSavedGame();
-    set((s) => ({
-      game: initial, clock: null, ui: { ...s.ui, reviewPly: null, selected: null, targets: [] },
-      toast: null, lastMove: null, announcedMove: null, engineToken: s.engineToken + 1, isThinking: false, engineFailed: false,
-    }));
+    set((s) => ({ isGameInProgress: false, game: initial, clock: null, ui: { ...s.ui, reviewPly: null, selected: null, targets: [] }, toast: null, lastMove: null, announcedMove: null, engineToken: s.engineToken + 1, isThinking: false, engineFailed: false }));
     emitGameEvent({ type: 'new-game', fen: initial.fen, level: initial.level, uciMoves: initial.uciMoves });
+  },
+
+  returnToSetup: (): void => {
+    clearSavedGame();
+    set((s) => ({ isGameInProgress: false, game: buildFreshGameState(STARTING_FEN), clock: null, ui: { ...s.ui, reviewPly: null, selected: null, targets: [], pendingPromotion: null }, toast: null, lastMove: null, announcedMove: null, engineToken: s.engineToken + 1, isThinking: false, engineFailed: false }));
   },
 
   rematch: (): void => {
@@ -164,10 +166,7 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
     const clock = ms !== null ? createClockState('w', ms) : null;
     const initial = buildFreshGameState(STARTING_FEN, { mode, humanSide, level, clock });
     clearSavedGame();
-    set((s) => ({
-      game: initial, clock, ui: { ...s.ui, reviewPly: null, selected: null, targets: [], flipped: humanSide === 'b' },
-      toast: null, lastMove: null, announcedMove: null, engineToken: s.engineToken + 1, isThinking: false, engineFailed: false,
-    }));
+    set((s) => ({ isGameInProgress: true, game: initial, clock, ui: { ...s.ui, reviewPly: null, selected: null, targets: [], flipped: humanSide === 'b' }, toast: null, lastMove: null, announcedMove: null, engineToken: s.engineToken + 1, isThinking: false, engineFailed: false }));
     emitGameEvent({ type: 'new-game', fen: initial.fen, level: initial.level, uciMoves: initial.uciMoves });
     track('game_started', { mode, level, colour: humanSide === 'b' ? 'black' : 'white' });
   },
@@ -178,7 +177,7 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
     const { mode, humanSide, level } = get().game;
     const newGame = buildFreshGameState(trimmed, { mode, humanSide, level });
     clearSavedGame();
-    set((s) => ({ game: newGame, clock: null, ui: { ...s.ui, reviewPly: null, selected: null, targets: [] }, toast: null, lastMove: null, announcedMove: null, engineToken: s.engineToken + 1, isThinking: false }));
+    set((s) => ({ isGameInProgress: true, game: newGame, clock: null, ui: { ...s.ui, reviewPly: null, selected: null, targets: [] }, toast: null, lastMove: null, announcedMove: null, engineToken: s.engineToken + 1, isThinking: false }));
     emitGameEvent({ type: 'new-game', fen: newGame.fen, level: newGame.level, uciMoves: newGame.uciMoves });
     return true;
   },
@@ -224,7 +223,7 @@ export const useGameStoreBase = create<GameStoreState>((set, get) => ({
 
   restoreGame: (savedGame: GameState) => {
     const { game, lastMove } = buildRestoredGameState(savedGame);
-    set((s) => ({ game, clock: game.clock, ui: { ...s.ui, reviewPly: null, selected: null, targets: [] }, lastMove, engineToken: s.engineToken + 1, isThinking: false }));
+    set((s) => ({ isGameInProgress: true, game, clock: game.clock, ui: { ...s.ui, reviewPly: null, selected: null, targets: [] }, lastMove, engineToken: s.engineToken + 1, isThinking: false }));
     emitGameEvent({ type: 'restored', fen: game.fen, level: game.level, uciMoves: game.uciMoves });
   },
 }));

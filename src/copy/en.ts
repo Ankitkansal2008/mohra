@@ -166,7 +166,10 @@ export const en: Record<string, string> = {
 
   // Route metadata (Part 6)
   homeTitle: 'Mohra - play chess in your browser',
-  homeMetaDescription: 'Play chess in your browser against the computer at three levels, or a friend on the same device. Free, no signup, no install.',
+  homeMetaDescription: 'Play chess in your browser against the computer at four levels, or a friend on one device. Free, no signup, beginner friendly.',
+  playTitle: 'Play Mohra',
+  playDocTitle: 'Play - Mohra',
+  playMetaDescription: 'Play chess against the computer at four levels or a friend on one device. Free, no signup, beginner friendly.',
   howToPlayTitle: 'How to play',
   howToPlayDocTitle: 'How to Play - Mohra',
   howToPlayMetaDescription: 'Learn how chess pieces move, castling, en passant, and pawn promotion with clear rules and examples.',
@@ -176,6 +179,18 @@ export const en: Record<string, string> = {
   privacyTitle: 'Privacy',
   privacyDocTitle: 'Privacy - Mohra',
   privacyMetaDescription: 'Plain language privacy: no accounts, no personal data, cookieless analytics, and transparent local storage.',
+
+  // Home Page (v1.4)
+  homeEyebrow: 'Free • No signup',
+  homeHeading: 'Chess that explains itself',
+  homeSubheading: 'Play the computer at four levels, or a friend on one device. Legal moves are shown, and a refused move tells you why.',
+  playNow: 'Play now',
+  howToPlay: 'How to play',
+  homeBoardCardAriaLabel: 'Static chess demonstration position',
+  homeFeatureLegalMoves: 'Every legal move is shown',
+  homeFeatureRefusedMoves: 'A refused move tells you why',
+  homeFeatureNoSignup: 'No signup, no install',
+  homeClosingHeading: 'Ready to play?',
 
   // How to play cards (Part 5)
   howToPlayIntro: 'Chess is played on an 8×8 grid by two players. Here is everything you need to know about piece movement and special rules.',

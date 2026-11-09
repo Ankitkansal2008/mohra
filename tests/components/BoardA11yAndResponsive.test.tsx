@@ -8,6 +8,7 @@ import { BoardView } from '../../src/components/Board/BoardView.tsx';
 import { buildSquareStyles } from '../../src/components/Board/boardStyles.ts';
 import { en } from '../../src/copy/en.ts';
 import { formatLiveMoveAnnouncement, formatMoveAnnouncement } from '../../src/lib/moveAnnouncement.ts';
+import { useGameStore } from '../../src/game/store.ts';
 
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
@@ -125,7 +126,8 @@ describe('Board Accessibility, Coordinates, Keyboard Play & Responsive Pass', ()
   });
 
   it('mounts App with responsive shell: left-column, board-layout, and sidebar-layout', () => {
-    const html = renderToStaticMarkup(React.createElement(App));
+    useGameStore.getState().startNewGame();
+    const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
 
     expect(html).toContain('class="app-shell"');
     expect(html).toContain('class="board-container"');

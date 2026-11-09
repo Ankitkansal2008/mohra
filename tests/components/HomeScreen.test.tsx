@@ -117,7 +117,7 @@ describe('HomeScreen and new-game flow', () => {
     });
 
     it('Header renders New game trigger which opens the HomeScreen', () => {
-      const html = renderToStaticMarkup(React.createElement(App));
+      const html = renderToStaticMarkup(React.createElement(App, { initialRoute: '/play' }));
       expect(html).toContain(en.newGame);
       expect(html).toContain('gambit-home-dialog');
     });
