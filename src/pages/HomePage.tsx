@@ -5,6 +5,7 @@ import { AppLink } from '../components/Common/AppLink.tsx';
 import { en } from '../copy/en.ts';
 import { usePageMetadata } from '../hooks/usePageMetadata.ts';
 import { track } from '../lib/analytics.ts';
+import { getStreak } from '../puzzles/streak.ts';
 import './HomePage.css';
 
 const HERO_FEN = 'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQkq - 6 5';
@@ -12,6 +13,7 @@ const HERO_FEN = 'r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R w KQ
 export function HomePage(): React.JSX.Element {
   usePageMetadata(en.homeTitle, en.homeMetaDescription);
   const navigate = useNavigate();
+  const streak = getStreak();
 
   const handleHeroPlay = (): void => {
     track('play_clicked', { from: 'home_hero' });
@@ -42,6 +44,15 @@ export function HomePage(): React.JSX.Element {
             >
               {en.playNow}
             </button>
+            <AppLink
+              to="/puzzles"
+              className="home-streak-badge"
+              data-testid="home-streak-badge"
+              aria-label={en.puzzleStreak.replace('{count}', String(streak))}
+            >
+              <span aria-hidden="true">🔥</span>
+              <span>{en.puzzleStreak.replace('{count}', String(streak))}</span>
+            </AppLink>
             <AppLink to="/how-to-play" className="home-cta-secondary">
               {en.howToPlay}
             </AppLink>
@@ -79,7 +90,25 @@ export function HomePage(): React.JSX.Element {
         </div>
       </section>
 
-      {/* 3. Closing CTA Band */}
+      {/* 3. Puzzle of the Day Card */}
+      <section className="home-daily-puzzle-band" aria-label={en.puzzleDailyTitle}>
+        <div className="home-daily-puzzle-card">
+          <div className="home-daily-puzzle-info">
+            <span className="home-daily-puzzle-badge">{en.puzzleDailyTitle}</span>
+            <h2 className="home-daily-puzzle-title">{en.puzzleDailySubheading}</h2>
+            <p className="home-daily-puzzle-desc">{en.puzzleDailyHomeDesc}</p>
+          </div>
+          <AppLink
+            to="/puzzles?daily=1"
+            className="home-cta-primary home-daily-puzzle-cta"
+            data-testid="home-daily-puzzle-cta"
+          >
+            {en.puzzlePlayDaily}
+          </AppLink>
+        </div>
+      </section>
+
+      {/* 4. Closing CTA Band */}
       <section className="home-closing-band" aria-label={en.homeClosingHeading}>
         <h2 className="home-closing-title">{en.homeClosingHeading}</h2>
         <button

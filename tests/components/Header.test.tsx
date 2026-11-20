@@ -41,6 +41,11 @@ describe('Header component', () => {
     expect(html).toMatch(/<a[^>]*(class="gambit-nav-link"[^>]*href="\/"|href="\/"[^>]*class="gambit-nav-link")[^>]*>Home<\/a>/);
   });
 
+  it('renders visible Puzzles navigation item in header linking to "/puzzles"', () => {
+    const html = renderToStaticMarkup(React.createElement(Header));
+    expect(html).toMatch(/<a[^>]*(class="gambit-nav-link"[^>]*href="\/puzzles"[^>]*|href="\/puzzles"[^>]*class="gambit-nav-link")[^>]*>Puzzles<\/a>/);
+  });
+
   it('asserts document title is "Mohra - play chess in your browser" in index.html', () => {
     const indexHtml = fs.readFileSync(path.resolve(__dirname, '../../index.html'), 'utf-8');
     expect(indexHtml).toContain('<title>Mohra - play chess in your browser</title>');

@@ -6,10 +6,27 @@ import { FirstVisitBanner } from '../../src/components/Panels/FirstVisitBanner.t
 import { en } from '../../src/copy/en.ts';
 import { useGameStore } from '../../src/game/store.ts';
 import { usePageMetadata } from '../../src/hooks/usePageMetadata.ts';
+import { setPuzzlesCache } from '../../src/puzzles/loader.ts';
+
+const MOCK_PUZZLE_DATA = {
+  version: 1,
+  count: 1,
+  puzzles: [
+    {
+      id: 'mock1',
+      fen: '8/8/2P2k2/3B1p2/3NpK1p/2r5/5P2/8 w - - 2 49',
+      moves: ['d4b5', 'c3f3'],
+      rating: 601,
+      themes: ['endgame', 'mateIn1'],
+      side: 'b' as const,
+    },
+  ],
+};
 
 describe('Routing, web presence and content pages (v1.3)', () => {
   beforeEach(() => {
     useGameStore.getState().resetGame();
+    setPuzzlesCache(MOCK_PUZZLE_DATA);
   });
 
   describe('Route headings and page content', () => {
@@ -77,7 +94,21 @@ describe('Routing, web presence and content pages (v1.3)', () => {
       expect(html).toContain(en.homeFeatureLegalMoves);
       expect(html).toContain(en.homeFeatureRefusedMoves);
       expect(html).toContain(en.homeFeatureNoSignup);
+      expect(html).toContain('data-testid="home-streak-badge"');
+      expect(html).toContain('data-testid="home-daily-puzzle-cta"');
+      expect(html).toContain(en.puzzleDailyTitle);
       expect(html).toContain('data-testid="closing-play-cta"');
+    });
+
+    it('renders puzzles route on "/puzzles"', () => {
+      const html = renderToStaticMarkup(
+        <MemoryRouter initialEntries={['/puzzles']}>
+          <App />
+        </MemoryRouter>,
+      );
+
+      expect(html).toContain(en.puzzlesTitle);
+      expect(html).toContain(en.puzzlePracticeByTheme);
     });
 
     it('renders play route on "/play" with setup panel and no board until Start', () => {

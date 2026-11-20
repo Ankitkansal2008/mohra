@@ -21,6 +21,7 @@ import { GamePage } from './pages/GamePage.tsx';
 import { HomePage } from './pages/HomePage.tsx';
 import { HowToPlayPage } from './pages/HowToPlayPage.tsx';
 import { PrivacyPage } from './pages/PrivacyPage.tsx';
+import { PuzzlesPage } from './pages/PuzzlesPage.tsx';
 import './App.css';
 
 function loadDevFenIfPresent(): boolean {
@@ -133,6 +134,7 @@ function AppContent(): React.JSX.Element {
           }
         />
         <Route path="/how-to-play" element={<HowToPlayPage />} />
+        <Route path="/puzzles" element={<PuzzlesPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
       </Routes>

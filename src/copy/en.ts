@@ -4,7 +4,6 @@ export const en: Record<string, string> = {
   dismissToast: 'Dismiss notification',
   toastAriaLabel: 'Notification',
   announcedMove: 'Move played: ',
-
   // Rejection reasons (UI/UX Section 8 and TRD Section 5)
   rejectionPinned: 'That piece is pinned - moving it would expose your king.',
   rejectionWrongTurn: 'It is not your turn to move.',
@@ -12,7 +11,6 @@ export const en: Record<string, string> = {
   rejectionInCheck: 'You are in check - that move leaves your king attacked.',
   rejectionCastlingBlocked: 'You cannot castle out of, through, or into check.',
   rejectionGameOver: 'The game has ended.',
-
   // Promotion overlay (UI/UX Section 6 and 7)
   promotionDialogAriaLabel: 'Pawn promotion choices',
   promoteToQueen: 'Promote to Queen',
@@ -20,7 +18,6 @@ export const en: Record<string, string> = {
   promoteToBishop: 'Promote to Bishop',
   promoteToKnight: 'Promote to Knight',
   cancelPromotion: 'Cancel promotion',
-
   // UI/UX Section 8 copy tokens
   homePlayComputer: 'Play the computer',
   homeTwoPlayers: 'Two players, one device',
@@ -59,7 +56,6 @@ export const en: Record<string, string> = {
   pgnCopied: 'Game copied as PGN.',
   engineFailed: 'The computer opponent could not start. You can keep playing on this device.',
   offline: 'You are offline. The game still works; only the online features will not.',
-
   // Actions and controls (PRD FR-12, FR-13, FR-17, FR-19 and UI/UX Section 7, 8)
   rematch: 'Rematch',
   reviewMoves: 'Review moves',
@@ -75,7 +71,6 @@ export const en: Record<string, string> = {
   resign: 'Resign',
   cancel: 'Cancel',
   newGame: 'New game',
-
   // Player labels, clock and turn indicators
   you: 'You',
   mohra: 'Mohra',
@@ -87,7 +82,6 @@ export const en: Record<string, string> = {
   toMove: 'To move',
   levelLabel: 'Level {level}',
   playerClock: '{player} clock: {time}',
-
   // Moves list, drawer & review mode
   moves: 'Moves',
   noMovesYet: 'No moves yet. White to play.',
@@ -96,7 +90,6 @@ export const en: Record<string, string> = {
   movesDrawerTitle: 'Moves',
   closeMovesDrawer: 'Close moves list',
   openMovesDrawer: 'Moves',
-
   // Screen reader piece & square announcements (UI/UX Section 9)
   piecePawn: 'pawn',
   pieceKnight: 'knight',
@@ -113,12 +106,10 @@ export const en: Record<string, string> = {
   squareEmpty: '{square}, empty',
   squarePiece: '{square}, {color} {piece}',
   boardKeyboardInstructions: 'Chess board. Use arrow keys to navigate squares, Enter or Space to select and move, Escape to cancel, F to flip.',
-
   // Persistence & Resume
   resumeGame: 'Resume game - {turn} to move, move {move}',
   resume: 'Resume',
   discard: 'Discard',
-
   // Settings
   settings: 'Settings',
   settingsTitle: 'Settings',
@@ -138,7 +129,6 @@ export const en: Record<string, string> = {
   clockReference: 'Clock: set when you start a game.',
   on: 'On',
   off: 'Off',
-
   // Dev position loader
   loadFen: 'Load FEN',
   loadFenLabel: 'Load FEN',
@@ -146,25 +136,22 @@ export const en: Record<string, string> = {
   loadFenSubmit: 'Load',
   invalidPosition: 'That position is not valid.',
   invalidFen: 'That position is not valid.',
-
   // Footer & Version Marker
   versionMarker: 'v{version} • {buildDate}',
   copyright: '© {year} Mohra. All rights reserved.',
   developerCredit: 'Developed by Ankit Kansal',
   credit: 'Developed by Ankit Kansal',
-
   // Navigation (Part 2 & 3)
   navHome: 'Home',
   navPlay: 'Play',
+  navPuzzles: 'Puzzles',
   navHowToPlay: 'How to play',
   navAbout: 'About',
   navPrivacy: 'Privacy',
-
   // First-visit line (Part 4)
   firstVisitText: 'Beginner-friendly chess - legal moves are shown, and a refused move tells you why. No signup.',
   firstVisitHowToPlay: 'How to play',
   firstVisitDismiss: 'Dismiss notice',
-
   // Route metadata (Part 6)
   homeTitle: 'Mohra - play chess in your browser',
   homeMetaDescription: 'Play chess in your browser against the computer at four levels, or a friend on one device. Free, no signup, beginner friendly.',
@@ -180,7 +167,6 @@ export const en: Record<string, string> = {
   privacyTitle: 'Privacy',
   privacyDocTitle: 'Privacy - Mohra',
   privacyMetaDescription: 'Plain language privacy: no accounts, no personal data, cookieless analytics, and transparent local storage.',
-
   // Home Page (v1.4)
   homeEyebrow: 'Free • No signup',
   homeHeading: 'Chess that explains itself',
@@ -192,7 +178,6 @@ export const en: Record<string, string> = {
   homeFeatureRefusedMoves: 'A refused move tells you why',
   homeFeatureNoSignup: 'No signup, no install',
   homeClosingHeading: 'Ready to play?',
-
   // How to play cards (Part 5)
   howToPlayIntro: 'Chess is played on an 8×8 grid by two players. Here is everything you need to know about piece movement and special rules.',
   cardPiecesTitle: 'How the pieces move',
@@ -215,12 +200,10 @@ export const en: Record<string, string> = {
   cardPromotionDesc: 'When a pawn reaches the eighth rank, it transforms immediately into a more powerful piece.',
   cardPromotionRules: 'You can choose a Queen, Rook, Bishop, or Knight. A Queen is usually selected.',
   cardPromotionExample: 'Example: Advancing a white pawn from e7 to e8 converts it into a queen for the endgame attack.',
-
   // About page (Part 5)
   aboutP1: 'Mohra is a clean, minimal browser chess game designed for focused play without distractions, accounts, or clutter. Legal moves are shown directly on the board, and refused moves explain why with clear reasons.',
   aboutP2: 'It is built for anyone who enjoys chess, from beginners learning movement and tactical rules to experienced players wanting a swift match against four calibrated difficulty levels or a friend on one device.',
   aboutP3: 'The engine runs Stockfish inside your browser via WebAssembly in a Web Worker, ensuring fast responses and complete offline functionality without server latency. Developed by Ankit Kansal.',
-
   // Privacy page (Part 5)
   privacyP1: 'Mohra is built with complete respect for your privacy. There are no accounts, no signups, and no personal data collection of any kind.',
   privacyAnalyticsTitle: 'Cookieless analytics',
@@ -231,8 +214,34 @@ export const en: Record<string, string> = {
   privacyClearDesc: 'You can clear stored games by tapping Discard on the resume banner, or reset all local data anytime via your browser\'s site storage settings.',
   privacyContactTitle: 'Contact',
   privacyContactDesc: 'If you have questions or feedback, reach out to the developer at ankikansal@gmail.com.',
+  // Puzzles section (v1.5)
+  puzzlesTitle: 'Puzzles',
+  puzzlesDocTitle: 'Puzzles - Mohra',
+  puzzlesMetaDescription: 'Practice tactical chess puzzles offline in your browser. Daily puzzle, tactical themes, and streak tracking.',
+  puzzleDailyTitle: 'Puzzle of the day',
+  puzzleDailySubheading: 'A new tactical puzzle every day for everyone.',
+  puzzleDailyHomeDesc: 'Test your tactical vision with today\'s puzzle and build your daily streak.',
+  puzzlePracticeByTheme: 'Practice by theme',
+  puzzleStreak: '{count} day streak',
+  puzzleWhiteToMove: 'White to move - find the best move',
+  puzzleBlackToMove: 'Black to move - find the best move',
+  puzzleNotBestMove: 'Not the best move - try again',
+  puzzleShowSolution: 'Show solution',
+  puzzleSolved: 'Solved',
+  puzzleSolvedWithRating: 'Solved • Rating {rating}',
+  puzzleNext: 'Next puzzle',
+  puzzlePlayDaily: 'Play daily puzzle',
+  backToPuzzles: 'Back to puzzles',
+  puzzleThemeMateIn1: 'Mate in 1',
+  puzzleThemeMateIn2: 'Mate in 2',
+  puzzleThemeFork: 'Fork',
+  puzzleThemePin: 'Pin',
+  puzzleThemeDiscoveredAttack: 'Discovered attack',
+  puzzleThemeHangingPiece: 'Hanging piece',
+  puzzleCount: '{count} puzzles',
+  puzzleLoading: 'Loading puzzles...',
+  puzzleError: 'Could not load puzzles.',
+  puzzleRating: 'Rating: {rating}',
 };
-
 export const copy: Record<string, string> = en;
-
 export default en;

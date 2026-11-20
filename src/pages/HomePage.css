@@ -186,6 +186,89 @@
   line-height: var(--line-height-ui);
 }
 
+/* Home streak badge next to play button */
+.home-streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: var(--font-size-14);
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  min-height: var(--touch-min);
+  box-sizing: border-box;
+  transition: border-color var(--duration-120), background-color var(--duration-120);
+}
+
+.home-streak-badge:hover {
+  border-color: var(--color-primary);
+}
+
+.home-streak-badge:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Home daily puzzle card band */
+.home-daily-puzzle-band {
+  width: 100%;
+}
+
+.home-daily-puzzle-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-24);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-20);
+  box-sizing: border-box;
+}
+
+.home-daily-puzzle-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: var(--space-4);
+  flex: 1;
+}
+
+.home-daily-puzzle-badge {
+  display: inline-block;
+  font-size: var(--font-size-13);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-accent);
+}
+
+.home-daily-puzzle-title {
+  font-size: var(--font-size-20);
+  font-weight: 700;
+  color: var(--color-ink);
+  margin: 0;
+}
+
+.home-daily-puzzle-desc {
+  font-size: var(--font-size-14);
+  color: var(--color-muted);
+  margin: 0;
+  line-height: var(--line-height-body);
+}
+
+.home-daily-puzzle-cta {
+  min-width: 160px;
+  white-space: nowrap;
+}
+
 /* 3. Closing CTA Band */
 .home-closing-band {
   background-color: var(--color-surface);
@@ -240,6 +323,18 @@
   .home-features {
     grid-template-columns: 1fr;
     gap: var(--space-16);
+  }
+  .home-daily-puzzle-card {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  .home-daily-puzzle-info {
+    align-items: center;
+    text-align: center;
+  }
+  .home-daily-puzzle-cta {
+    width: 100%;
   }
   .home-cta-group { justify-content: center; }
 }

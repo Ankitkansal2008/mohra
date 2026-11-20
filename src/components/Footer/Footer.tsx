@@ -15,6 +15,9 @@ export function Footer(): React.JSX.Element {
         <AppLink to="/play" className="gambit-footer-link">
           {en.navPlay}
         </AppLink>
+        <AppLink to="/puzzles" className="gambit-footer-link">
+          {en.navPuzzles}
+        </AppLink>
         <AppLink to="/how-to-play" className="gambit-footer-link">
           {en.navHowToPlay}
         </AppLink>

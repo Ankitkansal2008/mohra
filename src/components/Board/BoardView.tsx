@@ -26,6 +26,13 @@ export interface BoardViewProps {
   readonly interactive?: boolean;
   readonly className?: string;
   readonly style?: React.CSSProperties;
+  readonly playerSide?: 'w' | 'b';
+  readonly onMove?: (from: string, to: string) => boolean;
+  readonly onSelectSquare?: (square: string) => void;
+  readonly toastMessage?: string | null;
+  readonly onDismissToast?: () => void;
+  readonly customSquareStyles?: Record<string, React.CSSProperties>;
+  readonly isShaking?: boolean;
 }
 
 export function BoardView({
@@ -40,6 +47,13 @@ export function BoardView({
   interactive = true,
   className = '',
   style,
+  playerSide,
+  onMove: propOnMove,
+  onSelectSquare: propOnSelectSquare,
+  toastMessage,
+  onDismissToast,
+  customSquareStyles,
+  isShaking = false,
 }: BoardViewProps): React.JSX.Element {
   const storeGame = useGameStore((s) => s.game);
   const storeUi = useGameStore((s) => s.ui);
@@ -80,26 +94,32 @@ export function BoardView({
   const orientation = propBoardOrientation ?? (storeUi.flipped ? 'black' : 'white');
   const isInteractive = interactive && !isReviewing && !isGameOver(status);
 
+  const handleMove = propOnMove ?? attemptMove;
+  const handleSelect = propOnSelectSquare ?? selectSquare;
+  const activeToast = toastMessage !== undefined ? (toastMessage ? { message: toastMessage } : null) : storeToast;
+  const handleDismissToast = onDismissToast ?? dismissToast;
+
   // Keyboard navigation hook provides single-tab-stop board play (UI/UX Section 9).
   const { cursorSquare, isFocused, handleFocus, handleBlur, handleKeyDown } = useBoardKeyboard({
     orientation,
     isInteractive,
     selected,
-    onSelectSquare: selectSquare,
-    onAttemptMove: attemptMove,
+    onSelectSquare: handleSelect,
+    onAttemptMove: handleMove,
     onCancelPromotion: cancelPromotion,
     hasPendingPromotion: storeUi.pendingPromotion !== null,
   });
 
   const activeCheck = propCheck !== undefined ? propCheck : isCheck(status) ? findKingSquare(fen, turn) : null;
   const colors = BOARD_THEMES[theme] ?? BOARD_THEMES.default;
-  const squareStyles = buildSquareStyles({ lastMove, selected, activeCheck, legalTargets, fen, isFocused, cursorSquare });
+  const baseSquareStyles = buildSquareStyles({ lastMove, selected, activeCheck, legalTargets, fen, isFocused, cursorSquare });
+  const squareStyles = customSquareStyles ? { ...baseSquareStyles, ...customSquareStyles } : baseSquareStyles;
   const animationDuration = reducedMotion || !storeUi.animationOn ? 0 : 150;
   const liveAnnouncement = formatLiveMoveAnnouncement(storeAnnounced);
 
   return (
     <div
-      className={`gambit-board-wrapper ${className}`.trim()}
+      className={`gambit-board-wrapper ${isShaking ? 'board-shake' : ''} ${className}`.trim()}
       style={{
         position: 'relative',
         width: 'clamp(320px, 100%, 100%)',
@@ -120,9 +140,9 @@ export function BoardView({
       onBlur={interactive ? handleBlur : undefined}
       onKeyDown={interactive ? handleKeyDown : undefined}
     >
-      {storeToast ? (
+      {activeToast ? (
         <div style={{ position: 'absolute', top: '8px', left: '50%', transform: 'translateX(-50%)', zIndex: 60, maxWidth: '90%' }}>
-          <Toast message={storeToast.message} onDismiss={dismissToast} />
+          <Toast message={activeToast.message} onDismiss={handleDismissToast} />
         </div>
       ) : null}
 
@@ -159,13 +179,19 @@ export function BoardView({
             showNotation: false,
             boardStyle: { touchAction: 'pinch-zoom', ...(isInteractive ? {} : { pointerEvents: 'none' }) },
             allowDragging: isInteractive,
-            canDragPiece: ({ piece }) => (isInteractive ? piece.pieceType[0] === turn : false),
+            canDragPiece: ({ piece }) => {
+              if (!isInteractive) return false;
+              if (playerSide) {
+                return piece.pieceType[0] === playerSide && turn === playerSide;
+              }
+              return piece.pieceType[0] === turn;
+            },
             onPieceDrop: ({ sourceSquare, targetSquare }) => {
               if (!isInteractive || !targetSquare || sourceSquare === targetSquare) return false;
-              return attemptMove(sourceSquare, targetSquare);
+              return handleMove(sourceSquare, targetSquare);
             },
             onSquareClick: ({ square }) => {
-              if (isInteractive) selectSquare(square);
+              if (isInteractive) handleSelect(square);
             },
           }}
         />

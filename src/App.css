@@ -247,3 +247,20 @@
     transition: none !important;
   }
 }
+
+/* Board shake feedback on wrong move */
+@keyframes board-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+.board-shake {
+  animation: board-shake 300ms ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .board-shake {
+    animation: none;
+  }
+}

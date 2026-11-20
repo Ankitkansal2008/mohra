@@ -1,6 +1,6 @@
 # Mohra
 
-A clean, fast, offline-first browser chess game. Play against the computer across four difficulty levels, or with a friend on one device.
+A clean, fast, offline-first browser chess game. Play against the computer across four difficulty levels, with a friend on one device, or solve 1,158 tactical puzzles.
 
 ## Setup
 

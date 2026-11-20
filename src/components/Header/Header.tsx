@@ -67,6 +67,9 @@ export function Header({
         <AppLink to="/play" className="gambit-nav-link">
           {en.navPlay}
         </AppLink>
+        <AppLink to="/puzzles" className="gambit-nav-link">
+          {en.navPuzzles}
+        </AppLink>
         <AppLink to="/how-to-play" className="gambit-nav-link">
           {en.navHowToPlay}
         </AppLink>
@@ -184,6 +187,13 @@ export function Header({
                 onClick={handleCloseMenu}
               >
                 {en.navPlay}
+              </AppLink>
+              <AppLink
+                to="/puzzles"
+                className="gambit-mobile-menu-action"
+                onClick={handleCloseMenu}
+              >
+                {en.navPuzzles}
               </AppLink>
               <AppLink
                 to="/how-to-play"
