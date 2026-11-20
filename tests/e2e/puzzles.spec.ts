@@ -118,3 +118,4 @@ test.describe('Puzzles section end-to-end', () => {
     expect(playScrollWidth).toBeLessThanOrEqual(320);
   });
 });
+

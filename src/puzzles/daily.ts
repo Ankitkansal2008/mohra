@@ -21,3 +21,4 @@ export function getDailyPuzzle(puzzles: readonly Puzzle[], dateStr?: string): Pu
   const index = hashDate(targetDate) % puzzles.length;
   return puzzles[index] ?? null;
 }
+

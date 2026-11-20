@@ -21,3 +21,4 @@ export interface StoredStreak {
 }
 
 export type MoveResult = 'correct' | 'wrong';
+

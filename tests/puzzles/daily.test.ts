@@ -53,3 +53,4 @@ describe('Daily puzzle selection (src/puzzles/daily.ts)', () => {
     expect(getDailyPuzzle([])).toBeNull();
   });
 });
+

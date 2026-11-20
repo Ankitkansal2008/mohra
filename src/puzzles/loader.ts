@@ -36,3 +36,4 @@ export async function loadPuzzles(url: string = '/data/puzzles.json'): Promise<P
 
   return loadPromise;
 }
+

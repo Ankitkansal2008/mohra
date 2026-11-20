@@ -64,3 +64,4 @@ describe('Puzzles loader (src/puzzles/loader.ts)', () => {
     await expect(loadPuzzles('/bad/path.json')).rejects.toThrow('Failed to load puzzles: 404');
   });
 });
+
