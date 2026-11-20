@@ -3,31 +3,19 @@ import type { GameStatus, Side } from '../game/types.ts';
 import {
   type ActiveSoundInstance,
   type GameEndOutcome,
-  playCapture,
-  playCastle,
-  playCheck,
-  playEndGame,
-  playMove,
-  playNotify,
-  playPromote,
-  playRefuse,
+  playCapture, playCastle, playCheck, playEndGame,
+  playMove, playNotify, playPromote, playRefuse,
 } from './soundEffects.ts';
 
 export type { GameEndOutcome };
 
-export type SoundEffect =
-  | 'move'
-  | 'capture'
-  | 'castle'
-  | 'check'
-  | 'promote'
-  | 'gameEnd'
-  | 'refuse'
-  | 'notify';
+export type SoundEffect = 'move' | 'capture' | 'castle' | 'check' | 'promote' | 'gameEnd' | 'refuse' | 'notify';
 
 const TOAST_THROTTLE_MS = 250;
 let audioCtx: AudioContext | null = null;
 let unlockListenersAttached = false;
+let isUnlocked = false;
+let visibilityListenerAttached = false;
 let isReviewingProvider: (() => boolean) | null = null;
 const activeInstances = new Map<SoundEffect, ActiveSoundInstance[]>();
 const lastToastTime = new Map<SoundEffect, number>();
@@ -49,8 +37,12 @@ export function getAudioContext(): AudioContext | null {
   return audioCtx;
 }
 
-// User gesture unlock: required by mobile Safari and modern browser autoplay policies.
+// User gesture unlock: runs once synchronously on first user gesture on document
 export function unlockAudio(): void {
+  if (isUnlocked) return;
+  isUnlocked = true;
+  removeUnlockListeners();
+
   const AudioContextClass = getAudioContextClass();
   if (!AudioContextClass) return;
 
@@ -58,9 +50,7 @@ export function unlockAudio(): void {
     if (!audioCtx) {
       audioCtx = new AudioContextClass();
     }
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume().catch(() => {});
-    }
+    audioCtx.resume().catch(() => {});
 
     // Play a 1-sample silent buffer on user gesture for iOS Safari compatibility
     const buffer = audioCtx.createBuffer(1, 1, 22050);
@@ -68,31 +58,47 @@ export function unlockAudio(): void {
     source.buffer = buffer;
     source.connect(audioCtx.destination);
     source.start(0);
+
+    if (import.meta.env.DEV) {
+      console.log('[AudioContext state after unlock]:', audioCtx.state);
+    }
   } catch {
     // Strictly constrained browser autoplay policies fail silently
   }
 }
 
 function handleUnlock(): void {
-  removeUnlockListeners();
   unlockAudio();
 }
 
 export function removeUnlockListeners(): void {
-  if (typeof window === 'undefined') return;
-  window.removeEventListener('pointerdown', handleUnlock, true);
-  window.removeEventListener('keydown', handleUnlock, true);
+  if (typeof document === 'undefined') return;
+  document.removeEventListener('pointerdown', handleUnlock, true);
+  document.removeEventListener('touchstart', handleUnlock, true);
+  document.removeEventListener('click', handleUnlock, true);
   unlockListenersAttached = false;
 }
 
-export function initAudioUnlock(): void {
-  if (typeof window === 'undefined' || unlockListenersAttached) return;
-  window.addEventListener('pointerdown', handleUnlock, { capture: true });
-  window.addEventListener('keydown', handleUnlock, { capture: true });
-  unlockListenersAttached = true;
+function initVisibilityListener(): void {
+  if (typeof document === 'undefined' || visibilityListenerAttached) return;
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && audioCtx && audioCtx.state !== 'running') {
+      audioCtx.resume().catch(() => {});
+    }
+  });
+  visibilityListenerAttached = true;
 }
 
-if (typeof window !== 'undefined') {
+export function initAudioUnlock(): void {
+  if (typeof document === 'undefined' || unlockListenersAttached) return;
+  document.addEventListener('pointerdown', handleUnlock, { capture: true });
+  document.addEventListener('touchstart', handleUnlock, { capture: true });
+  document.addEventListener('click', handleUnlock, { capture: true });
+  unlockListenersAttached = true;
+  initVisibilityListener();
+}
+
+if (typeof document !== 'undefined') {
   initAudioUnlock();
 }
 
@@ -113,7 +119,14 @@ function registerInstance(effect: SoundEffect, instance: ActiveSoundInstance, no
 
 export function playSound(effect: SoundEffect, enabled: boolean, outcome: GameEndOutcome = 'draw'): void {
   if (!enabled) return;
-  if (!audioCtx || audioCtx.state !== 'running') return;
+  if (!audioCtx) return;
+
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume().catch(() => {});
+    return;
+  }
+
+  if (audioCtx.state !== 'running') return;
   if (isReviewingProvider && isReviewingProvider()) return;
 
   // Rate-limit toast feedback sounds to at most once per 250 ms
@@ -208,6 +221,8 @@ export function playMoveSound(
 
 export function resetAudioForTesting(): void {
   removeUnlockListeners();
+  isUnlocked = false;
+  visibilityListenerAttached = false;
   if (audioCtx) {
     try {
       audioCtx.close().catch(() => {});

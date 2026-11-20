@@ -1,12 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  initAudioUnlock,
-  playMoveSound,
-  playSound,
-  resetAudioForTesting,
-  setAudioContextForTesting,
-  setReviewingProvider,
-  unlockAudio,
+  initAudioUnlock, playMoveSound, playSound, resetAudioForTesting,
+  setAudioContextForTesting, setReviewingProvider, unlockAudio,
 } from '../../src/lib/sound.ts';
 import { createInitialUiState } from '../../src/game/selectors.ts';
 import { loadSavedSettings, saveSettings } from '../../src/lib/persist.ts';
@@ -55,24 +50,36 @@ describe('Sound module (src/lib/sound.ts)', () => {
     resetAudioForTesting();
     mockCtx = createMockAudioContext('running');
 
+    const addListener = vi.fn((type: string, fn: (e?: unknown) => void) => {
+      if (!listeners.has(type)) listeners.set(type, new Set());
+      listeners.get(type)!.add(fn);
+    });
+    const removeListener = vi.fn((type: string, fn: (e?: unknown) => void) => {
+      listeners.get(type)?.delete(fn);
+    });
+    const dispatch = vi.fn((evt: { type: string }) => {
+      listeners.get(evt.type)?.forEach((fn) => fn(evt));
+      return true;
+    });
+
     const mockWindow = {
       localStorage: localStorageMock,
       AudioContext: vi.fn().mockImplementation(function (this: unknown) { return mockCtx; }),
-      addEventListener: vi.fn((type: string, fn: (e?: unknown) => void) => {
-        if (!listeners.has(type)) listeners.set(type, new Set());
-        listeners.get(type)!.add(fn);
-      }),
-      removeEventListener: vi.fn((type: string, fn: (e?: unknown) => void) => {
-        listeners.get(type)?.delete(fn);
-      }),
-      dispatchEvent: vi.fn((evt: { type: string }) => {
-        listeners.get(evt.type)?.forEach((fn) => fn(evt));
-        return true;
-      }),
+      addEventListener: addListener,
+      removeEventListener: removeListener,
+      dispatchEvent: dispatch,
+    };
+    const mockDocument = {
+      visibilityState: 'visible',
+      addEventListener: addListener,
+      removeEventListener: removeListener,
+      dispatchEvent: dispatch,
     };
 
-    (globalThis as unknown as { window: unknown; localStorage: unknown }).window = mockWindow;
-    (globalThis as unknown as { localStorage: unknown }).localStorage = localStorageMock;
+    const g = globalThis as unknown as { window: unknown; document: unknown; localStorage: unknown };
+    g.window = mockWindow;
+    g.document = mockDocument;
+    g.localStorage = localStorageMock;
     setAudioContextForTesting(mockCtx as unknown as AudioContext);
   });
 
@@ -102,31 +109,56 @@ describe('Sound module (src/lib/sound.ts)', () => {
       expect(mockCtx.createGain).not.toHaveBeenCalled();
     });
 
-    it('until the context is running, sound calls are silent no-ops', () => {
+    it('sound calls are no-ops while the context is suspended and trigger resume', () => {
       mockCtx.state = 'suspended';
       playSound('move', true);
+      playSound('capture', true);
+      playSound('castle', true);
+      playSound('check', true);
+      playSound('promote', true);
+      playSound('gameEnd', true, 'win');
       playSound('refuse', true);
+      playSound('notify', true);
+      playMoveSound('e4', 'playing', true);
+
+      expect(mockCtx.resume).toHaveBeenCalled();
       expect(mockCtx.createOscillator).not.toHaveBeenCalled();
       expect(mockCtx.createGain).not.toHaveBeenCalled();
+      expect(mockCtx.createBiquadFilter).not.toHaveBeenCalled();
     });
   });
 
   describe('Audio unlock mechanism', () => {
-    it('unlocks AudioContext and plays silent buffer on user gesture', () => {
+    it('the unlock function resumes the context exactly once', () => {
       setAudioContextForTesting(null);
-      unlockAudio();
+      initAudioUnlock();
+
+      expect(document.addEventListener).toHaveBeenCalledWith('pointerdown', expect.any(Function), { capture: true });
+      expect(document.addEventListener).toHaveBeenCalledWith('touchstart', expect.any(Function), { capture: true });
+      expect(document.addEventListener).toHaveBeenCalledWith('click', expect.any(Function), { capture: true });
+
+      document.dispatchEvent(new Event('pointerdown'));
+      expect(mockCtx.resume).toHaveBeenCalledTimes(1);
       expect(mockCtx.createBuffer).toHaveBeenCalledWith(1, 1, 22050);
-      expect(mockCtx.createBufferSource).toHaveBeenCalled();
+      expect(mockCtx.createBufferSource).toHaveBeenCalledTimes(1);
+
+      expect(document.removeEventListener).toHaveBeenCalledWith('pointerdown', expect.any(Function), true);
+      expect(document.removeEventListener).toHaveBeenCalledWith('touchstart', expect.any(Function), true);
+      expect(document.removeEventListener).toHaveBeenCalledWith('click', expect.any(Function), true);
+
+      // Subsequent gestures or unlockAudio calls do not resume again
+      document.dispatchEvent(new Event('touchstart'));
+      document.dispatchEvent(new Event('click'));
+      unlockAudio();
+      expect(mockCtx.resume).toHaveBeenCalledTimes(1);
     });
 
-    it('listens for pointerdown and keydown then removes listeners after trigger', () => {
+    it('resumes context on visibilitychange when page becomes visible', () => {
       initAudioUnlock();
-      expect(window.addEventListener).toHaveBeenCalledWith('pointerdown', expect.any(Function), { capture: true });
-      expect(window.addEventListener).toHaveBeenCalledWith('keydown', expect.any(Function), { capture: true });
-
-      window.dispatchEvent(new Event('pointerdown'));
-      expect(window.removeEventListener).toHaveBeenCalledWith('pointerdown', expect.any(Function), true);
-      expect(window.removeEventListener).toHaveBeenCalledWith('keydown', expect.any(Function), true);
+      mockCtx.state = 'suspended';
+      (document as unknown as { visibilityState: string }).visibilityState = 'visible';
+      document.dispatchEvent(new Event('visibilitychange'));
+      expect(mockCtx.resume).toHaveBeenCalled();
     });
   });
 

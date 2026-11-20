@@ -87,6 +87,7 @@ export function PuzzlePlayView({
 
     if (player.isSolved()) {
       setIsSolved(true);
+      setToastMessage(null);
       playSound('gameEnd', soundOn, 'win');
       recordPuzzleSolved();
       track('puzzle_solved', {
@@ -108,6 +109,7 @@ export function PuzzlePlayView({
 
       if (player.isSolved()) {
         setIsSolved(true);
+        setToastMessage(null);
         playSound('gameEnd', soundOn, 'win');
         recordPuzzleSolved();
         track('puzzle_solved', {
@@ -144,6 +146,7 @@ export function PuzzlePlayView({
     setLastMove(player.getLastMove());
     setIsRevealed(true);
     setIsSolved(true);
+    setToastMessage(null);
     track('puzzle_failed', { theme: themeName, rating: puzzle.rating });
   };
 

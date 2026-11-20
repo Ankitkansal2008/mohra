@@ -91,6 +91,9 @@ test.describe('Puzzles section end-to-end', () => {
     await expect(solvedBadge).toBeVisible();
     await expect(solvedBadge).toHaveText('Solved');
 
+    // Any active toast message is cleared when solved
+    await expect(page.getByRole('alert')).not.toBeVisible();
+
     const nextBtn = page.locator('.puzzle-next-btn');
     await expect(nextBtn).toBeVisible();
     await expect(nextBtn).toHaveText('Next puzzle');
